@@ -94,11 +94,26 @@ return(tmp)
 #' 
 marginalised_means <- function(model, data, pred = "1", by = NULL, at = NULL, ...){
      model$data <- data
-     grid <- emmeans::qdrg(object = model,  at = at)
+
+     grid <- emmeans::qdrg(object = model, at = at)
        mm <- emmeans::emmeans(grid, specs = pred, df = model$df, by = by, ...)
     mm_pi <- pred_interval_esmeans(model, mm)
 
-  return(mm_pi)
+
+    if(is.null(by)){
+      mod_table <- tibble::tibble(name = mm_pi[,1], estimate = mm_pi[,"emmean"], lowerCL = mm_pi[,"lower.CL"], upperCL = mm_pi[,"upper.CL"], lowerPI = mm_pi[,"lower.PI"], upperPI = mm_pi[,"upper.PI"])
+    
+    } else{
+      mod_table <- tibble::tibble(name = mm_pi[,1], mod = mm_pi[,2], estimate = mm_pi[,"emmean"], lowerCL = mm_pi[,"lower.CL"], upperCL = mm_pi[,"upper.CL"], lowerPI = mm_pi[,"lower.PI"], upperPI = mm_pi[,"upper.PI"])
+      
+    }
+
+    output <- list(mod_table = mod_table, 
+                data = data)
+
+    class(output) <- "orchard"
+
+  return(output)
 }
 
 
