@@ -18,26 +18,6 @@ get_est <- function (model, mod) {
   return(table)
 }
 
-#' @title pred_interval_esmeans
-#' @description Function to get prediction intervals (crediblity intervals) from esmeans objects (metafor)
-#' @param model rma.mv object 
-#' @param esmeans result from emmeans::emmeans object
-#' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
-#' @author Daniel Noble - daniel.noble@anu.edu.au
-#' @export
-pred_interval_esmeans <- function(model, esmeans){
-
-          results <- summary(esmeans)
-                 sigmas <- sum(model$sigma2)
-              test.stat <- qt(0.975, results$df)
-
-  results$lower.PI <- results$emmean - test.stat * sqrt(results$SE^2 + sigmas)
-  results$upper.PI <- results$emmean + test.stat * sqrt(results$SE^2 + sigmas)
-
-return(results)
-}
-
-
 #' @title get_pred
 #' @description Function to get prediction intervals (crediblity intervals) from rma objects (metafor)
 #' @param model rma.mv object 
@@ -72,30 +52,50 @@ get_pred <- function (model, mod) {
   return(table)
 }
 
+#' @title pred_interval_esmeans
+#' @description Function to get prediction intervals (crediblity intervals) from esmeans objects (metafor)
+#' @param model rma.mv object 
+#' @param esmeans result from emmeans::emmeans object
+#' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
+#' @author Daniel Noble - daniel.noble@anu.edu.au
+#' @export
+pred_interval_esmeans <- function(model, mm){
+
+                results <- summary(mm)
+                 sigmas <- sum(model$sigma2)
+              test.stat <- qt(0.975, results$df)
+              PI <- test.stat * sqrt(results$SE^2 + sigmas)
+  
+  results$lower.PI <- results$emmean - PI
+  results$upper.PI <- results$emmean + PI
+
+return(results)
+}
+
 #' @title marginalised_means
 #' @description Function to to get marginalised means from met-regression models with single or multiple moderator variables that are both continuous or categorical.
 #' @param model rma.mv object 
-#' @param dat data frame used to fit rma.mv model
+#' @param data data frame used to fit rma.mv model
 #' @param pred predictor variable of interest that one wants marginalised means for. 
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
 #' @example \dontrun{
-#'warm_dat <- dat %>% filter(treat_type == "warm")
-#' model <- rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 | es_ID), mods = ~ experimental_design + trait.type + deg_dif + treat_end_days, method = "REML", test = "t", data = warm_dat,                               control=list(optimizer="optim", optmethod="Nelder-Mead")) 
-#'   overall <- marginalised_means(model, dat = warm_dat)
-#' across_trait <- marginalised_means(model, dat = warm_dat, pred = "trait.type")
-#' across_trait_by_degree_diff <- marginalised_means(model, dat = warm_dat, pred = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif")
-#' across_trait_by_degree_diff_at_treat_end_days10 <- marginalised_means(model, dat = warm_dat, pred = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = 10), by = "deg_dif")
-#' across_trait_by_degree_diff_at_treat_end_days10And50 <- marginalised_means(model, dat = warm_dat, pred = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "deg_dif")
-#' across_trait_by_treat_end_days10And50 <- marginalised_means(model, dat = warm_dat, pred = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "treat_end_days")
-#' across_trait_by_treat_end_days10And50_ordinaryMM <- marginalised_means(model, dat = warm_dat, pred = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "treat_end_days", weights = "prop")
+#'warm_dat <- data(fish)
+#' model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 | es_ID), mods = ~ experimental_design + trait.type + deg_dif + treat_end_days, method = "REML", test = "t", data = warm_dat,                               control=list(optimizer="optim", optmethod="Nelder-Mead")) 
+#'   overall <- marginalised_means(model, data = warm_dat)
+#' across_trait <- marginalised_means(model, data = warm_dat, pred = "trait.type")
+#' across_trait_by_degree_diff <- marginalised_means(model, data = warm_dat, pred = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif")
+#' across_trait_by_degree_diff_at_treat_end_days10 <- marginalised_means(model, data = warm_dat, pred = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = 10), by = "deg_dif")
+#' across_trait_by_degree_diff_at_treat_end_days10And50 <- marginalised_means(model, data = warm_dat, pred = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "deg_dif")
+#' across_trait_by_treat_end_days10And50 <- marginalised_means(model, data = warm_dat, pred = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "treat_end_days")
+#' across_trait_by_treat_end_days10And50_ordinaryMM <- marginalised_means(model, data = warm_dat, pred = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "treat_end_days", weights = "prop")
 #' }
 #' @export
 #' 
-marginalised_means <- function(model, dat, pred, by = NULL, at = NULL, ...){
-  grid <- emmeans::qdrg(object = model, data = dat, at = at)
-    mm <- emmeans::emmeans(grid, specs = pred, df = model$df, by = by, ...)
-    mm_pi <- pred_interval(model, mm)
+marginalised_means <- function(model, data, pred = "1", by = NULL, at = NULL, ...){
+  esmeans <- emmeans::qdrg(object = model, data = data, at = at)
+       mm <- emmeans::emmeans(esmeans, specs = pred, df = model$df, by = by, ...)
+ mm_pi <- pred_interval_esmeans(model, mm)
 
   return(mm_pi)
 }
