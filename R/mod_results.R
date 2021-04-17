@@ -61,15 +61,15 @@ get_pred <- function (model, mod) {
 #' @export
 pred_interval_esmeans <- function(model, mm){
 
-                results <- summary(mm)
+                tmp <- summary(mm)
                  sigmas <- sum(model$sigma2)
-              test.stat <- qt(0.975, results$df)
-              PI <- test.stat * sqrt(results$SE^2 + sigmas)
+              test.stat <- qt(0.975, tmp$df)
+              PI <- test.stat * sqrt(tmp$SE^2 + sigmas)
   
-  results$lower.PI <- results$emmean - PI
-  results$upper.PI <- results$emmean + PI
+  tmp$lower.PI <- tmp$emmean - PI
+  tmp$upper.PI <- tmp$emmean + PI
 
-return(results)
+return(tmp)
 }
 
 #' @title marginalised_means
@@ -93,9 +93,10 @@ return(results)
 #' @export
 #' 
 marginalised_means <- function(model, data, pred = "1", by = NULL, at = NULL, ...){
-  esmeans <- emmeans::qdrg(object = model, data = data, at = at)
-       mm <- emmeans::emmeans(esmeans, specs = pred, df = model$df, by = by, ...)
- mm_pi <- pred_interval_esmeans(model, mm)
+     model$data <- data
+     grid <- emmeans::qdrg(object = model,  at = at)
+       mm <- emmeans::emmeans(grid, specs = pred, df = model$df, by = by, ...)
+    mm_pi <- pred_interval_esmeans(model, mm)
 
   return(mm_pi)
 }
