@@ -56,15 +56,31 @@ get_pred <- function (model, mod) {
 #' @description Function to get prediction intervals (crediblity intervals) from esmeans objects (metafor)
 #' @param model rma.mv object 
 #' @param esmeans result from emmeans::emmeans object
+#' @param ... other arguments passed to function
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
 #' @export
-pred_interval_esmeans <- function(model, mm){
+pred_interval_esmeans <- function(model, mm, ...){
 
-                tmp <- summary(mm)
+        tmp <- summary(mm)
+  test.stat <- qt(0.975, tmp$df)
+  
+  if(length(model$tau2) <= 1){         
                  sigmas <- sum(model$sigma2)
-              test.stat <- qt(0.975, tmp$df)
-              PI <- test.stat * sqrt(tmp$SE^2 + sigmas)
+                     PI <- test.stat * sqrt(tmp$SE^2 + sigmas)
+        } else {
+            sigmas <- sum(model$sigma2)
+            taus   <- model$tau2
+                 w <- model$g.levels.k
+            
+            if(pred == "1"){
+              tau <- weighted_var(taus, weights = w)
+                     PI <- test.stat * sqrt(tmp$SE^2 + sigmas + tau)
+
+            } else { 
+               PI <- test.stat * sqrt(tmp$SE^2 + sigmas + taus)
+            }
+        }
   
   tmp$lower.PI <- tmp$emmean - PI
   tmp$upper.PI <- tmp$emmean + PI
@@ -97,7 +113,7 @@ marginalised_means <- function(model, data, pred = "1", by = NULL, at = NULL, ..
 
      grid <- emmeans::qdrg(object = model, at = at)
        mm <- emmeans::emmeans(grid, specs = pred, df = model$df, by = by, ...)
-    mm_pi <- pred_interval_esmeans(model, mm)
+    mm_pi <- pred_interval_esmeans(model, mm, pred = pred)
 
 
     if(is.null(by)){
@@ -115,7 +131,6 @@ marginalised_means <- function(model, data, pred = "1", by = NULL, at = NULL, ..
 
   return(output)
 }
-
 
 
 #' @title firstup
@@ -211,4 +226,18 @@ mod_results <- function(model, mod) {
 #' 
 print.orchard <- function(object, ...){
     return(object$mod_table)
+}
+
+#' @title weighted_var
+#' @description Calculate weighted variance 
+#' @param x A vector of tau2s to be averaged
+#' @param weights Weights, or sample sizes, used to average the variance
+#' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
+#' @author Daniel Noble - daniel.noble@anu.edu.au
+#' @return Returns a vector with a single weighted variance
+#' @export
+#' 
+weighted_var <- function(x, weights){
+    weight_var <- sum(x * weights) / sum(weights)
+    return(weight_var)
 }
