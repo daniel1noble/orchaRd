@@ -96,7 +96,7 @@ return(tmp)
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
 #' @example \dontrun{
-#'warm_dat <- data("fish")
+#'warm_dat <- fish
 #' model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 | es_ID), mods = ~ experimental_design + trait.type + deg_dif + treat_end_days, method = "REML", test = "t", data = warm_dat,                               control=list(optimizer="optim", optmethod="Nelder-Mead"))
 #'   overall <- marginalised_means(model, data = warm_dat)
 #' across_trait <- marginalised_means(model, data = warm_dat, pred = "trait.type")
