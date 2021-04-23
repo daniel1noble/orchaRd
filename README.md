@@ -17,7 +17,7 @@ install.packages("metafor")
 install.packages("patchwork")
 install.packages("R.rsp")
 
-devtools::install_github("daniel1noble/orchard_plot", force = TRUE, build_vignettes = TRUE)
+devtools::install_github("daniel1noble/orchaRd", force = TRUE, build_vignettes = TRUE)
 remotes::install_github("rvlenth/emmeans", dependencies = TRUE, build_opts = "") 
 
 library(orchaRd)
