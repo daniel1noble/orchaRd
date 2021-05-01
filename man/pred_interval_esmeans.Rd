@@ -4,10 +4,12 @@
 \alias{pred_interval_esmeans}
 \title{pred_interval_esmeans}
 \usage{
-pred_interval_esmeans(model, esmeans)
+pred_interval_esmeans(model, mm, ...)
 }
 \arguments{
 \item{model}{rma.mv object}
+
+\item{...}{other arguments passed to function}
 
 \item{esmeans}{result from emmeans::emmeans object}
 }
