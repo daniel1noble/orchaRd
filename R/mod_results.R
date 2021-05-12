@@ -108,6 +108,8 @@ return(tmp)
 #' }
 #' @export
 #'
+#'
+# We will ned to make sure people use "1" pr "moderator_names"
 marginalised_means <- function(model, data, pred = "1", by = NULL, at = NULL, ...){
      model$data <- data
 
