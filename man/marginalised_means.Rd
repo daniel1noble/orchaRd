@@ -4,12 +4,12 @@
 \alias{marginalised_means}
 \title{marginalised_means}
 \usage{
-marginalised_means(model, dat, pred, by = NULL, at = NULL, ...)
+marginalised_means(model, data, pred = "1", by = NULL, at = NULL, ...)
 }
 \arguments{
 \item{model}{rma.mv object}
 
-\item{dat}{data frame used to fit rma.mv model}
+\item{data}{data frame used to fit rma.mv model}
 
 \item{pred}{predictor variable of interest that one wants marginalised means for.}
 }
