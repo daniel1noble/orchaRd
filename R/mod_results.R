@@ -97,6 +97,7 @@ return(tmp)
 #' @param model rma.mv object
 #' @param data data frame used to fit rma.mv model
 #' @param mod moderator variable of interest that one wants marginalised means for.
+#' @param weights how to marginalize categorical variables. The default is weights = "prop" - more to add here (discuss with Dan)
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
 #' @example \dontrun{
@@ -115,7 +116,7 @@ return(tmp)
 #'
 #'
 # We will ned to make sure people use "1" pr "moderator_names"
-marginalised_means <- function(model, data, mod = "1", by = NULL, at = NULL, ...){
+marginalised_means <- function(model, data, mod = "1", weights = "prop", by = NULL, at = NULL, ...){
      model$data <- data
 
      grid <- emmeans::qdrg(object = model, at = at)
