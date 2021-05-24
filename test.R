@@ -5,16 +5,6 @@ library(orchaRd)
 library(metafor)
 library(emmeans)
 
-
-#' @title marginalised_means
-#' @description Function to to get marginalised means from met-regression models with single or multiple moderator variables that are both continuous or categorical.
-#' @param model rma.mv object
-#' @param data data frame used to fit rma.mv model
-#' @param mod moderator variable of interest that one wants marginalised means for.
-#' @param weights how to marginalize categorical variables. The defult is weights = "prop" - more to add here (discuss with Dan)
-#' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
-#' @author Daniel Noble - daniel.noble@anu.edu.au
-#' @example \dontrun{
 data(fish)
 warm_dat <- fish
 
@@ -40,8 +30,8 @@ across_trait_by_treat_end_days10And50_ordinaryMM <- marginalised_means(model, da
 
 # current get_data
 
-data <-overall2$data
-mod_table <- overall2$mod_table
+data <-across_trait_by_treat_end_days10And50$data
+mod_table <- across_trait_by_treat_end_days10And50$mod_table
 label <- "Test"
 angle <- 90
 alpha <- 0.5
@@ -53,7 +43,7 @@ plot <- ggplot2::ggplot() +
   ggplot2::geom_hline(yintercept = 0, linetype = 2, colour = "black", alpha = alpha) +
   # creating dots + CI and PI
   ggplot2::geom_linerange(data = mod_table, aes(x = name, ymin = lowerCL, ymax = upperCL), size = 1.2, position = position_dodge2(width = 0.3)) +
-  ggplot2::geom_pointrange(data = mod_table, aes(y = estimate, x = name, fill = name, ymin = lowerPR, ymax = upperPR), size = 0.6, shape = 21, position = position_dodge2(width = 0.3)) +
+  ggplot2::geom_pointrange(data = mod_table, aes(y = estimate, x = name, fill = name, ymin = lowerPR, ymax = upperPR), size = 0.5, shape = 21, position = position_dodge2(width = 0.3)) +
   #ggplot2::geom_errorbar(aes(ymin = lowerPR, ymax = upperPR), position = position_dodge2(), show.legend = FALSE, size = 0.5, alpha = 0.6, width = 0) +
   coord_flip() +
   # 95 %CI: branches
