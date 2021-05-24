@@ -22,10 +22,12 @@ model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1
 
 # margainl ovarll
 overall <- marginalised_means(model, data = warm_dat)
+overall2 <- marginalised_means(model, data = warm_dat, mod = "1", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif",  weights = "prop")
+
 
 # marginalsed stuff
 across_trait <- marginalised_means(model, data = warm_dat, mod = "trait.type")
-across_trait_by_degree_diff <- marginalised_means(model, data = warm_dat, pred = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif")
+across_trait_by_degree_diff <- marginalised_means(model, data = warm_dat, mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif")
 across_trait_by_degree_diff_at_treat_end_days10 <- marginalised_means(model, data = warm_dat, mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = 10), by = "deg_dif")
 across_trait_by_degree_diff_at_treat_end_days10And50 <- marginalised_means(model, data = warm_dat, mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "deg_dif")
 
@@ -37,8 +39,8 @@ across_trait_by_treat_end_days10And50_ordinaryMM <- marginalised_means(model, da
 
 # current get_data
 
-data <-across_trait_by_degree_diff_at_treat_end_days10And50$data
-mod_table <- across_trait_by_degree_diff_at_treat_end_days10And50$mod_table
+data <-overall2$data
+mod_table <- overall2$mod_table
 label <- "Test"
 angle <- 90
 alpha <- 0.5

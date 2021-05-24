@@ -86,6 +86,9 @@ pred_interval_esmeans <- function(model, mm, mod, ...){
   tmp$lower.PI <- tmp$emmean - PI
   tmp$upper.PI <- tmp$emmean + PI
 
+  # renaming "overall" to ""
+  if(tmp[1,1] == "overall"){tmp[,1] <- "intrcpt"}
+
 return(tmp)
 }
 
