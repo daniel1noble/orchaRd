@@ -5,16 +5,6 @@ library(orchaRd)
 library(metafor)
 library(emmeans)
 
-
-#' @title marginalised_means
-#' @description Function to to get marginalised means from met-regression models with single or multiple moderator variables that are both continuous or categorical.
-#' @param model rma.mv object
-#' @param data data frame used to fit rma.mv model
-#' @param mod moderator variable of interest that one wants marginalised means for.
-#' @param weights how to marginalize categorical variables. The defult is weights = "prop" - more to add here (discuss with Dan)
-#' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
-#' @author Daniel Noble - daniel.noble@anu.edu.au
-#' @example \dontrun{
 data(fish)
 warm_dat <- fish
 
