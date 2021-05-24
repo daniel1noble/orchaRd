@@ -95,6 +95,35 @@ orchard_plot <- function(object, mod = "Int", xlab, N = "none", alpha = 0.5, ang
 	# colour blind friendly colours with grey
 	 cbpl <- c("#E69F00","#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#56B4E9", "#999999")
 
+	 # whether marginal
+	 if(names(mod_table)[2] == "condition"){
+	   #Make the orchard plot
+	   plot <- ggplot2::ggplot(data = mod_table, aes(x = estimate, y = name)) +
+	     # pieces of fruit (bee-swarm and bubbles)
+	     ggbeeswarm::geom_quasirandom(data = data, aes(x = yi, y = moderator, size = scale, colour = moderator), groupOnX = FALSE, alpha=alpha) +
+	     # 95 %prediction interval (PI): twigs
+	     ggplot2::geom_errorbarh(aes(xmin = lowerPR, xmax = upperPR),  height = 0, show.legend = FALSE, size = 0.5, alpha = 0.6) +
+	     # 95 %CI: branches
+	     ggplot2::geom_errorbarh(aes(xmin = lowerCL, xmax = upperCL),  height = 0, show.legend = FALSE, size = 1.2) +
+	     ggplot2::geom_vline(xintercept = 0, linetype = 2, colour = "black", alpha = alpha) +
+	     # creating dots for truncks
+	     ggplot2::geom_point(aes(fill = name), size = 3, shape = 21) +
+	     # putting labels
+	     #ggplot2::annotate('text', x = (max(data$yi) + (max(data$yi)*0.10)), y = (seq(1, group_no, 1)+0.3),
+	     #                 label= paste("italic(k)==", mod_table$K), parse = TRUE, hjust = "right", size = 3.5) +
+	     ggplot2::theme_bw() +
+	     ggplot2::guides(fill = "none", colour = "none") +
+	     ggplot2::theme(legend.position= c(1, 0), legend.justification = c(1, 0)) +
+	     ggplot2::theme(legend.title = element_text(size = 9)) +
+	     ggplot2::theme(legend.direction="horizontal") +
+	     ggplot2::theme(legend.background = element_blank()) +
+	     ggplot2::labs(x = label, y = "", size = legend) +
+	     ggplot2::theme(axis.text.y = element_text(size = 10, colour ="black",
+	                                               hjust = 0.5,
+	                                               angle = angle))
+
+	 }else{
+
 	# Make the orchard plot
 	  plot <- ggplot2::ggplot(data = mod_table, aes(x = estimate, y = name)) +
 	    # pieces of fruit (bee-swarm and bubbles)
@@ -119,6 +148,8 @@ orchard_plot <- function(object, mod = "Int", xlab, N = "none", alpha = 0.5, ang
 	    ggplot2::theme(axis.text.y = element_text(size = 10, colour ="black",
 	                                              hjust = 0.5,
 	                                              angle = angle))
+
+	 }
 	  # putting colors in
 	  if(cb == TRUE){
 	    plot <- plot +

@@ -55,12 +55,13 @@ get_pred <- function (model, mod) {
 #' @title pred_interval_esmeans
 #' @description Function to get prediction intervals (crediblity intervals) from esmeans objects (metafor)
 #' @param model rma.mv object
-#' @param esmeans result from emmeans::emmeans object
+#' @param esmeans result from emmeans::emmeans object'
+#' @param
 #' @param ... other arguments passed to function
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
 #' @export
-pred_interval_esmeans <- function(model, mm, ...){
+pred_interval_esmeans <- function(model, mm, mod, ...){
 
         tmp <- summary(mm)
   test.stat <- qt(0.975, tmp$df)
@@ -73,7 +74,7 @@ pred_interval_esmeans <- function(model, mm, ...){
             taus   <- model$tau2
                  w <- model$g.levels.k
 
-            if(pred == "1"){
+            if(mod == "1"){
               tau <- weighted_var(taus, weights = w)
                      PI <- test.stat * sqrt(tmp$SE^2 + sigmas + tau)
 
@@ -92,42 +93,47 @@ return(tmp)
 #' @description Function to to get marginalised means from met-regression models with single or multiple moderator variables that are both continuous or categorical.
 #' @param model rma.mv object
 #' @param data data frame used to fit rma.mv model
-#' @param pred predictor variable of interest that one wants marginalised means for.
+#' @param mod moderator variable of interest that one wants marginalised means for.
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
 #' @example \dontrun{
+#' data(fish)
 #'warm_dat <- fish
 #' model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 | es_ID), mods = ~ experimental_design + trait.type + deg_dif + treat_end_days, method = "REML", test = "t", data = warm_dat,                               control=list(optimizer="optim", optmethod="Nelder-Mead"))
 #'   overall <- marginalised_means(model, data = warm_dat)
 #' across_trait <- marginalised_means(model, data = warm_dat, pred = "trait.type")
-#' across_trait_by_degree_diff <- marginalised_means(model, data = warm_dat, pred = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif")
-#' across_trait_by_degree_diff_at_treat_end_days10 <- marginalised_means(model, data = warm_dat, pred = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = 10), by = "deg_dif")
-#' across_trait_by_degree_diff_at_treat_end_days10And50 <- marginalised_means(model, data = warm_dat, pred = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "deg_dif")
-#' across_trait_by_treat_end_days10And50 <- marginalised_means(model, data = warm_dat, pred = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "treat_end_days")
-#' across_trait_by_treat_end_days10And50_ordinaryMM <- marginalised_means(model, data = warm_dat, pred = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "treat_end_days", weights = "prop")
+#' across_trait_by_degree_diff <- marginalised_means(model, data = warm_dat, mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif")
+#' across_trait_by_degree_diff_at_treat_end_days10 <- marginalised_means(model, data = warm_dat, mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = 10), by = "deg_dif")
+#' across_trait_by_degree_diff_at_treat_end_days10And50 <- marginalised_means(model, data = warm_dat, mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "deg_dif")
+#' across_trait_by_treat_end_days10And50 <- marginalised_means(model, data = warm_dat, mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "treat_end_days")
+#' across_trait_by_treat_end_days10And50_ordinaryMM <- marginalised_means(model, data = warm_dat, mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "treat_end_days", weights = "prop")
 #' }
 #' @export
 #'
 #'
 # We will ned to make sure people use "1" pr "moderator_names"
-marginalised_means <- function(model, data, pred = "1", by = NULL, at = NULL, ...){
+marginalised_means <- function(model, data, mod = "1", by = NULL, at = NULL, ...){
      model$data <- data
 
      grid <- emmeans::qdrg(object = model, at = at)
-       mm <- emmeans::emmeans(grid, specs = pred, df = model$df, by = by, ...)
-    mm_pi <- pred_interval_esmeans(model, mm, pred = pred)
+       mm <- emmeans::emmeans(grid, specs = mod, df = model$dfs, by = by, ...)
+    mm_pi <- pred_interval_esmeans(model, mm, mod = mod)
 
 
     if(is.null(by)){
-      mod_table <- tibble::tibble(name = mm_pi[,1], estimate = mm_pi[,"emmean"], lowerCL = mm_pi[,"lower.CL"], upperCL = mm_pi[,"upper.CL"], lowerPI = mm_pi[,"lower.PI"], upperPI = mm_pi[,"upper.PI"])
+      mod_table <- data.frame(name = firstup(as.character(mm_pi[,1])), estimate = mm_pi[,"emmean"], lowerCL = mm_pi[,"lower.CL"], upperCL = mm_pi[,"upper.CL"], lowerPI = mm_pi[,"lower.PI"], upperPI = mm_pi[,"upper.PI"])
 
     } else{
-      mod_table <- tibble::tibble(name = mm_pi[,1], mod = mm_pi[,2], estimate = mm_pi[,"emmean"], lowerCL = mm_pi[,"lower.CL"], upperCL = mm_pi[,"upper.CL"], lowerPI = mm_pi[,"lower.PI"], upperPI = mm_pi[,"upper.PI"])
+      mod_table <- data.frame(name = firstup(as.character(mm_pi[,1])), condition = mm_pi[,2], estimate = mm_pi[,"emmean"], lowerCL = mm_pi[,"lower.CL"], upperCL = mm_pi[,"upper.CL"], lowerPR = mm_pi[,"lower.PI"], upperPR = mm_pi[,"upper.PI"])
 
     }
 
+    mod_table$name <- factor(mod_table$name, levels = mod_table$name, labels = mod_table$name)
+
+    data2 <- get_data2(model, mod)
+
     output <- list(mod_table = mod_table,
-                data = data)
+                data = data2)
 
     class(output) <- "orchard"
 
@@ -171,9 +177,36 @@ get_data <- function(model, mod){
   type <- attr(model$yi, "measure")
 
 data <- data.frame(yi, vi, moderator, type)
-return(data)
+data
 
 }
+
+#' @title get_data2
+#' @description Collects and builds the data used to fit the rma.mv or rma model in metafor in conjunction with emmeans
+#' @param model rma.mv object
+#' @param mod the moderator variable
+#' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
+#' @author Daniel Noble - daniel.noble@anu.edu.au
+#' @return Returns a data frame
+#' @export
+#'
+get_data2 <- function(model, mod){
+
+  if(mod == "1"){
+    moderator <- "Intrcpt"
+  }else{
+    moderator<- model$data[[mod]]
+
+    moderator <- firstup(moderator)}
+  yi <- model$yi
+  vi <- model$vi
+  type <- attr(model$yi, "measure")
+
+  data <- data.frame(yi, vi, moderator, type)
+  return(data)
+
+}
+
 
 #' @title mod_results
 #' @description Using a metafor model object of class rma or rma.mv it creates a table of model results containing the mean effect size estimates for all levels of a given categorical moderator, their corresponding confidence intervals and prediction intervals
@@ -212,10 +245,9 @@ mod_results <- function(model, mod) {
 
 	class(model_results) <- "orchard"
 
-	return(model_results)
+	model_results
 
 }
-# TODO - I think we can improve `mod` bit?
 
 #' @title print.orchard
 #' @description Print method for class 'orchard'
@@ -243,3 +275,5 @@ weighted_var <- function(x, weights){
     weight_var <- sum(x * weights) / sum(weights)
     return(weight_var)
 }
+
+# TODO - I think we can improve `mod` bit?

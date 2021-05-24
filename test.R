@@ -14,65 +14,59 @@ library(emmeans)
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
 #' @example \dontrun{
+data(fish)
 warm_dat <- fish
+
+# model
 model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 | es_ID), mods = ~ experimental_design + trait.type + deg_dif + treat_end_days, method = "REML", test = "t", data = warm_dat,                               control=list(optimizer="optim", optmethod="Nelder-Mead"))
-  overall <- marginalised_means(model, data = warm_dat)
-across_trait <- marginalised_means(model, data = warm_dat, pred = "trait.type")
+
+# margainl ovarll
+overall <- marginalised_means(model, data = warm_dat)
+
+# marginalsed stuff
+across_trait <- marginalised_means(model, data = warm_dat, mod = "trait.type")
 across_trait_by_degree_diff <- marginalised_means(model, data = warm_dat, pred = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif")
-across_trait_by_degree_diff_at_treat_end_days10 <- marginalised_means(model, data = warm_dat, pred = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = 10), by = "deg_dif")
-across_trait_by_degree_diff_at_treat_end_days10And50 <- marginalised_means(model, data = warm_dat, pred = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "deg_dif")
-across_trait_by_treat_end_days10And50 <- marginalised_means(model, data = warm_dat, pred = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "treat_end_days")
-across_trait_by_treat_end_days10And50_ordinaryMM <- marginalised_means(model, data = warm_dat, pred = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "treat_end_days", weights = "prop")
-
-marginalised_means <- function(model, data, pred = "1", by = NULL, at = NULL, ...){
-  model$data <- data
-
-  grid <- emmeans::qdrg(object = model, at = at)
-  mm <- emmeans::emmeans(grid, specs = pred, df = model$df, by = by, ...)
-  mm_pi <- pred_interval_esmeans(model, mm, pred = pred)
+across_trait_by_degree_diff_at_treat_end_days10 <- marginalised_means(model, data = warm_dat, mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = 10), by = "deg_dif")
+across_trait_by_degree_diff_at_treat_end_days10And50 <- marginalised_means(model, data = warm_dat, mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "deg_dif")
 
 
-  if(is.null(by)){
-    mod_table <- tibble::tibble(name = mm_pi[,1], estimate = mm_pi[,"emmean"], lowerCL = mm_pi[,"lower.CL"], upperCL = mm_pi[,"upper.CL"], lowerPI = mm_pi[,"lower.PI"], upperPI = mm_pi[,"upper.PI"])
+across_trait_by_treat_end_days10And50 <- marginalised_means(model, data = warm_dat, mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "treat_end_days")
 
-  } else{
-    mod_table <- tibble::tibble(name = mm_pi[,1], mod = mm_pi[,2], estimate = mm_pi[,"emmean"], lowerCL = mm_pi[,"lower.CL"], upperCL = mm_pi[,"upper.CL"], lowerPI = mm_pi[,"lower.PI"], upperPI = mm_pi[,"upper.PI"])
-
-  }
-
-  output <- list(mod_table = mod_table,
-                 data = data)
-
-  class(output) <- "orchard"
-
-  return(output)
-}
+#
+across_trait_by_treat_end_days10And50_ordinaryMM <- marginalised_means(model, data = warm_dat, mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "treat_end_days", weights = "prop")
 
 # current get_data
 
-get_data <- function(model, mod){
-  X <- as.data.frame(model$X)
-  names <- vapply(stringr::str_split(colnames(X), {{mod}}), function(x) paste(unique(x), collapse = ""), character(1L))
+data <-across_trait_by_degree_diff_at_treat_end_days10And50$data
+mod_table <- across_trait_by_degree_diff_at_treat_end_days10And50$mod_table
+label <- "Test"
+angle <- 90
+alpha <- 0.5
 
-  moderator <- matrix(ncol = 1, nrow = dim(X)[1])
+plot <- ggplot2::ggplot() +
+  # pieces of fruit (bee-swarm and bubbles)
+  ggbeeswarm::geom_quasirandom(data = data, aes(y = yi, x = moderator, size = (1/sqrt(data[,"vi"])), colour = moderator), alpha=alpha) +
 
-  for(i in 1:ncol(X)){
-    moderator <- ifelse(X[,i] == 1, names[i], moderator)
-  }
-  moderator <- firstup(moderator)
-  yi <- model$yi
-  vi <- model$vi
-  type <- attr(model$yi, "measure")
-
-  data <- data.frame(yi, vi, moderator, type)
-  return(data)
-
-}
-
-
-# TODO
-# - we can do - get_data2
-# - we need to also change -
-
+  ggplot2::geom_hline(yintercept = 0, linetype = 2, colour = "black", alpha = alpha) +
+  # creating dots + CI and PI
+  ggplot2::geom_linerange(data = mod_table, aes(x = name, ymin = lowerCL, ymax = upperCL), size = 1.2, position = position_dodge2(width = 0.3)) +
+  ggplot2::geom_pointrange(data = mod_table, aes(y = estimate, x = name, fill = name, ymin = lowerPR, ymax = upperPR), size = 0.6, shape = 21, position = position_dodge2(width = 0.3)) +
+  #ggplot2::geom_errorbar(aes(ymin = lowerPR, ymax = upperPR), position = position_dodge2(), show.legend = FALSE, size = 0.5, alpha = 0.6, width = 0) +
+  coord_flip() +
+  # 95 %CI: branches
+  #ggplot2::geom_errorbarh(aes(xmin = lowerCL, xmax = upperCL),  height = 0, show.legend = FALSE, size = 1.2, position = position_dodge2()) +
+  # putting labels
+  #ggplot2::annotate('text', x = (max(data$yi) + (max(data$yi)*0.10)), y = (seq(1, group_no, 1)+0.3),
+  #                 label= paste("italic(k)==", mod_table$K), parse = TRUE, hjust = "right", size = 3.5) +
+  ggplot2::theme_bw() +
+  ggplot2::guides(fill = "none", colour = "none") +
+  ggplot2::theme(legend.position= c(0, 1), legend.justification = c(0, 1)) +
+  ggplot2::theme(legend.title = element_text(size = 9)) +
+  ggplot2::theme(legend.direction="horizontal") +
+  ggplot2::theme(legend.background = element_blank()) +
+  ggplot2::labs(y = "lnRR", x = "", size = "N") +
+  ggplot2::theme(axis.text.y = element_text(size = 10, colour ="black",
+                                            hjust = 0.5,
+                                            angle = 0))
 
 
