@@ -50,8 +50,12 @@ Zr_to_r <- function(df){
 #' @export
 
 # Note that cb = TRUE - we run out colour quite quickly
-
-orchard_plot <- function(object, mod = "Int", xlab, N = "none", alpha = 0.5, angle = 90, cb = TRUE, k = TRUE, transfm = c("none", "tanh")) {
+# TODO - we should say more than 8 groups (cb) we use cb = FALSE
+# TODO- we can only do up to 5 conditions for drowing pruposes - we
+# TODO - make it possible to where we want ot put legend - 1, 2, 3, 4 (top.right, top.left, bottom.right, bottom.left)
+orchard_plot <- function(object, mod = "Int", xlab, N = "none",
+                         alpha = 0.5, angle = 90, cb = TRUE, k = TRUE,
+                         transfm = c("none", "tanh"), condition.lab = "condition") {
 
   ## evaluate choices
   transfm <- match.arg(transfm) # if not sepcificed it takes the first choice
@@ -89,7 +93,11 @@ orchard_plot <- function(object, mod = "Int", xlab, N = "none", alpha = 0.5, ang
 	 mod_table$K <- as.vector(by(data, data[,"moderator"], function(x) length(x[,"yi"])))
 
 	 # the number of groups in a moderator & data points
-	 group_no <- nrow(mod_table)
+	 group_no <- length(unique(mod_table[, "name"]))
+
+	 # the number of levels in the condition
+	 condition_no <- length(unique(mod_table[, "condition"]))
+
 	 #data_no <- nrow(data)
 
 	# colour blind friendly colours with grey
@@ -97,30 +105,7 @@ orchard_plot <- function(object, mod = "Int", xlab, N = "none", alpha = 0.5, ang
 
 	 # whether marginal
 	 if(names(mod_table)[2] == "condition"){
-	   #Make the orchard plot
-	   plot <- ggplot2::ggplot(data = mod_table, aes(x = estimate, y = name)) +
-	     # pieces of fruit (bee-swarm and bubbles)
-	     ggbeeswarm::geom_quasirandom(data = data, aes(x = yi, y = moderator, size = scale, colour = moderator), groupOnX = FALSE, alpha=alpha) +
-	     # 95 %prediction interval (PI): twigs
-	     ggplot2::geom_errorbarh(aes(xmin = lowerPR, xmax = upperPR),  height = 0, show.legend = FALSE, size = 0.5, alpha = 0.6) +
-	     # 95 %CI: branches
-	     ggplot2::geom_errorbarh(aes(xmin = lowerCL, xmax = upperCL),  height = 0, show.legend = FALSE, size = 1.2) +
-	     ggplot2::geom_vline(xintercept = 0, linetype = 2, colour = "black", alpha = alpha) +
-	     # creating dots for truncks
-	     ggplot2::geom_point(aes(fill = name), size = 3, shape = 21) +
-	     # putting labels
-	     #ggplot2::annotate('text', x = (max(data$yi) + (max(data$yi)*0.10)), y = (seq(1, group_no, 1)+0.3),
-	     #                 label= paste("italic(k)==", mod_table$K), parse = TRUE, hjust = "right", size = 3.5) +
-	     ggplot2::theme_bw() +
-	     ggplot2::guides(fill = "none", colour = "none") +
-	     ggplot2::theme(legend.position= c(1, 0), legend.justification = c(1, 0)) +
-	     ggplot2::theme(legend.title = element_text(size = 9)) +
-	     ggplot2::theme(legend.direction="horizontal") +
-	     ggplot2::theme(legend.background = element_blank()) +
-	     ggplot2::labs(x = label, y = "", size = legend) +
-	     ggplot2::theme(axis.text.y = element_text(size = 10, colour ="black",
-	                                               hjust = 0.5,
-	                                               angle = angle))
+
 
 	 }else{
 

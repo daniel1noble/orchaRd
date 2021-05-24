@@ -19,7 +19,7 @@ get_est <- function (model, mod) {
 }
 
 #' @title get_pred
-#' @description Function to get prediction intervals (crediblity intervals) from rma objects (metafor)
+#' @description Function to get prediction intervals (credibility intervals) from rma objects (metafor)
 #' @param model rma.mv object
 #' @param mod the name of a moderator
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au

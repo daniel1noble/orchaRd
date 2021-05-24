@@ -30,20 +30,27 @@ across_trait_by_treat_end_days10And50_ordinaryMM <- marginalised_means(model, da
 
 # current get_data
 
-data <-across_trait_by_treat_end_days10And50$data
-mod_table <- across_trait_by_treat_end_days10And50$mod_table
-label <- "Test"
+data <-across_trait_by_degree_diff_at_treat_end_days10And50$data
+mod_table <- across_trait_by_degree_diff_at_treat_end_days10And50$mod_table
+label <- "lnRR (effect size)"
 angle <- 90
 alpha <- 0.5
+scale <- 1/sqrt(data$vi)
+legend <- "Precision (1/SE)"
+condition_no <- 3
+group_no <- 4
+condition.lab <- "Tempature "
+mod_table$K <- as.vector(by(data, data[,"moderator"], function(x) length(x[,"yi"])))
 
 plot <- ggplot2::ggplot() +
   # pieces of fruit (bee-swarm and bubbles)
-  ggbeeswarm::geom_quasirandom(data = data, aes(y = yi, x = moderator, size = (1/sqrt(data[,"vi"])), colour = moderator), alpha=alpha) +
+  ggbeeswarm::geom_quasirandom(data = data, aes(y = yi, x = moderator, size = scale, colour = moderator), alpha=alpha) +
 
   ggplot2::geom_hline(yintercept = 0, linetype = 2, colour = "black", alpha = alpha) +
   # creating dots + CI and PI
   ggplot2::geom_linerange(data = mod_table, aes(x = name, ymin = lowerCL, ymax = upperCL), size = 1.2, position = position_dodge2(width = 0.3)) +
-  ggplot2::geom_pointrange(data = mod_table, aes(y = estimate, x = name, fill = name, ymin = lowerPR, ymax = upperPR), size = 0.5, shape = 21, position = position_dodge2(width = 0.3)) +
+  ggplot2::geom_pointrange(data = mod_table, aes(y = estimate, x = name, ymin = lowerPR, ymax = upperPR,  shape = as.factor(condition), fill = name), size = 0.5, position = position_dodge2(width = 0.3)) +
+  scale_shape_manual(values =  20 + (1:condition_no)) +
   #ggplot2::geom_errorbar(aes(ymin = lowerPR, ymax = upperPR), position = position_dodge2(), show.legend = FALSE, size = 0.5, alpha = 0.6, width = 0) +
   coord_flip() +
   # 95 %CI: branches
@@ -57,9 +64,59 @@ plot <- ggplot2::ggplot() +
   ggplot2::theme(legend.title = element_text(size = 9)) +
   ggplot2::theme(legend.direction="horizontal") +
   ggplot2::theme(legend.background = element_blank()) +
-  ggplot2::labs(y = "lnRR", x = "", size = "N") +
+  ggplot2::labs(y = label, x = "", size = legend) +
+  ggplot2::labs(shape = condition.lab) +
   ggplot2::theme(axis.text.y = element_text(size = 10, colour ="black",
                                             hjust = 0.5,
                                             angle = 0))
 
+plot <- plot +
+  ggplot2::annotate('text', y = (max(data$yi) + (max(data$yi)*0.10)), x = (seq(1, group_no, 1)+0.3),
+                    label= paste("italic(k)==", mod_table$K[1:group_no]), parse = TRUE, hjust = "right", size = 3.5)
+
+# current get_data
+
+data <-overall2$data
+mod_table <- overall2$mod_table
+label <- "lnRR (effect size)"
+angle <- 90
+alpha <- 0.5
+scale <- 1/sqrt(data$vi)
+legend <- "Precision (1/SE)"
+condition_no <- 3
+group_no <- 4
+condition.lab <- "Temparature"
+mod_table$K <- as.vector(by(data, data[,"moderator"], function(x) length(x[,"yi"])))
+
+plot <- ggplot2::ggplot() +
+  # pieces of fruit (bee-swarm and bubbles)
+  ggbeeswarm::geom_quasirandom(data = data, aes(y = yi, x = moderator, size = scale, colour = moderator), alpha=alpha) +
+
+  ggplot2::geom_hline(yintercept = 0, linetype = 2, colour = "black", alpha = alpha) +
+  # creating dots + CI and PI
+  ggplot2::geom_linerange(data = mod_table, aes(x = name, ymin = lowerCL, ymax = upperCL), size = 1.2, position = position_dodge2(width = 0.3)) +
+  ggplot2::geom_pointrange(data = mod_table, aes(y = estimate, x = name, ymin = lowerPR, ymax = upperPR,  shape = as.factor(condition), fill = name), size = 0.5, position = position_dodge2(width = 0.3)) +
+  scale_shape_manual(values =  20 + (1:condition_no)) +
+  #ggplot2::geom_errorbar(aes(ymin = lowerPR, ymax = upperPR), position = position_dodge2(), show.legend = FALSE, size = 0.5, alpha = 0.6, width = 0) +
+  coord_flip() +
+  # 95 %CI: branches
+  #ggplot2::geom_errorbarh(aes(xmin = lowerCL, xmax = upperCL),  height = 0, show.legend = FALSE, size = 1.2, position = position_dodge2()) +
+  # putting labels
+  #ggplot2::annotate('text', x = (max(data$yi) + (max(data$yi)*0.10)), y = (seq(1, group_no, 1)+0.3),
+  #                 label= paste("italic(k)==", mod_table$K), parse = TRUE, hjust = "right", size = 3.5) +
+  ggplot2::theme_bw() +
+  ggplot2::guides(fill = "none", colour = "none") +
+  ggplot2::theme(legend.position= c(0, 1), legend.justification = c(0, 1)) +
+  ggplot2::theme(legend.title = element_text(size = 9)) +
+  ggplot2::theme(legend.direction="horizontal") +
+  ggplot2::theme(legend.background = element_blank()) +
+  ggplot2::labs(y = label, x = "", size = legend) +
+  ggplot2::labs(shape = condition.lab) +
+  ggplot2::theme(axis.text.y = element_text(size = 10, colour ="black",
+                                            hjust = 0.5,
+                                            angle = 0))
+# we need to do something about k[1]
+plot <- plot +
+  ggplot2::annotate('text', y = (max(data$yi) + (max(data$yi)*0.10)), x = (1+0.3), # here
+                    label= paste("italic(k)==", mod_table$K[1]), parse = TRUE, hjust = "right", size = 3.5)
 
