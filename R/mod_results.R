@@ -104,13 +104,13 @@ return(tmp)
 #' data(fish)
 #'warm_dat <- fish
 #' model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 | es_ID), mods = ~ experimental_design + trait.type + deg_dif + treat_end_days, method = "REML", test = "t", data = warm_dat,                               control=list(optimizer="optim", optmethod="Nelder-Mead"))
-#'   overall <- marginalised_means(model, data = warm_dat)
-#' across_trait <- marginalised_means(model, data = warm_dat, pred = "trait.type")
-#' across_trait_by_degree_diff <- marginalised_means(model, data = warm_dat, mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif")
-#' across_trait_by_degree_diff_at_treat_end_days10 <- marginalised_means(model, data = warm_dat, mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = 10), by = "deg_dif")
-#' across_trait_by_degree_diff_at_treat_end_days10And50 <- marginalised_means(model, data = warm_dat, mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "deg_dif")
-#' across_trait_by_treat_end_days10And50 <- marginalised_means(model, data = warm_dat, mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "treat_end_days")
-#' across_trait_by_treat_end_days10And50_ordinaryMM <- marginalised_means(model, data = warm_dat, mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "treat_end_days", weights = "prop")
+#'   overall <- marginal_means(model, data = warm_dat)
+#' across_trait <- marginal_means(model, data = warm_dat, pred = "trait.type")
+#' across_trait_by_degree_diff <- marginal_means(model, data = warm_dat, mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif")
+#' across_trait_by_degree_diff_at_treat_end_days10 <- marginal_means(model, data = warm_dat, mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = 10), by = "deg_dif")
+#' across_trait_by_degree_diff_at_treat_end_days10And50 <- marginal_means(model, data = warm_dat, mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "deg_dif")
+#' across_trait_by_treat_end_days10And50 <- marginal_means(model, data = warm_dat, mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "treat_end_days")
+#' across_trait_by_treat_end_days10And50_ordinaryMM <- marginal_means(model, data = warm_dat, mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "treat_end_days", weights = "prop")
 #' }
 #' @export
 #'
