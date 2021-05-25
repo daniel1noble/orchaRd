@@ -12,7 +12,7 @@ get_pred(model, mod)
 \item{mod}{the name of a moderator}
 }
 \description{
-Function to get prediction intervals (crediblity intervals) from rma objects (metafor)
+Function to get prediction intervals (credibility intervals) from rma objects (metafor)
 }
 \author{
 Shinichi Nakagawa - s.nakagawa@unsw.edu.au

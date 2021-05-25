@@ -13,7 +13,8 @@ orchard_plot(
   angle = 90,
   cb = TRUE,
   k = TRUE,
-  transfm = c("none", "tanh")
+  transfm = c("none", "tanh"),
+  condition.lab = "condition"
 )
 }
 \arguments{
@@ -43,7 +44,7 @@ Using a metafor model object of class rma or rma.mv or a results table of class 
 }
 \examples{
 \dontrun{
-data(eklof) 
+data(eklof)
 eklof<-metafor::escalc(measure="ROM", n1i=N_control, sd1i=SD_control,
 m1i=mean_control, n2i=N_treatment, sd2i=SD_treatment, m2i=mean_treatment,
 data=eklof)

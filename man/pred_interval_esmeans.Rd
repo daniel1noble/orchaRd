@@ -4,14 +4,14 @@
 \alias{pred_interval_esmeans}
 \title{pred_interval_esmeans}
 \usage{
-pred_interval_esmeans(model, mm, ...)
+pred_interval_esmeans(model, mm, mod, ...)
 }
 \arguments{
 \item{model}{rma.mv object}
 
 \item{...}{other arguments passed to function}
 
-\item{esmeans}{result from emmeans::emmeans object}
+\item{esmeans}{result from emmeans::emmeans object'}
 }
 \description{
 Function to get prediction intervals (crediblity intervals) from esmeans objects (metafor)

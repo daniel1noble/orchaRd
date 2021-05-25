@@ -93,10 +93,10 @@ return(tmp)
 }
 
 #' @title marginal_means
-#' @description Function to to get marginalised means from met-regression models with single or multiple moderator variables that are both continuous or categorical.
+#' @description Function to to get marginal means from met-regression models with single or multiple moderator variables that are both continuous or categorical.
 #' @param model rma.mv object
 #' @param data data frame used to fit rma.mv model
-#' @param mod moderator variable of interest that one wants marginalised means for.
+#' @param mod moderator variable of interest that one wants marginal means for.
 #' @param weights how to marginalize categorical variables. The default is weights = "prop" - more to add here (discuss with Dan)
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au

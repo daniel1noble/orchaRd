@@ -5,18 +5,17 @@ library(orchaRd)
 library(metafor)
 library(emmeans)
 
-data(fish)
 warm_dat <- fish
 
 # model
 model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 | es_ID), mods = ~ experimental_design + trait.type + deg_dif + treat_end_days, method = "REML", test = "t", data = warm_dat,                               control=list(optimizer="optim", optmethod="Nelder-Mead"))
 
-# margainl ovarll
+# marginal overall
 overall <- marginal_means(model, data = warm_dat)
 overall2 <- marginal_means(model, data = warm_dat, mod = "1", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif",  weights = "prop")
 
 
-# marginalsed stuff
+# marginalized stuff
 across_trait <- marginal_means(model, data = warm_dat, mod = "trait.type")
 orchard_plot(across_trait, xlab = "lnRR")
 

@@ -7,7 +7,7 @@
 mod_results(model, mod)
 }
 \arguments{
-\item{model}{rma.mv object}
+\item{model}{rma.mv or rma bject}
 
 \item{mod}{the name of a moderator; put "Int" if the intercept model (meta-analysis) or no moderators.}
 }
@@ -18,7 +18,7 @@ A data frame containing all the model results including mean effect size estimat
 Using a metafor model object of class rma or rma.mv it creates a table of model results containing the mean effect size estimates for all levels of a given categorical moderator, their corresponding confidence intervals and prediction intervals
 }
 \examples{
-\dontrun{data(eklof) 
+\dontrun{data(eklof)
 eklof<-metafor::escalc(measure="ROM", n1i=N_control, sd1i=SD_control,
 m1i=mean_control, n2i=N_treatment, sd2i=SD_treatment, m2i=mean_treatment,
 data=eklof)
