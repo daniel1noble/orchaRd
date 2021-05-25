@@ -92,7 +92,7 @@ pred_interval_esmeans <- function(model, mm, mod, ...){
 return(tmp)
 }
 
-#' @title marginalised_means
+#' @title marginal_means
 #' @description Function to to get marginalised means from met-regression models with single or multiple moderator variables that are both continuous or categorical.
 #' @param model rma.mv object
 #' @param data data frame used to fit rma.mv model
@@ -116,7 +116,11 @@ return(tmp)
 #'
 #'
 # We will ned to make sure people use "1" pr "moderator_names"
-marginalised_means <- function(model, data, mod = "1", weights = "prop", by = NULL, at = NULL, ...){
+marginal_means <- function(model, data, mod = "1", weights = "prop", by = NULL, at = NULL, ...){
+     # full model delete missing values so need to adjust
+     position <- as.numeric(attr(model$X, "dimnames")[[1]])
+     # we need to adjust data
+     data <- data[position, ]
      model$data <- data
 
      grid <- emmeans::qdrg(object = model, at = at)
@@ -125,7 +129,7 @@ marginalised_means <- function(model, data, mod = "1", weights = "prop", by = NU
 
 
     if(is.null(by)){
-      mod_table <- data.frame(name = firstup(as.character(mm_pi[,1])), estimate = mm_pi[,"emmean"], lowerCL = mm_pi[,"lower.CL"], upperCL = mm_pi[,"upper.CL"], lowerPI = mm_pi[,"lower.PI"], upperPI = mm_pi[,"upper.PI"])
+      mod_table <- data.frame(name = firstup(as.character(mm_pi[,1])), estimate = mm_pi[,"emmean"], lowerCL = mm_pi[,"lower.CL"], upperCL = mm_pi[,"upper.CL"], lowerPR = mm_pi[,"lower.PI"], upperPR = mm_pi[,"upper.PI"])
 
     } else{
       mod_table <- data.frame(name = firstup(as.character(mm_pi[,1])), condition = mm_pi[,2], estimate = mm_pi[,"emmean"], lowerCL = mm_pi[,"lower.CL"], upperCL = mm_pi[,"upper.CL"], lowerPR = mm_pi[,"lower.PI"], upperPR = mm_pi[,"upper.PI"])
@@ -134,7 +138,7 @@ marginalised_means <- function(model, data, mod = "1", weights = "prop", by = NU
 
     mod_table$name <- factor(mod_table$name, levels = mod_table$name, labels = mod_table$name)
 
-    data2 <- get_data2(model, mod)
+    data2 <- get_data2(model, mod, data)
 
     output <- list(mod_table = mod_table,
                 data = data2)
@@ -194,7 +198,7 @@ data
 #' @return Returns a data frame
 #' @export
 #'
-get_data2 <- function(model, mod){
+get_data2 <- function(model, mod, data = data){
 
   if(mod == "1"){
     moderator <- "Intrcpt"

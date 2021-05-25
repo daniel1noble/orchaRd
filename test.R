@@ -12,22 +12,30 @@ warm_dat <- fish
 model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 | es_ID), mods = ~ experimental_design + trait.type + deg_dif + treat_end_days, method = "REML", test = "t", data = warm_dat,                               control=list(optimizer="optim", optmethod="Nelder-Mead"))
 
 # margainl ovarll
-overall <- marginalised_means(model, data = warm_dat)
-overall2 <- marginalised_means(model, data = warm_dat, mod = "1", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif",  weights = "prop")
+overall <- marginal_means(model, data = warm_dat)
+overall2 <- marginal_means(model, data = warm_dat, mod = "1", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif",  weights = "prop")
 
 
 # marginalsed stuff
-across_trait <- marginalised_means(model, data = warm_dat, mod = "trait.type")
-across_trait_by_degree_diff <- marginalised_means(model, data = warm_dat, mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif")
-across_trait_by_degree_diff_at_treat_end_days10 <- marginalised_means(model, data = warm_dat, mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = 10), by = "deg_dif")
-across_trait_by_degree_diff_at_treat_end_days10And50 <- marginalised_means(model, data = warm_dat, mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "deg_dif")
+across_trait <- marginal_means(model, data = warm_dat, mod = "trait.type")
+orchard_plot(across_trait, xlab = "lnRR")
 
+across_trait_by_degree_diff <- marginal_means(model, data = warm_dat, mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif")
+orchard_plot(across_trait_by_degree_diff, xlab = "lnRR")
 
-across_trait_by_treat_end_days10And50 <- marginalised_means(model, data = warm_dat, mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "treat_end_days")
+across_trait_by_degree_diff_at_treat_end_days10 <- marginal_means(model, data = warm_dat, mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = 10), by = "deg_dif")
+orchard_plot(across_trait_by_degree_diff_at_treat_end_days10, xlab = "lnRR")
 
+across_trait_by_degree_diff_at_treat_end_days10And50 <- marginal_means(model, data = warm_dat, mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "deg_dif")
+orchard_plot(across_trait_by_degree_diff_at_treat_end_days10And50, xlab = "lnRR")
+
+across_trait_by_treat_end_days10And50 <- marginal_means(model, data = warm_dat, mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "treat_end_days")
+orchard_plot(across_trait_by_treat_end_days10And50, xlab = "lnRR")
 #
-across_trait_by_treat_end_days10And50_ordinaryMM <- marginalised_means(model, data = warm_dat, mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "treat_end_days", weights = "prop")
+across_trait_by_treat_end_days10And50_ordinaryMM <- marginal_means(model, data = warm_dat, mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "treat_end_days", weights = "prop")
 
+
+orchard_plot(across_trait_by_treat_end_days10And50_ordinaryMM, xlab = "lnRR")
 # current get_data
 
 data <-across_trait_by_degree_diff_at_treat_end_days10And50$data
@@ -73,6 +81,10 @@ plot <- ggplot2::ggplot() +
 plot <- plot +
   ggplot2::annotate('text', y = (max(data$yi) + (max(data$yi)*0.10)), x = (seq(1, group_no, 1)+0.3),
                     label= paste("italic(k)==", mod_table$K[1:group_no]), parse = TRUE, hjust = "right", size = 3.5)
+
+
+
+
 
 # current get_data
 
