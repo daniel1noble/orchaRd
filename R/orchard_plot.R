@@ -55,10 +55,11 @@ Zr_to_r <- function(df){
 # TODO - make it possible to where we want ot put legend - 1, 2, 3, 4 (top.right, top.left, bottom.right, bottom.left)
 # TODO - making we can turn on and off legends too?? - I think we should
 # TODO - we do not really need "Int" for marginal_means
+# TODO - we can get ride of "mod" - I think discuss with Dan
 orchard_plot <- function(object, mod = "Int", xlab, N = "none",
                          alpha = 0.5, angle = 90, cb = TRUE, k = TRUE,
-                         transfm = c("none", "tanh"), condition.lab = "condition")
-                         #legend.pos = c("", , ,))
+                         transfm = c("none", "tanh"), condition.lab = "Condition")
+                         #legend.pos = c("top.left", "", "", "", "top.out", "bottom.out"))
   {
 
   ## evaluate choices
@@ -178,8 +179,8 @@ orchard_plot <- function(object, mod = "Int", xlab, N = "none",
 	  # putting colors in
 	  if(cb == TRUE){
 	    plot <- plot +
-	      scale_fill_manual(values=cbpl) +
-	      scale_colour_manual(values=cbpl)
+	      ggplot2::scale_fill_manual(values=cbpl) +
+	      ggplot2::scale_colour_manual(values=cbpl)
 	  }
 
 	  return(plot)
