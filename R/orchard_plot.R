@@ -56,6 +56,7 @@ Zr_to_r <- function(df){
 # TODO - making we can turn on and off legends too?? - I think we should
 # TODO - we do not really need "Int" for marginal_means
 # TODO - we can get ride of "mod" - I think discuss with Dan
+# TODO - supress one or more levels within a categorical moderator
 orchard_plot <- function(object, mod = "Int", xlab, N = "none",
                          alpha = 0.5, angle = 90, cb = TRUE, k = TRUE,
                          transfm = c("none", "tanh"), condition.lab = "Condition")
