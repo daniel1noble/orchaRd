@@ -58,7 +58,7 @@ Zr_to_r <- function(df){
 # TODO - we can get ride of "mod" - I think discuss with Dan
 # TODO - supress one or more levels within a categorical moderator
 orchard_plot <- function(object, mod = "Int", xlab, N = "none",
-                         alpha = 0.5, angle = 90, cb = TRUE, k = TRUE,
+                         alpha = 0.5, angle = 90, cb = FALSE, k = TRUE,
                          transfm = c("none", "tanh"), condition.lab = "Condition")
                          #legend.pos = c("top.left", "", "", "", "top.out", "bottom.out"))
   {
@@ -125,7 +125,7 @@ orchard_plot <- function(object, mod = "Int", xlab, N = "none",
 	                              size = 0.5, position = ggplot2::position_dodge2(width = 0.3)) +
 	     # this will only work for up to 5 different conditions
 	     # flipping things around (I guess we could do use the same geoms but the below is the oiginal so we should not change)
-	     ggplot2::scale_shape_manual(values =  20 + (1:condition_no)) + coord_flip() +
+	     ggplot2::scale_shape_manual(values =  20 + (1:condition_no)) + ggplot2::coord_flip() +
 	     ggplot2::theme_bw() +
 	     ggplot2::guides(fill = "none", colour = "none") +
 	     ggplot2::theme(legend.position= c(0, 1), legend.justification = c(0, 1)) +
