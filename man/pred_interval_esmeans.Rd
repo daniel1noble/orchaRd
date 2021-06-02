@@ -9,6 +9,8 @@ pred_interval_esmeans(model, mm, mod, ...)
 \arguments{
 \item{model}{rma.mv object}
 
+\item{mod}{Moderator of interest}
+
 \item{...}{other arguments passed to function}
 
 \item{esmeans}{result from emmeans::emmeans object'}

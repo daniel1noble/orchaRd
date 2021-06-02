@@ -56,7 +56,7 @@ get_pred <- function (model, mod) {
 #' @description Function to get prediction intervals (crediblity intervals) from esmeans objects (metafor)
 #' @param model rma.mv object
 #' @param esmeans result from emmeans::emmeans object'
-#' @param
+#' @param mod Moderator of interest
 #' @param ... other arguments passed to function
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
@@ -64,11 +64,11 @@ get_pred <- function (model, mod) {
 pred_interval_esmeans <- function(model, mm, mod, ...){
 
         tmp <- summary(mm)
-  test.stat <- qt(0.975, tmp$df)
+  test.stat <- stats::qt(0.975, tmp$df)
 
   if(length(model$tau2) <= 1){
                  sigmas <- sum(model$sigma2)
-                     PI <- test.stat * sqrt(tmp$SE^2 + sigmas)
+                     PI <- test.stat * base::sqrt(tmp$SE^2 + sigmas)
         } else {
             sigmas <- sum(model$sigma2)
             taus   <- model$tau2
@@ -100,7 +100,7 @@ return(tmp)
 #' @param weights how to marginalize categorical variables. The default is weights = "prop" - more to add here (discuss with Dan)
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
-#' @example \dontrun{
+#' @examples \dontrun{
 #' data(fish)
 #'warm_dat <- fish
 #' model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 | es_ID), mods = ~ experimental_design + trait.type + deg_dif + treat_end_days, method = "REML", test = "t", data = warm_dat,                               control=list(optimizer="optim", optmethod="Nelder-Mead"))
