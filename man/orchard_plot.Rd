@@ -11,10 +11,10 @@ orchard_plot(
   N = "none",
   alpha = 0.5,
   angle = 90,
-  cb = TRUE,
+  cb = FALSE,
   k = TRUE,
   transfm = c("none", "tanh"),
-  condition.lab = "condition"
+  condition.lab = "Condition"
 )
 }
 \arguments{
