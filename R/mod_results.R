@@ -61,6 +61,7 @@ get_pred <- function (model, mod) {
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
 #' @export
+
 pred_interval_esmeans <- function(model, mm, mod, ...){
 
         tmp <- summary(mm)
@@ -115,7 +116,8 @@ return(tmp)
 #' @export
 #'
 #'
-# We will ned to make sure people use "1" pr "moderator_names"
+# We will need to make sure people use "1" pr "moderator_names"
+
 marginal_means <- function(model, data, mod = "1", weights = "prop", by = NULL, at = NULL, ...){
      # full model delete missing values so need to adjust
      position <- as.numeric(attr(model$X, "dimnames")[[1]])
@@ -156,6 +158,7 @@ marginal_means <- function(model, data, mod = "1", weights = "prop", by = NULL, 
 #' @author Daniel Noble - daniel.noble@anu.edu.au
 #' @return Returns a character string with all combinations of the moderator level names with upper case first letters
 #' @export
+
 firstup <- function(x) {
         substr(x, 1, 1) <- toupper(substr(x, 1, 1))
         x
@@ -170,6 +173,7 @@ firstup <- function(x) {
 #' @return Returns a data frame
 #' @export
 #'
+
 get_data <- function(model, mod){
      X <- as.data.frame(model$X)
  names <- vapply(stringr::str_split(colnames(X), {{mod}}), function(x) paste(unique(x), collapse = ""), character(1L))
@@ -198,6 +202,7 @@ data
 #' @return Returns a data frame
 #' @export
 #'
+
 get_data2 <- function(model, mod, data = data){
 
   if(mod == "1"){
@@ -236,6 +241,7 @@ get_data2 <- function(model, mod, data = data){
 #' results <- mod_results(eklof_MR, mod = "Grazer.type")
 #' }
 #' @export
+#'
 
 mod_results <- function(model, mod) {
 
@@ -266,6 +272,7 @@ mod_results <- function(model, mod) {
 #' @return Returns a data frame
 #' @export
 #'
+
 print.orchard <- function(object, ...){
     return(object$mod_table)
 }
@@ -279,6 +286,7 @@ print.orchard <- function(object, ...){
 #' @return Returns a vector with a single weighted variance
 #' @export
 #'
+
 weighted_var <- function(x, weights){
     weight_var <- sum(x * weights) / sum(weights)
     return(weight_var)
