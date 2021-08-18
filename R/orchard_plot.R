@@ -21,6 +21,7 @@ Zr_to_r <- function(df){
 #' @param cb If TRUE, it uses 8 colour blind friendly colors (7 colours plus grey)
 #' @param k If TRUE, it displays k (number of effect sizes) on the plot
 #' @param transfm If set to "tanh", a tanh transformation will be applied to effect sizes, converting Zr will to a correlation or pulling in extreme values for other effect sizes (lnRR, lnCVR, SMD). If "none" is chosen then it will default to
+#' @param condition.lab
 #' @return Orchard plot
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
