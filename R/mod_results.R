@@ -65,7 +65,7 @@ get_pred <- function (model, mod) {
 pred_interval_esmeans <- function(model, mm, mod, ...){
 
         tmp <- summary(mm)
-  test.stat <- stats::qt(0.975, tmp$df)
+  test.stat <- stats::qt(0.975, tmp$ddf[[1]])
 
   if(length(model$tau2) <= 1){
                  sigmas <- sum(model$sigma2)
@@ -126,7 +126,7 @@ marginal_means <- function(model, data, mod = "1", weights = "prop", by = NULL, 
      model$data <- data
 
      grid <- emmeans::qdrg(object = model, at = at)
-       mm <- emmeans::emmeans(grid, specs = mod, df = model$dfs, by = by, ...)
+       mm <- emmeans::emmeans(grid, specs = mod, df = model$ddf[[1]], by = by, ...)
     mm_pi <- pred_interval_esmeans(model, mm, mod = mod)
 
 
