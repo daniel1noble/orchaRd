@@ -55,16 +55,16 @@ get_pred <- function (model, mod) {
 #' @title pred_interval_esmeans
 #' @description Function to get prediction intervals (credibility intervals) from esmeans objects (metafor)
 #' @param model rma.mv object
-#' @param esmeans result from emmeans::emmeans object'
+#' @param mm result from emmeans::emmeans object'
 #' @param mod Moderator of interest
 #' @param ... other arguments passed to function
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
 #' @export
 
-pred_interval_esmeans <- function(model, esmeans, mod, ...){
+pred_interval_esmeans <- function(model, mm, mod, ...){
 
-        tmp <- summary(esmeans)
+        tmp <- summary(mm)
   test.stat <- stats::qt(0.975, tmp$df[[1]])
 
   if(length(model$tau2) <= 1){
