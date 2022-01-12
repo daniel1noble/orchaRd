@@ -53,7 +53,7 @@ get_pred <- function (model, mod) {
 }
 
 #' @title pred_interval_esmeans
-#' @description Function to get prediction intervals (crediblity intervals) from esmeans objects (metafor)
+#' @description Function to get prediction intervals (credibility intervals) from esmeans objects (metafor)
 #' @param model rma.mv object
 #' @param esmeans result from emmeans::emmeans object'
 #' @param mod Moderator of interest
@@ -94,7 +94,7 @@ return(tmp)
 }
 
 #' @title marginal_means
-#' @description Function to to get marginal means from met-regression models with single or multiple moderator variables that are both continuous or categorical.
+#' @description Function to to get marginal means from meta-regression models with single or multiple moderator variables that are both continuous or categorical.
 #' @param model rma.mv object
 #' @param data data frame used to fit rma.mv model
 #' @param mod moderator variable of interest that one wants marginal means for.
