@@ -62,9 +62,9 @@ get_pred <- function (model, mod) {
 #' @author Daniel Noble - daniel.noble@anu.edu.au
 #' @export
 
-pred_interval_esmeans <- function(model, mm, mod, ...){
+pred_interval_esmeans <- function(model, esmeans, mod, ...){
 
-        tmp <- summary(mm)
+        tmp <- summary(esmeans)
   test.stat <- stats::qt(0.975, tmp$df[[1]])
 
   if(length(model$tau2) <= 1){
@@ -104,7 +104,7 @@ return(tmp)
 #' @examples \dontrun{
 #' data(fish)
 #'warm_dat <- fish
-#' model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 | es_ID), mods = ~ experimental_design + trait.type + deg_dif + treat_end_days, method = "REML", test = "t", data = warm_dat,                               control=list(optimizer="optim", optmethod="Nelder-Mead"))
+#' model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 | es_ID), mods = ~ experimental_design + trait.type + deg_dif + treat_end_days, method = "REML", test = "t", data = warm_dat, control=list(optimizer="optim", optmethod="Nelder-Mead"))
 #'   overall <- marginal_means(model, data = warm_dat)
 #' across_trait <- marginal_means(model, data = warm_dat, pred = "trait.type")
 #' across_trait_by_degree_diff <- marginal_means(model, data = warm_dat, mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif")
