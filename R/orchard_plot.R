@@ -33,7 +33,7 @@ Zr_to_r <- function(df){
 #' data=eklof)
 #' # Add the unit level predictor
 #' eklof$Datapoint<-as.factor(seq(1, dim(eklof)[1], 1))
-#' # fit a MLMR - accouting for some non-independence
+#' # fit a MLMR - accounting for some non-independence
 #' eklof_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~ Grazer.type-1, random=list(~1|ExptID,
 #' ~1|Datapoint), data=eklof)
 #' results <- mod_results(eklof_MR, mod = "Grazer.type")
@@ -52,8 +52,8 @@ Zr_to_r <- function(df){
 
 # Note that cb = TRUE - we run out colour quite quickly
 # TODO - we should say more than 8 groups (cb) we use cb = FALSE
-# TODO- we can only do up to 5 conditions for drowing pruposes - we
-# TODO - make it possible to where we want ot put legend - 1, 2, 3, 4 (top.right, top.left, bottom.right, bottom.left)
+# TODO- we can only do up to 5 conditions for drawing purposes - we
+# TODO - make it possible to where we want to put legend - 1, 2, 3, 4 (top.right, top.left, bottom.right, bottom.left)
 # TODO - making we can turn on and off legends too?? - I think we should
 # TODO - we do not really need "Int" for marginal_means
 # TODO - we can get ride of "mod" - I think discuss with Dan
@@ -65,7 +65,7 @@ orchard_plot <- function(object, mod = "Int", xlab, N = "none",
   {
 
   ## evaluate choices
-  transfm <- match.arg(transfm) # if not sepcificed it takes the first choice
+  transfm <- match.arg(transfm) # if not specified it takes the first choice
 
 	if(any(class(object) %in% c("rma.mv", "rma"))){
 		if(mod != "Int"){
@@ -125,7 +125,7 @@ orchard_plot <- function(object, mod = "Int", xlab, N = "none",
 	     ggplot2::geom_pointrange(data = mod_table, ggplot2::aes(y = estimate, x = name, ymin = lowerPR, ymax = upperPR,  shape = as.factor(condition), fill = name),
 	                              size = 0.5, position = ggplot2::position_dodge2(width = 0.3)) +
 	     # this will only work for up to 5 different conditions
-	     # flipping things around (I guess we could do use the same geoms but the below is the oiginal so we should not change)
+	     # flipping things around (I guess we could do use the same geoms but the below is the original so we should not change)
 	     ggplot2::scale_shape_manual(values =  20 + (1:condition_no)) + ggplot2::coord_flip() +
 	     ggplot2::theme_bw() +
 	     ggplot2::guides(fill = "none", colour = "none") +
