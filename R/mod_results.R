@@ -223,7 +223,7 @@ get_data2 <- function(model, mod, data = data){
 
 #' @title mod_results
 #' @description Using a metafor model object of class rma or rma.mv it creates a table of model results containing the mean effect size estimates for all levels of a given categorical moderator, their corresponding confidence intervals and prediction intervals
-#' @param model rma.mv or rma bject
+#' @param model rma.mv or rma object
 #' @param mod the name of a moderator; put "Int" if the intercept model (meta-analysis) or no moderators.
 #' @return A data frame containing all the model results including mean effect size estimate, confidence and prediction intervals
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
@@ -292,4 +292,46 @@ weighted_var <- function(x, weights){
     return(weight_var)
 }
 
-# TODO - I think we can improve `mod` bit?
+
+#' @title num_studies
+#' @description Computes how many studies are in each level of categorical moderators of a rma.mv model object. 
+#' @param model rma.mv or rma object
+#' @param studyID A character string specifying the column name of the study ID grouping variable. 
+#' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
+#' @author Daniel Noble - daniel.noble@anu.edu.au
+#' @return Returns a table with the number of studies in each level of all parameters within a rma.mv or rma object.
+#' @export
+#' @examples
+#' \dontrun{data(fish)
+#'warm_dat <- fish
+#' model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list( ~1 | es_ID,~1 | group_ID), mods = ~ experimental_design, method = "REML", test = "t", data = warm_dat,                               control=list(optimizer="optim", optmethod="Nelder-Mead"))
+#' num_studies(model, studyID = "group_ID")
+#' }
+ 
+num_studies <- function(model, studyID = "group_ID"){
+
+  # extract study levels for entire design matrix. # Note that it's essential that the study ID column be specified because of the fact that the model can swap around random effect levels 
+    study_levels <- do.call("cbind", model$mf.r)[,studyID]
+
+  # Extract design matrix for model fitted
+           X <- model$X
+
+  # Combine study levels and X into a single object
+        X_Z <- data.frame(study_levels,X)      
+
+  # Create a table for the number of studies in each level of the design matrix. NOTE need to exclude or focus on the moderator of interest here, but for now this will do all parameters
+    colnames <- colnames(X_Z)
+    n <- data.frame()
+    
+    for(i in 2:length(colnames)){
+      n[i-1,1] <- colnames[i]
+      n[i-1,2] <- length(unique(X_Z[which(X_Z[,colnames[i]] == 1), colnames[1]]))
+    }
+
+  # Rename, and return
+    colnames(n) <- c("Parameter", "Num_Studies")
+    return(n)
+
+}
+
+
