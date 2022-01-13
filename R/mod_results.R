@@ -305,35 +305,21 @@ weighted_var <- function(x, weights){
 #' \dontrun{data(fish)
 #'warm_dat <- fish
 #' model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list( ~1 | es_ID,~1 | group_ID), mods = ~ experimental_design, method = "REML", test = "t", data = warm_dat,                               control=list(optimizer="optim", optmethod="Nelder-Mead"))
-#' num_studies(model, studyID = "group_ID")
+#' num_studies(model, experimental_design, group_ID)
 #' }
 
-## NOTE: that this only really works if you have a model WITHOUT an intercept because only then can the design matrix can then be split up according to the level of each categorical variable. Only way around this is to feed in the raw data as opposed to design matrix. This might be the only thing we can do. 
+num_studies <- function(model, mod, studyID){
 
-num_studies <- function(model, studyID = "group_ID"){
+  # Get the raw data that is stored in metafor
+    data <- model$data
 
-  # extract study levels for entire design matrix. # Note that it's essential that the study ID column be specified because of the fact that the model can swap around random effect levels 
-    study_levels <- do.call("cbind", model$mf.r)[,studyID]
-
-  # Extract design matrix for model fitted
-           X <- model$X
-
-  # Combine study levels and X into a single object
-        X_Z <- data.frame(study_levels,X)      
-
-  # Create a table for the number of studies in each level of the design matrix. NOTE need to exclude or focus on the moderator of interest here, but for now this will do all parameters
-    colnames <- colnames(X_Z)
-    n <- data.frame()
-    
-    for(i in 2:length(colnames)){
-      n[i-1,1] <- colnames[i]
-      n[i-1,2] <- length(unique(X_Z[which(X_Z[,colnames[i]] == 1), colnames[1]]))
-    }
+  # Summarize the number of studies within each level of moderator
+   table <- data               %>% 
+            group_by({{mod}})  %>% 
+            summarise(stdy = length(unique({{studyID}})))
 
   # Rename, and return
-    colnames(n) <- c("Parameter", "Num_Studies")
-    return(n)
+    colnames(table) <- c("Parameter", "Num_Studies")
+      return(table)
 
 }
-
-

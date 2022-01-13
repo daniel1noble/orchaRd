@@ -24,13 +24,13 @@ marginal_means(
 \item{weights}{how to marginalize categorical variables. The default is weights = "prop" - more to add here (discuss with Dan)}
 }
 \description{
-Function to to get marginal means from met-regression models with single or multiple moderator variables that are both continuous or categorical.
+Function to to get marginal means from meta-regression models with single or multiple moderator variables that are both continuous or categorical.
 }
 \examples{
 \dontrun{
 data(fish)
 warm_dat <- fish
-model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 | es_ID), mods = ~ experimental_design + trait.type + deg_dif + treat_end_days, method = "REML", test = "t", data = warm_dat,                               control=list(optimizer="optim", optmethod="Nelder-Mead"))
+model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 | es_ID), mods = ~ experimental_design + trait.type + deg_dif + treat_end_days, method = "REML", test = "t", data = warm_dat, control=list(optimizer="optim", optmethod="Nelder-Mead"))
   overall <- marginal_means(model, data = warm_dat)
 across_trait <- marginal_means(model, data = warm_dat, pred = "trait.type")
 across_trait_by_degree_diff <- marginal_means(model, data = warm_dat, mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif")

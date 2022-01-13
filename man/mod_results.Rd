@@ -7,7 +7,7 @@
 mod_results(model, mod)
 }
 \arguments{
-\item{model}{rma.mv or rma bject}
+\item{model}{rma.mv or rma object}
 
 \item{mod}{the name of a moderator; put "Int" if the intercept model (meta-analysis) or no moderators.}
 }
