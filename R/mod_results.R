@@ -58,6 +58,8 @@ get_pred <- function (model, mod) {
 #' @author Daniel Noble - daniel.noble@anu.edu.au
 #' @export
 
+# TODO I think we can make it general and get PI with hetero from predict function
+
 pred_interval_esmeans <- function(model, mm, mod, ...){
 
         tmp <- summary(mm)
@@ -290,9 +292,9 @@ weighted_var <- function(x, weights){
 
 
 #' @title num_studies
-#' @description Computes how many studies are in each level of categorical moderators of a rma.mv model object. 
+#' @description Computes how many studies are in each level of categorical moderators of a rma.mv model object.
 #' @param model rma.mv or rma object
-#' @param studyID A character string specifying the column name of the study ID grouping variable. 
+#' @param studyID A character string specifying the column name of the study ID grouping variable.
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
 #' @return Returns a table with the number of studies in each level of all parameters within a rma.mv or rma object.
@@ -310,8 +312,8 @@ num_studies <- function(model, mod, studyID){
     data <- model$data
 
   # Summarize the number of studies within each level of moderator
-   table <- data               %>% 
-            group_by({{mod}})  %>% 
+   table <- data               %>%
+            group_by({{mod}})  %>%
             summarise(stdy = length(unique({{studyID}})))
 
   # Rename, and return
