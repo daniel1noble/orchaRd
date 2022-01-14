@@ -30,13 +30,13 @@ orchard_plot(across_trait_by_degree_diff_at_treat_end_days10, xlab = "lnRR")
 across_trait_by_degree_diff_at_treat_end_days10And50 <- marginal_means(model, data = warm_dat, mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "deg_dif")
 orchard_plot(across_trait_by_degree_diff_at_treat_end_days10And50, xlab = "lnRR")
 
-across_trait_by_treat_end_days10And50 <- marginal_means(model, data = warm_dat, mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "treat_end_days")
+across_trait_by_treat_end_days10And50 <- marginal_means(model, data = warm_dat, mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "treat_end_days", weights = "equal")
 orchard_plot(across_trait_by_treat_end_days10And50, xlab = "lnRR")
 #
 across_trait_by_treat_end_days10And50_ordinaryMM <- marginal_means(model, data = warm_dat, mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "treat_end_days", weights = "prop")
-
-
 orchard_plot(across_trait_by_treat_end_days10And50_ordinaryMM, xlab = "lnRR")
+
+
 # current get_data
 
 data <-across_trait_by_degree_diff_at_treat_end_days10And50$data
@@ -132,4 +132,11 @@ plot <- ggplot2::ggplot() +
 plot <- plot +
   ggplot2::annotate('text', y = (max(data$yi) + (max(data$yi)*0.10)), x = (1+0.3), # here
                     label= paste("italic(k)==", mod_table$K[1]), parse = TRUE, hjust = "right", size = 3.5)
+
+
+##############
+
+
+
+
 

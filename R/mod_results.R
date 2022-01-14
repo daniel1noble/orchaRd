@@ -59,6 +59,9 @@ get_pred <- function (model, mod) {
 #' @export
 
 # TODO I think we can make it general and get PI with hetero from predict function
+# TODO we want to add gamma too
+# TODO - if we model Hetero for a particular categorical variable then, we do not want to
+# TODO - this is actually challenging to make it general (they can have tau and gamma but the moderator needs to be the same)
 
 pred_interval_esmeans <- function(model, mm, mod, ...){
 
@@ -114,7 +117,7 @@ return(tmp)
 #' @export
 #'
 #'
-# We will need to make sure people use "1" pr "moderator_names"
+# We will need to make sure people use "1" or"moderator_names"
 
 marginal_means <- function(model, data, mod = "1", weights = "prop", by = NULL, at = NULL, ...){
      # full model delete missing values so need to adjust
@@ -124,7 +127,7 @@ marginal_means <- function(model, data, mod = "1", weights = "prop", by = NULL, 
      model$data <- data
 
      grid <- emmeans::qdrg(object = model, at = at)
-       mm <- emmeans::emmeans(grid, specs = mod, df = as.numeric(model$ddf[[1]]), by = by, ...)
+       mm <- emmeans::emmeans(grid, specs = mod, df = as.numeric(model$ddf[[1]]), by = by, weights = weights, ...)
     mm_pi <- pred_interval_esmeans(model, mm, mod = mod)
 
 
