@@ -219,7 +219,7 @@ get_data2 <- function(model, mod, data = data){
 
 #' @title mod_results
 #' @description Using a metafor model object of class rma or rma.mv it creates a table of model results containing the mean effect size estimates for all levels of a given categorical moderator, their corresponding confidence intervals and prediction intervals
-#' @param model rma.mv or rma bject
+#' @param model rma.mv or rma object
 #' @param mod the name of a moderator; put "Int" if the intercept model (meta-analysis) or no moderators.
 #' @return A data frame containing all the model results including mean effect size estimate, confidence and prediction intervals
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
@@ -288,4 +288,34 @@ weighted_var <- function(x, weights){
     return(weight_var)
 }
 
-# TODO - I think we can improve `mod` bit?
+
+#' @title num_studies
+#' @description Computes how many studies are in each level of categorical moderators of a rma.mv model object. 
+#' @param model rma.mv or rma object
+#' @param studyID A character string specifying the column name of the study ID grouping variable. 
+#' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
+#' @author Daniel Noble - daniel.noble@anu.edu.au
+#' @return Returns a table with the number of studies in each level of all parameters within a rma.mv or rma object.
+#' @export
+#' @examples
+#' \dontrun{data(fish)
+#'warm_dat <- fish
+#' model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list( ~1 | es_ID,~1 | group_ID), mods = ~ experimental_design, method = "REML", test = "t", data = warm_dat,                               control=list(optimizer="optim", optmethod="Nelder-Mead"))
+#' num_studies(model, experimental_design, group_ID)
+#' }
+
+num_studies <- function(model, mod, studyID){
+
+  # Get the raw data that is stored in metafor
+    data <- model$data
+
+  # Summarize the number of studies within each level of moderator
+   table <- data               %>% 
+            group_by({{mod}})  %>% 
+            summarise(stdy = length(unique({{studyID}})))
+
+  # Rename, and return
+    colnames(table) <- c("Parameter", "Num_Studies")
+      return(table)
+
+}

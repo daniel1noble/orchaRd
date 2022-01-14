@@ -9,14 +9,14 @@ pred_interval_esmeans(model, mm, mod, ...)
 \arguments{
 \item{model}{rma.mv object}
 
+\item{mm}{result from emmeans::emmeans object'}
+
 \item{mod}{Moderator of interest}
 
 \item{...}{other arguments passed to function}
-
-\item{esmeans}{result from emmeans::emmeans object'}
 }
 \description{
-Function to get prediction intervals (crediblity intervals) from esmeans objects (metafor)
+Function to get prediction intervals (credibility intervals) from esmeans objects (metafor)
 }
 \author{
 Shinichi Nakagawa - s.nakagawa@unsw.edu.au
