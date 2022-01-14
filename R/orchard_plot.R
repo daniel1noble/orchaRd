@@ -22,6 +22,9 @@ Zr_to_r <- function(df){
 #' @param k If TRUE, it displays k (number of effect sizes) on the plot
 #' @param transfm If set to "tanh", a tanh transformation will be applied to effect sizes, converting Zr will to a correlation or pulling in extreme values for other effect sizes (lnRR, lnCVR, SMD). If "none" is chosen then it will default to
 #' @param condition.lab
+#' @param trunk.size
+#' @param branch.size
+#' @param twig.size
 #' @return Orchard plot
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
@@ -51,13 +54,14 @@ Zr_to_r <- function(df){
 #' @export
 
 # Note that cb = TRUE - we run out colour quite quickly
-# TODO - we should say more than 8 groups (cb) we use cb = FALSE
-# TODO- we can only do up to 5 conditions for drawing purposes - we
+# TODO - we should say more than 8 groups (cb) we use cb = FALSE - we can use
+# TODO- we can only do up to 5 conditions for drawing purposes (add warnings)
 # TODO - make it possible to where we want to put legend - 1, 2, 3, 4 (top.right, top.left, bottom.right, bottom.left)
 # TODO - making we can turn on and off legends too?? - I think we should
 # TODO - we do not really need "Int" for marginal_means
 # TODO - we can get ride of "mod" - I think discuss with Dan
-# TODO - supress one or more levels within a categorical moderator
+# TODO - suppress one or more levels within a categorical moderator
+
 orchard_plot <- function(object, mod = "Int", xlab, N = "none",
                          alpha = 0.5, angle = 90, cb = FALSE, k = TRUE,
                          transfm = c("none", "tanh"), condition.lab = "Condition")
@@ -105,7 +109,8 @@ orchard_plot <- function(object, mod = "Int", xlab, N = "none",
 	 #data_no <- nrow(data)
 
 	# colour blind friendly colours with grey
-	 cbpl <- c("#E69F00","#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#56B4E9", "#999999")
+	 #cbpl <- c("#E69F00","#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#56B4E9", "#999999")
+
 
 	 # whether marginal
 	 if(names(mod_table)[2] == "condition"){

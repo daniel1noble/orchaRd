@@ -34,13 +34,9 @@ get_pred <- function (model, mod) {
   if(len != 1){
   newdata <- matrix(NA, ncol = len, nrow = len)
 
-  for(i in 1:len) {
-    # getting the position of unique case from X (design matrix)
-    pos <- which(model$X[,i] == 1)[[1]]
-    # I think this is the other way around but it is diag(len) so fine
-    newdata[, i] <- model$X[pos,]
-    }
-  pred <- metafor::predict.rma(model, newmods = newdata)
+  pred <- metafor::predict.rma(model, newmods = diag(len),
+                               tau2.levels = 1:len,
+                               gamma2.levels = 1:len)
   }
   else {
     pred <- metafor::predict.rma(model)
