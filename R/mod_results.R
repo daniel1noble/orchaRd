@@ -99,7 +99,7 @@ return(tmp)
 #' @param model rma.mv object
 #' @param data data frame used to fit rma.mv model
 #' @param mod moderator variable of interest that one wants marginal means for.
-#' @param weights how to marginalize categorical variables. The default is weights = "prop" - more to add here (discuss with Dan)
+#' @param weights how to marginalize categorical variables. The default is weights = "prop", which wights means for moderator levels based on their proportional representation in the data. For example, if "sex" is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal. IN the case if sex, for example, males and females are roughly equally prevalent in a population. As such, you can give the moderator levels equal weight using weights = "equal".
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
 #' @examples \dontrun{
@@ -147,7 +147,7 @@ marginal_means <- function(model, data, mod = "1", weights = "prop", by = NULL, 
     data2 <- get_data2(model, mod, data)
 
     output <- list(mod_table = mod_table,
-                data = data2)
+                        data = data2)
 
     class(output) <- "orchard"
 
@@ -194,6 +194,28 @@ get_data <- function(model, mod){
 
 data <- data.frame(yi, vi, moderator, type)
 data
+
+}
+
+######### NOTE we should just change get_data to have a single function that works more generally. Here, you can extract the full dataset, missing data excluded in the metafor object, which makes it much easier to work with than the design matrix
+get_data_raw <- function(model, mod, studyID){
+    
+    # Extract data
+    data <- model$data 
+
+    # Get moderator
+    moderator <- firstup(data %>% select({{mod}}))
+    
+    # Extract study grouping variable to calculate the 
+    stdy <- data %>% select({{studyID}})
+    
+    # Extract effect sizes
+    yi <- model$yi
+    vi <- model$vi
+  type <- attr(model$yi, "measure")
+
+  data <- data.frame(yi, vi, moderator, stdy, type)
+  data
 
 }
 
