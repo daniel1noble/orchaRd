@@ -4,12 +4,14 @@
 \alias{num_studies}
 \title{num_studies}
 \usage{
-num_studies(model, mod, studyID)
+num_studies(data, mod, group)
 }
 \arguments{
-\item{model}{rma.mv or rma object}
+\item{data}{Raw data from object of class "orchard"}
 
-\item{studyID}{A character string specifying the column name of the study ID grouping variable.}
+\item{mod}{Character string describing the moderator of interest.}
+
+\item{group}{A character string specifying the column name of the study ID grouping variable.}
 }
 \value{
 Returns a table with the number of studies in each level of all parameters within a rma.mv or rma object.
@@ -20,8 +22,8 @@ Computes how many studies are in each level of categorical moderators of a rma.m
 \examples{
 \dontrun{data(fish)
 warm_dat <- fish
-model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list( ~1 | es_ID,~1 | group_ID), mods = ~ 1-experimental_design, method = "REML", test = "t", data = warm_dat,                               control=list(optimizer="optim", optmethod="Nelder-Mead"))
-num_studies(model, experimental_design, group_ID)
+model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list( ~1 | es_ID,~1 | group_ID), mods = ~experimental_design-1, method = "REML", test = "t", data = warm_dat, control=list(optimizer="optim", optmethod="Nelder-Mead"))
+num_studies(model$data, experimental_design, group_ID)
 }
 }
 \author{

@@ -47,7 +47,6 @@
 # TODO - make it possible to where we want to put legend - 1, 2, 3, 4 (top.right, top.left, bottom.right, bottom.left)
 # TODO - making we can turn on and off legends too?? - I think we should
 # TODO - we do not really need "Int" for marginal_means
-# TODO - we can get ride of "mod" - I think discuss with Dan
 # TODO - suppress one or more levels within a categorical moderator
 
 orchard_plot <- function(object, mod = "Int", group, xlab, N = "none",
@@ -63,15 +62,15 @@ orchard_plot <- function(object, mod = "Int", group, xlab, N = "none",
 
 	if(any(class(object) %in% c("rma.mv", "rma"))){
 		if(mod != "Int"){
-			object <- mod_results(object, mod, group)  
+			results <- mod_results(object, mod, group)  
 		} else{
-			object <- mod_results(object, mod = "Int", group)
+			results <- mod_results(object, mod = "Int", group)
 			}
 	}
 
-	mod_table <- object$mod_table
+	mod_table <- results$mod_table
 
-  data <- object$data
+  data <- results$data
   data$moderator <- factor(data$moderator, levels = mod_table$name, labels = mod_table$name)
 
 	data$scale <- (1/sqrt(data[,"vi"]))
@@ -91,7 +90,11 @@ orchard_plot <- function(object, mod = "Int", group, xlab, N = "none",
 		label <- xlab
 	}
 
+	# Add in total effect sizes for each level
 	 mod_table$K <- as.vector(by(data, data[,"moderator"], function(x) length(x[,"yi"])))
+
+	# Add in total levels of a grouping variable (e.g., study ID) within each moderator level.
+	 mod_table$g <- as.vector(num_studies(data, moderator, stdy)[,2]) # TO DO: WORK INTO PLOT
 
 	 # the number of groups in a moderator & data points
 	 group_no <- length(unique(mod_table[, "name"]))

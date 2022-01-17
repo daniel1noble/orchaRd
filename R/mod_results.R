@@ -286,8 +286,9 @@ weighted_var <- function(x, weights){
 
 #' @title num_studies
 #' @description Computes how many studies are in each level of categorical moderators of a rma.mv model object.
-#' @param model rma.mv or rma object
-#' @param studyID A character string specifying the column name of the study ID grouping variable.
+#' @param mod Character string describing the moderator of interest.
+#' @param data Raw data from object of class "orchard"
+#' @param group A character string specifying the column name of the study ID grouping variable.
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
 #' @return Returns a table with the number of studies in each level of all parameters within a rma.mv or rma object.
@@ -295,22 +296,19 @@ weighted_var <- function(x, weights){
 #' @examples
 #' \dontrun{data(fish)
 #'warm_dat <- fish
-#' model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list( ~1 | es_ID,~1 | group_ID), mods = ~ 1-experimental_design, method = "REML", test = "t", data = warm_dat,                               control=list(optimizer="optim", optmethod="Nelder-Mead"))
-#' num_studies(model, experimental_design, group_ID)
+#' model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list( ~1 | es_ID,~1 | group_ID), mods = ~experimental_design-1, method = "REML", test = "t", data = warm_dat, control=list(optimizer="optim", optmethod="Nelder-Mead"))
+#' num_studies(model$data, experimental_design, group_ID)
 #' }
 
-num_studies <- function(model, mod, studyID){
-
-  # Get the raw data that is stored in metafor
-    data <- model$data
+num_studies <- function(data, mod, group){
 
   # Summarize the number of studies within each level of moderator
    table <- data               %>%
             group_by({{mod}})  %>%
-            summarise(stdy = length(unique({{studyID}})))
+            summarise(stdy = length(unique({{group}})))
 
   # Rename, and return
     colnames(table) <- c("Parameter", "Num_Studies")
-      return(table)
+      return(data.frame(table))
 
 }
