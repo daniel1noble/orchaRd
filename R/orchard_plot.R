@@ -187,7 +187,6 @@ orchard_plot <- function(object, mod = "Int", group, xlab, N = "none",
 	                            size = branch.size) +
 	    # drowning point estimate and PI
 	    ggplot2::geom_pointrange(data = mod_table, ggplot2::aes(y = estimate, x = name,  ymin = lowerPR, ymax = upperPR, fill = name), size = twig.size, fatten = trunk.size, shape = 21) +
-	    ggplot2::geom_point(data = mod_table, ggplot2::aes(y = estimate, x = name, fill = name), size = 2) +
 	    ggplot2::coord_flip() +
 	    ggplot2::theme_bw() +
 	    ggplot2::guides(fill = "none", colour = "none") +
