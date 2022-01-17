@@ -4,6 +4,7 @@ remotes::install_github("rvlenth/emmeans")
 library(orchaRd)
 library(metafor)
 library(emmeans)
+library(tidyverse)
 
 data(fish)
 warm_dat <- fish
@@ -12,8 +13,10 @@ warm_dat <- fish
 model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 | es_ID), mods = ~ experimental_design + trait.type + deg_dif + treat_end_days, method = "REML", test = "t", data = warm_dat,                               control=list(optimizer="optim", optmethod="Nelder-Mead"))
 
 # marginal overall
-overall <- marginal_means(model, data = warm_dat)
+overall <- marginal_means(model, mod = "experimental_design", group = "group_ID")
 orchard_plot(overall, xlab = "lnRR")
+overall1.1 <- marginal_means(model, group = "group_ID")
+orchard_plot(overall1.1, xlab = "lnRR")
 overall2 <- marginal_means(model, data = warm_dat, mod = "1", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif",  weights = "prop")
 orchard_plot(overall2, xlab = "lnRR", condition.lab = "Temparature")
 

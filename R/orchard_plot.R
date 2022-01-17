@@ -68,6 +68,10 @@ orchard_plot <- function(object, mod = "Int", group, xlab, N = "none",
 			}
 	}
 
+	if(class(object) == "orchard"){
+			results <- object
+	}
+	
 	mod_table <- results$mod_table
 
   data <- results$data
