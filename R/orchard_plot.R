@@ -71,9 +71,10 @@ orchard_plot <- function(object, mod = "Int", xlab, N = "none",
   ## evaluate choices
   transfm <- match.arg(transfm) # if not specified it takes the first choice
 
+
 	if(any(class(object) %in% c("rma.mv", "rma"))){
 		if(mod != "Int"){
-			object <- mod_results(object, mod)
+			object <- mod_results(object, mod)  
 		} else{
 			object <- mod_results(object, mod = "Int")
 			}
