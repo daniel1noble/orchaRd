@@ -1,15 +1,3 @@
-#' @title Zr_to_r
-#' @description Converts Zr back to r (Pearson's correlation coefficient)
-#' @param df data frame of results of class 'orchard'
-#' @return A data frame containing all the model results including mean effect size estimate, confidence and prediction intervals with estimates converted back to r
-#' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
-#' @author Daniel Noble - daniel.noble@anu.edu.au
-#' @export
-
-Zr_to_r <- function(df){
-	return(sapply(df, tanh))
-}
-
 #' @title orchard_plot
 #' @description Using a metafor model object of class rma or rma.mv or a results table of class orchard, it creates a an orchard plot from mean effect size estimates for all levels of a given categorical moderator, their corresponding confidence intervals and prediction intervals
 #' @param object model object of class 'rma.mv', 'rma' or 'orchard' table of model results
@@ -38,19 +26,18 @@ Zr_to_r <- function(df){
 #' # Add the unit level predictor
 #' eklof$Datapoint<-as.factor(seq(1, dim(eklof)[1], 1))
 #' # fit a MLMR - accounting for some non-independence
-#' eklof_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~ Grazer.type-1, random=list(~1|ExptID,
-#' ~1|Datapoint), data=eklof)
-#' results <- mod_results(eklof_MR, mod = "Grazer.type")
-#' orchard_plot(results, mod = Grazer.type, xlab = "log(Response ratio) (lnRR)")
+#' eklof_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~ Grazer.type-1, random=list(~1|ExptID, ~1|Datapoint), data=eklof)
+#' results <- mod_results(eklof_MR, mod = "Grazer.type", group = "ExptID")
+#' orchard_plot(results, mod = "Grazer.type", group = "ExptID", xlab = "log(Response ratio) (lnRR)")
 #' # or
-#' orchard_plot(eklof_MR, mod = Grazer.type, xlab = "log(Response ratio) (lnRR)")
+#' orchard_plot(eklof_MR, mod = "Grazer.type", group = "ExptID", xlab = "log(Response ratio) (lnRR)")
 #'
 #' # Example 2
 #' data(lim)
 #' lim$vi<- 1/(lim$N - 3)
 #' lim_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~Phylum-1, random=list(~1|Article,
 #' ~1|Datapoint), data=lim)
-#' orchard_plot(lim_MR, mod = "Phylum", xlab = "Correlaiton coefficent", transfm = "tanh", N = lim$N)
+#' orchard_plot(lim_MR, mod = "Phylum", group = "Article", xlab = "Correlaiton coefficent", transfm = "tanh", N = lim$N)
 #' }
 #' @export
 
@@ -226,4 +213,15 @@ orchard_plot <- function(object, mod = "Int", group, xlab, N = "none",
 }
 
 
+#' @title Zr_to_r
+#' @description Converts Zr back to r (Pearson's correlation coefficient)
+#' @param df data frame of results of class 'orchard'
+#' @return A data frame containing all the model results including mean effect size estimate, confidence and prediction intervals with estimates converted back to r
+#' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
+#' @author Daniel Noble - daniel.noble@anu.edu.au
+#' @export
+
+Zr_to_r <- function(df){
+	return(sapply(df, tanh))
+}
 

@@ -20,7 +20,7 @@ Computes how many studies are in each level of categorical moderators of a rma.m
 \examples{
 \dontrun{data(fish)
 warm_dat <- fish
-model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list( ~1 | es_ID,~1 | group_ID), mods = ~ experimental_design, method = "REML", test = "t", data = warm_dat,                               control=list(optimizer="optim", optmethod="Nelder-Mead"))
+model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list( ~1 | es_ID,~1 | group_ID), mods = ~ 1-experimental_design, method = "REML", test = "t", data = warm_dat,                               control=list(optimizer="optim", optmethod="Nelder-Mead"))
 num_studies(model, experimental_design, group_ID)
 }
 }

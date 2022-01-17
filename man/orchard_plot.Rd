@@ -7,12 +7,16 @@
 orchard_plot(
   object,
   mod = "Int",
+  group,
   xlab,
   N = "none",
   alpha = 0.5,
   angle = 90,
   cb = FALSE,
   k = TRUE,
+  trunk.size = 3,
+  branch.size = 2,
+  twig.size = 2,
   transfm = c("none", "tanh"),
   condition.lab = "Condition"
 )
@@ -21,6 +25,8 @@ orchard_plot(
 \item{object}{model object of class 'rma.mv', 'rma' or 'orchard' table of model results}
 
 \item{mod}{the name of a moderator. Otherwise, "Int" for intercept only model.}
+
+\item{group}{The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes.}
 
 \item{xlab}{The effect size measure label.}
 
@@ -51,19 +57,18 @@ data=eklof)
 # Add the unit level predictor
 eklof$Datapoint<-as.factor(seq(1, dim(eklof)[1], 1))
 # fit a MLMR - accounting for some non-independence
-eklof_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~ Grazer.type-1, random=list(~1|ExptID,
-~1|Datapoint), data=eklof)
-results <- mod_results(eklof_MR, mod = "Grazer.type")
-orchard_plot(results, mod = Grazer.type, xlab = "log(Response ratio) (lnRR)")
+eklof_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~ Grazer.type-1, random=list(~1|ExptID, ~1|Datapoint), data=eklof)
+results <- mod_results(eklof_MR, mod = "Grazer.type", group = "ExptID")
+orchard_plot(results, mod = "Grazer.type", group = "ExptID", xlab = "log(Response ratio) (lnRR)")
 # or
-orchard_plot(eklof_MR, mod = Grazer.type, xlab = "log(Response ratio) (lnRR)")
+orchard_plot(eklof_MR, mod = "Grazer.type", group = "ExptID", xlab = "log(Response ratio) (lnRR)")
 
 # Example 2
 data(lim)
 lim$vi<- 1/(lim$N - 3)
 lim_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~Phylum-1, random=list(~1|Article,
 ~1|Datapoint), data=lim)
-orchard_plot(lim_MR, mod = "Phylum", xlab = "Correlaiton coefficent", transfm = "tanh", N = lim$N)
+orchard_plot(lim_MR, mod = "Phylum", group = "Article", xlab = "Correlaiton coefficent", transfm = "tanh", N = lim$N)
 }
 }
 \author{
