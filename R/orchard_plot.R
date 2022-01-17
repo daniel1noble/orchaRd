@@ -51,7 +51,7 @@
 
 orchard_plot <- function(object, mod = "Int", group, xlab, N = "none",
                          alpha = 0.5, angle = 90, cb = FALSE, k = TRUE,
-                         trunk.size = 3, branch.size = 2, twig.size = 2,
+                         trunk.size = 3, branch.size = 1.2, twig.size = 0.5,
                          transfm = c("none", "tanh"), condition.lab = "Condition")
                          #legend.pos = c("top.left", "", "", "", "top.out", "bottom.out"))
   {
@@ -62,7 +62,7 @@ orchard_plot <- function(object, mod = "Int", group, xlab, N = "none",
 
 	if(any(class(object) %in% c("rma.mv", "rma"))){
 		if(mod != "Int"){
-			results <- mod_results(object, mod, group)  
+			results <- mod_results(object, mod, group)
 		} else{
 			results <- mod_results(object, mod = "Int", group)
 			}
@@ -71,7 +71,7 @@ orchard_plot <- function(object, mod = "Int", group, xlab, N = "none",
 	if(class(object) == "orchard"){
 			results <- object
 	}
-	
+
 	mod_table <- results$mod_table
 
   data <- results$data
@@ -122,9 +122,9 @@ orchard_plot <- function(object, mod = "Int", group, xlab, N = "none",
 	     ggplot2::geom_hline(yintercept = 0, linetype = 2, colour = "black", alpha = alpha) +
 	     # creating CI
 	     ggplot2::geom_linerange(data = mod_table, ggplot2::aes(x = name, ymin = lowerCL, ymax = upperCL),
-	                             size = 1.2, position = ggplot2::position_dodge2(width = 0.3)) +
+	                             size = branch.size, position = ggplot2::position_dodge2(width = 0.3)) +
 	     # drowning point estimate and PI
-	     ggplot2::geom_pointrange(data = mod_table, ggplot2::aes(y = estimate, x = name, ymin = lowerPR, ymax = upperPR,  shape = as.factor(condition), fill = name), size = 0.5, position = ggplot2::position_dodge2(width = 0.3)) +
+	     ggplot2::geom_pointrange(data = mod_table, ggplot2::aes(y = estimate, x = name, ymin = lowerPR, ymax = upperPR,  shape = as.factor(condition), fill = name), size = twig.size, position = ggplot2::position_dodge2(width = 0.3), fatten = trunk.size) +
 	     # this will only work for up to 5 different conditions
 	     # flipping things around (I guess we could do use the same geoms but the below is the original so we should not change)
 	     ggplot2::scale_shape_manual(values =  20 + (1:condition_no)) + ggplot2::coord_flip() +
@@ -184,9 +184,9 @@ orchard_plot <- function(object, mod = "Int", group, xlab, N = "none",
 	    ggplot2::geom_hline(yintercept = 0, linetype = 2, colour = "black", alpha = alpha) +
 	    # creating CI
 	    ggplot2::geom_linerange(data = mod_table, ggplot2::aes(x = name, ymin = lowerCL, ymax = upperCL),
-	                            size = 1.2) +
+	                            size = branch.size) +
 	    # drowning point estimate and PI
-	    ggplot2::geom_pointrange(data = mod_table, ggplot2::aes(y = estimate, x = name,  ymin = lowerPR, ymax = upperPR), size = 0.5, fatten = 2) +
+	    ggplot2::geom_pointrange(data = mod_table, ggplot2::aes(y = estimate, x = name,  ymin = lowerPR, ymax = upperPR, fill = name), size = twig.size, fatten = trunk.size, shape = 21) +
 	    ggplot2::geom_point(data = mod_table, ggplot2::aes(y = estimate, x = name, fill = name), size = 2) +
 	    ggplot2::coord_flip() +
 	    ggplot2::theme_bw() +
