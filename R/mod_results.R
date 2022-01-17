@@ -197,15 +197,22 @@ data
 
 }
 
-######### NOTE we should just change get_data to have a single function that works more generally. Here, you can extract the full dataset, missing data excluded in the metafor object, which makes it much easier to work with than the design matrix
+######### NOTE we should just change get_data to have a single function that works more generally. Here, you can extract the full dataset, missing data excluded in the metafor object, which makes it much easier to work with than the design matrix ** NOTE WILL REPLACE "get_data" and "get_data2". Needs testing.
 get_data_raw <- function(model, mod, studyID){
+  # Extract data
+    # full model delete missing values so need to adjust
+     position <- as.numeric(attr(model$X, "dimnames")[[1]])
+     # we need to adjust data
+     data <- model$data[position, ]
     
-    # Extract data
-    data <- model$data 
-
+    if(mod == "1"){
+    moderator <- "Intrcpt"
+    }else{
     # Get moderator
-    moderator <- firstup(data %>% select({{mod}}))
-    
+     moderator <- data %>% select({{mod}})
+     moderator <- firstup(moderator[,1])
+    }
+
     # Extract study grouping variable to calculate the 
     stdy <- data %>% select({{studyID}})
     
@@ -215,9 +222,12 @@ get_data_raw <- function(model, mod, studyID){
   type <- attr(model$yi, "measure")
 
   data <- data.frame(yi, vi, moderator, stdy, type)
-  data
-
+  row.names(data) <- 1:nrow(data)
+  return(data)
 }
+
+#test <- get_data_raw(model, mod = "trait.type", studyID = "group_ID")
+#test <- get_data_raw(model, mod = "1", studyID = "group_ID")
 
 #' @title get_data2
 #' @description Collects and builds the data used to fit the rma.mv or rma model in metafor in conjunction with emmeans
