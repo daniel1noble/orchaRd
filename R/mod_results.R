@@ -97,7 +97,6 @@ return(tmp)
 #' @title marginal_means
 #' @description Function to to get marginal means from meta-regression models with single or multiple moderator variables that are both continuous or categorical.
 #' @param model rma.mv object
-#' @param data data frame used to fit rma.mv model
 #' @param mod moderator variable of interest that one wants marginal means for.
 #' @param weights how to marginalize categorical variables. The default is weights = "prop", which wights means for moderator levels based on their proportional representation in the data. For example, if "sex" is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal. IN the case if sex, for example, males and females are roughly equally prevalent in a population. As such, you can give the moderator levels equal weight using weights = "equal".
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
@@ -123,11 +122,11 @@ return(tmp)
 # We will need to make sure people use "1" or"moderator_names"
 
 marginal_means <- function(model, data, mod = "1", weights = "prop", by = NULL, at = NULL, ...){
-     # full model delete missing values so need to adjust
+     # Extract data
+    # full model delete missing values so need to adjust
      position <- as.numeric(attr(model$X, "dimnames")[[1]])
      # we need to adjust data
-     data <- data[position, ]
-     model$data <- data
+     data <- model$data[position, ]
 
      grid <- emmeans::qdrg(object = model, at = at)
        mm <- emmeans::emmeans(grid, specs = mod, df = as.numeric(model$ddf[[1]]), by = by, weights = weights, ...)
@@ -196,9 +195,9 @@ data <- data.frame(yi, vi, moderator, type)
 data
 
 }
-
+model = eklof_MR
 ######### NOTE we should just change get_data to have a single function that works more generally. Here, you can extract the full dataset, missing data excluded in the metafor object, which makes it much easier to work with than the design matrix ** NOTE WILL REPLACE "get_data" and "get_data2". Needs testing.
-get_data_raw <- function(model, mod, studyID){
+get_data_raw <- function(model, mod, group){
   # Extract data
     # full model delete missing values so need to adjust
      position <- as.numeric(attr(model$X, "dimnames")[[1]])
@@ -209,12 +208,12 @@ get_data_raw <- function(model, mod, studyID){
     moderator <- "Intrcpt"
     }else{
     # Get moderator
-     moderator <- data %>% select({{mod}}) # Could default to base instead of tidy
-     moderator <- firstup(moderator[,1])
+     moderator <- as.character(data[,mod]) # Could default to base instead of tidy
+     moderator <- firstup(moderator)
     }
 
     # Extract study grouping variable to calculate the 
-    stdy <- data %>% select({{studyID}}) # Could default to base instead of tidy
+    stdy <- data[,group] # Could default to base instead of tidy
     
     # Extract effect sizes
     yi <- model$yi
@@ -279,11 +278,11 @@ get_data2 <- function(model, mod, data = data){
 #' @export
 #'
 
-mod_results <- function(model, mod) {
+mod_results <- function(model, mod, group) {
 
 	if(all(class(model) %in% c("rma.mv", "rma")) == FALSE) {stop("Sorry, you need to fit a metafor model of class rma.mv or rma")}
 
-  data <- get_data(model, mod)
+  data <- get_data_raw(model, mod, group)
 
 	# Get confidence intervals
 	CI <- get_est(model, mod)
