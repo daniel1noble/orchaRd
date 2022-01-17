@@ -1,6 +1,13 @@
 # test
+install.packages("devtools")
+install.packages("tidyverse")
+install.packages("metafor")
+install.packages("patchwork")
+install.packages("R.rsp")
 
-remotes::install_github("rvlenth/emmeans")
+devtools::install_github("daniel1noble/orchaRd", force = TRUE, build_vignettes = TRUE)
+remotes::install_github("rvlenth/emmeans", dependencies = TRUE, build_opts = "") 
+
 library(orchaRd)
 library(metafor)
 library(emmeans)
@@ -14,9 +21,9 @@ model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1
 
 # marginal overall
 overall <- marginal_means(model, mod = "experimental_design", group = "group_ID")
-orchard_plot(overall, xlab = "lnRR")
+orchard_plot(overall, xlab = "lnRR", trunk.size = 2, branch.size = 2, twig.size = 0.5, angle = 45)
 overall1.1 <- marginal_means(model, group = "group_ID")
-orchard_plot(overall1.1, xlab = "lnRR")
+orchard_plot(overall1.1, xlab = "lnRR", trunk.size = 2, branch.size = 1.2, twig.size = 2)
 overall2 <- marginal_means(model, data = warm_dat, mod = "1", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif",  weights = "prop")
 orchard_plot(overall2, xlab = "lnRR", condition.lab = "Temparature")
 
