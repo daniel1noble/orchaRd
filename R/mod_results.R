@@ -209,12 +209,12 @@ get_data_raw <- function(model, mod, studyID){
     moderator <- "Intrcpt"
     }else{
     # Get moderator
-     moderator <- data %>% select({{mod}})
+     moderator <- data %>% select({{mod}}) # Could default to base instead of tidy
      moderator <- firstup(moderator[,1])
     }
 
     # Extract study grouping variable to calculate the 
-    stdy <- data %>% select({{studyID}})
+    stdy <- data %>% select({{studyID}}) # Could default to base instead of tidy
     
     # Extract effect sizes
     yi <- model$yi
