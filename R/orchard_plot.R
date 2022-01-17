@@ -64,6 +64,7 @@ Zr_to_r <- function(df){
 
 orchard_plot <- function(object, mod = "Int", xlab, N = "none",
                          alpha = 0.5, angle = 90, cb = FALSE, k = TRUE,
+                         trunk.size = 3, branch.size = 2, twig.size = 2,
                          transfm = c("none", "tanh"), condition.lab = "Condition")
                          #legend.pos = c("top.left", "", "", "", "top.out", "bottom.out"))
   {
@@ -127,8 +128,7 @@ orchard_plot <- function(object, mod = "Int", xlab, N = "none",
 	     ggplot2::geom_linerange(data = mod_table, ggplot2::aes(x = name, ymin = lowerCL, ymax = upperCL),
 	                             size = 1.2, position = ggplot2::position_dodge2(width = 0.3)) +
 	     # drowning point estimate and PI
-	     ggplot2::geom_pointrange(data = mod_table, ggplot2::aes(y = estimate, x = name, ymin = lowerPR, ymax = upperPR,  shape = as.factor(condition), fill = name),
-	                              size = 0.5, position = ggplot2::position_dodge2(width = 0.3)) +
+	     ggplot2::geom_pointrange(data = mod_table, ggplot2::aes(y = estimate, x = name, ymin = lowerPR, ymax = upperPR,  shape = as.factor(condition), fill = name), size = 0.5, position = ggplot2::position_dodge2(width = 0.3)) +
 	     # this will only work for up to 5 different conditions
 	     # flipping things around (I guess we could do use the same geoms but the below is the original so we should not change)
 	     ggplot2::scale_shape_manual(values =  20 + (1:condition_no)) + ggplot2::coord_flip() +
@@ -143,43 +143,73 @@ orchard_plot <- function(object, mod = "Int", xlab, N = "none",
 	     ggplot2::theme(axis.text.y = ggplot2::element_text(size = 10, colour ="black",
 	                                               hjust = 0.5,
 	                                               angle = angle))
-
+	   # putting k in
+	   if(k == TRUE){
 	   plot <- plot +
 	     ggplot2::annotate('text', y = (max(data$yi) + (max(data$yi)*0.10)), x = (seq(1, group_no, 1)+0.3),
 	                       label= paste("italic(k)==", mod_table$K[1:group_no]), parse = TRUE, hjust = "right", size = 3.5)
+	   }
 
 	 }else{
 
 	# Make the orchard plot
-	  plot <- ggplot2::ggplot(data = mod_table, ggplot2::aes(x = estimate, y = name)) +
+	  # plot <- ggplot2::ggplot(data = mod_table, ggplot2::aes(x = estimate, y = name)) +
+	  #   # pieces of fruit (bee-swarm and bubbles)
+	  # 	ggbeeswarm::geom_quasirandom(data = data, ggplot2::aes(x = yi, y = moderator, size = scale, colour = moderator), groupOnX = FALSE, alpha=alpha) +
+	  # 	# 95 %prediction interval (PI): twigs
+	  # 	ggplot2::geom_errorbarh(ggplot2::aes(xmin = lowerPR, xmax = upperPR),  height = 0, show.legend = FALSE, size = 0.5, alpha = 0.6) +
+	  # 	# 95 %CI: branches
+	  # 	ggplot2::geom_errorbarh(ggplot2::aes(xmin = lowerCL, xmax = upperCL),  height = 0, show.legend = FALSE, size = 1.2) +
+	  # 	ggplot2::geom_vline(xintercept = 0, linetype = 2, colour = "black", alpha = alpha) +
+	  # 	# creating dots for truncks
+	  # 	ggplot2::geom_point(ggplot2::aes(fill = name), size = 3, shape = 21) +
+	  # 	# putting labels
+	  # 	#ggplot2::annotate('text', x = (max(data$yi) + (max(data$yi)*0.10)), y = (seq(1, group_no, 1)+0.3),
+	  # 	#                 label= paste("italic(k)==", mod_table$K), parse = TRUE, hjust = "right", size = 3.5) +
+	  # 	ggplot2::theme_bw() +
+	  #   ggplot2::guides(fill = "none", colour = "none") +
+	  #   ggplot2::theme(legend.position= c(1, 0), legend.justification = c(1, 0)) +
+	  #   ggplot2::theme(legend.title = ggplot2::element_text(size = 9)) +
+	  #   ggplot2::theme(legend.direction="horizontal") +
+	  #   ggplot2::theme(legend.background = ggplot2::element_blank()) +
+	  # 	ggplot2::labs(x = label, y = "", size = legend) +
+	  #   ggplot2::theme(axis.text.y = ggplot2::element_text(size = 10, colour ="black",
+	  #                                             hjust = 0.5,
+	  #                                             angle = angle))
+
+
+	 # the number of levels in name
+	  # name_no <- length(unique(mod_table[, "name"]))
+
+	  plot <- ggplot2::ggplot() +
 	    # pieces of fruit (bee-swarm and bubbles)
-	  	ggbeeswarm::geom_quasirandom(data = data, ggplot2::aes(x = yi, y = moderator, size = scale, colour = moderator), groupOnX = FALSE, alpha=alpha) +
-	  	# 95 %prediction interval (PI): twigs
-	  	ggplot2::geom_errorbarh(ggplot2::aes(xmin = lowerPR, xmax = upperPR),  height = 0, show.legend = FALSE, size = 0.5, alpha = 0.6) +
-	  	# 95 %CI: branches
-	  	ggplot2::geom_errorbarh(ggplot2::aes(xmin = lowerCL, xmax = upperCL),  height = 0, show.legend = FALSE, size = 1.2) +
-	  	ggplot2::geom_vline(xintercept = 0, linetype = 2, colour = "black", alpha = alpha) +
-	  	# creating dots for truncks
-	  	ggplot2::geom_point(ggplot2::aes(fill = name), size = 3, shape = 21) +
-	  	# putting labels
-	  	#ggplot2::annotate('text', x = (max(data$yi) + (max(data$yi)*0.10)), y = (seq(1, group_no, 1)+0.3),
-	  	#                 label= paste("italic(k)==", mod_table$K), parse = TRUE, hjust = "right", size = 3.5) +
-	  	ggplot2::theme_bw() +
+	    ggbeeswarm::geom_quasirandom(data = data, ggplot2::aes(y = yi, x = moderator, size = scale, colour = moderator), alpha=alpha) +
+
+	    ggplot2::geom_hline(yintercept = 0, linetype = 2, colour = "black", alpha = alpha) +
+	    # creating CI
+	    ggplot2::geom_linerange(data = mod_table, ggplot2::aes(x = name, ymin = lowerCL, ymax = upperCL),
+	                            size = 1.2) +
+	    # drowning point estimate and PI
+	    ggplot2::geom_pointrange(data = mod_table, ggplot2::aes(y = estimate, x = name,  ymin = lowerPR, ymax = upperPR), size = 0.5, fatten = 2) +
+	    ggplot2::geom_point(data = mod_table, ggplot2::aes(y = estimate, x = name, fill = name), size = 2) +
+	    ggplot2::coord_flip() +
+	    ggplot2::theme_bw() +
 	    ggplot2::guides(fill = "none", colour = "none") +
 	    ggplot2::theme(legend.position= c(1, 0), legend.justification = c(1, 0)) +
 	    ggplot2::theme(legend.title = ggplot2::element_text(size = 9)) +
 	    ggplot2::theme(legend.direction="horizontal") +
 	    ggplot2::theme(legend.background = ggplot2::element_blank()) +
-	  	ggplot2::labs(x = label, y = "", size = legend) +
+	    ggplot2::labs(y = label, x = "", size = legend) +
 	    ggplot2::theme(axis.text.y = ggplot2::element_text(size = 10, colour ="black",
-	                                              hjust = 0.5,
-	                                              angle = angle))
+	                                                       hjust = 0.5,
+	                                                       angle = angle))
+
 
 	  # putting k in
 	  if(k == TRUE){
 	    plot <- plot +
-	      ggplot2::annotate('text', x = (max(data$yi) + (max(data$yi)*0.10)), y = (seq(1, group_no, 1)+0.3),
-	                        label= paste("italic(k)==", mod_table$K), parse = TRUE, hjust = "right", size = 3.5)
+	      ggplot2::annotate('text', y = (max(data$yi) + (max(data$yi)*0.10)), x = (seq(1, group_no, 1)+0.3),
+	                        label= paste("italic(k)==", mod_table$K[1:group_no]), parse = TRUE, hjust = "right", size = 3.5)
 	  }
 
 	 }
