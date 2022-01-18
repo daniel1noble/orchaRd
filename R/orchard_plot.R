@@ -37,7 +37,7 @@
 #' lim$vi<- 1/(lim$N - 3)
 #' lim_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~Phylum-1, random=list(~1|Article,
 #' ~1|Datapoint), data=lim)
-#' orchard_plot(lim_MR, mod = "Phylum", group = "Article", xlab = "Correlaiton coefficent", transfm = "tanh", N = lim$N)
+#' orchard_plot(lim_MR, mod = "Phylum", group = "Article", xlab = "Correlation coefficient", transfm = "tanh", N = lim$N)
 #' }
 #' @export
 
@@ -68,7 +68,7 @@ orchard_plot <- function(object, mod = "Int", group, xlab, N = "none",
 			}
 	}
 
-	if(class(object) == "orchard"){
+	if(any(class(object) %in% c("orchard"))) {
 			results <- object
 	}
 

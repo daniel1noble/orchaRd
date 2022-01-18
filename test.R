@@ -1,4 +1,5 @@
 # test
+rm(list=ls())
 install.packages("devtools")
 install.packages("tidyverse")
 install.packages("metafor")
@@ -19,13 +20,19 @@ warm_dat <- fish
 # model
 model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 | es_ID), mods = ~ experimental_design + trait.type + deg_dif + treat_end_days, method = "REML", test = "t", data = warm_dat,                               control=list(optimizer="optim", optmethod="Nelder-Mead"))
 
+dat <- dat.bangertdrowns2004
+
+### fit a standard random-effects model
+res <- rma(yi, vi, data=dat)
+res
+
 # marginal overall
 overall <- marginal_means(model, mod = "experimental_design", group = "group_ID")
 orchard_plot(overall, xlab = "lnRR", trunk.size = 2, branch.size = 2, twig.size = 0.5, angle = 45)
 overall1.1 <- marginal_means(model, group = "group_ID")
 orchard_plot(overall1.1, xlab = "lnRR", trunk.size = 2, branch.size = 1.2, twig.size = 2)
-overall2 <- marginal_means(model, data = warm_dat, mod = "1", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif",  weights = "prop")
-orchard_plot(overall2, xlab = "lnRR", condition.lab = "Temparature")
+overall2 <- marginal_means(model, group = "group_ID", mod = "1", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif",  weights = "prop")
+orchard_plot(overall2, mod =  "experimental_design", xlab = "lnRR", group = "group_ID", condition.lab = "Temparature")
 
 # marginalized stuff
 across_trait <- marginal_means(model, data = warm_dat, mod = "trait.type")
