@@ -4,6 +4,8 @@
 #' @description Using a metafor model object of class rma or rma.mv it creates a table of model results containing the mean effect size estimates for all levels of a given categorical moderator, their corresponding confidence intervals and prediction intervals
 #' @param model rma.mv or rma object
 #' @param mod the name of a moderator; put "Int" if the intercept model (meta-analysis) or no moderators.
+#' @param group The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes.
+#' @param data The data frame used to fit the rma.mv model object
 #' @return A data frame containing all the model results including mean effect size estimate, confidence and prediction intervals
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
@@ -17,16 +19,16 @@
 #' # fit a MLMR - accouting for some non-independence
 #' eklof_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~ Grazer.type-1, random=list(~1|ExptID,
 #' ~1|Datapoint), data=eklof)
-#' results <- mod_results(eklof_MR, mod = "Grazer.type", group = "ExptID")
+#' results <- mod_results(eklof_MR, mod = "Grazer.type", group = "ExptID", data=eklof)
 #' }
 #' @export
 #'
 
-mod_results <- function(model, mod, group) {
+mod_results <- function(model, mod, group, data) {
 
   if(all(class(model) %in% c("rma.mv", "rma")) == FALSE) {stop("Sorry, you need to fit a metafor model of class rma.mv or rma")}
 
-  data <- get_data_raw(model, mod, group)
+  data <- get_data_raw(model, mod, group, data)
 
   # Get confidence intervals
   CI <- get_est(model, mod)
@@ -36,7 +38,7 @@ mod_results <- function(model, mod, group) {
 
   model_results <- list(mod_table = cbind(CI, PI[,-1]), data = data)
 
-  class(model_results) <- "orchard"
+  class(model_results) <- c("orchard", "data.frame")
 
   model_results
 
@@ -48,6 +50,7 @@ mod_results <- function(model, mod, group) {
 #' @param model rma.mv object
 #' @param mod moderator variable of interest that one wants marginal means for.
 #' @param group The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes.
+#' @param data The data frame used to fit the rma.mv model object
 #' @param weights how to marginalize categorical variables. The default is weights = "prop", which wights means for moderator levels based on their proportional representation in the data. For example, if "sex" is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal. IN the case if sex, for example, males and females are roughly equally prevalent in a population. As such, you can give the moderator levels equal weight using weights = "equal".
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
@@ -55,27 +58,29 @@ mod_results <- function(model, mod, group) {
 #' data(fish)
 #' warm_dat <- fish
 #' model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 | es_ID), mods = ~ experimental_design + trait.type + deg_dif + treat_end_days, method = "REML", test = "t", data = warm_dat, control=list(optimizer="optim", optmethod="Nelder-Mead"))
-#'   overall <- marginal_means(model, group = "group_ID")
-#' across_trait <- marginal_means(model, group = "group_ID", mod = "trait.type")
-#' across_trait_by_degree_diff <- marginal_means(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif")
-#' across_trait_by_degree_diff_at_treat_end_days10 <- marginal_means(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = 10), by = "deg_dif")
-#' across_trait_by_degree_diff_at_treat_end_days10And50 <- marginal_means(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "deg_dif")
-#' across_trait_by_treat_end_days10And50 <- marginal_means(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "treat_end_days")
-#' across_trait_by_treat_end_days10And50_ordinaryMM <- marginal_means(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "treat_end_days", weights = "prop")
+#'   overall <- marginal_means(model, group = "group_ID", data = warm_dat)
+#' across_trait <- marginal_means(model, group = "group_ID", mod = "trait.type", data = warm_dat)
+#' across_trait_by_degree_diff <- marginal_means(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif", data = warm_dat)
+#' across_trait_by_degree_diff_at_treat_end_days10 <- marginal_means(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = 10), by = "deg_dif",data = warm_dat)
+#' across_trait_by_degree_diff_at_treat_end_days10And50 <- marginal_means(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "deg_dif", data = warm_dat)
+#' across_trait_by_treat_end_days10And50 <- marginal_means(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "treat_end_days", data = warm_dat)
+#' across_trait_by_treat_end_days10And50_ordinaryMM <- marginal_means(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "treat_end_days", weights = "prop", data = warm_dat)
 #' model_het <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 + trait.type| es_ID), mods = ~ trait.type + deg_dif, method = "REML", test = "t", rho = 0, struc = "HCS", data = warm_dat, control=list(optimizer="optim", optmethod="Nelder-Mead"))
-#' HetModel <- marginal_means(model_het, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif", weights = "prop")
-#' orchard_plot(HetModel, xlab = "lnRR")
+#' HetModel <- marginal_means(model_het, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif", weights = "prop", data = warm_dat)
+#' orchard_plot(HetModel, xlab = "lnRR", data = warm_dat)
 #' }
 #' @export
 #'
 #'
 # We will need to make sure people use "1" or"moderator_names"
 
-marginal_means <- function(model, mod = "1", group, weights = "prop", by = NULL, at = NULL, ...){
+marginal_means <- function(model, mod = "1", group, data, weights = "prop", by = NULL, at = NULL, ...){
      # Extract data
-   data2 <- get_data_raw(model, mod, group)
+   data2 <- get_data_raw(model, mod, group, data)
 
-     grid <- emmeans::qdrg(object = model, at = at)
+      model$data <- data
+     grid <- emmeans::qdrg(object = model, at = at) 
+     
        mm <- emmeans::emmeans(grid, specs = mod, df = as.numeric(model$ddf[[1]]), by = by, weights = weights, ...)
     mm_pi <- pred_interval_esmeans(model, mm, mod = mod)
 
@@ -93,7 +98,7 @@ marginal_means <- function(model, mod = "1", group, weights = "prop", by = NULL,
     output <- list(mod_table = mod_table,
                         data = data2)
 
-    class(output) <- "orchard"
+    class(output) <- c("orchard", "data.frame")
 
   return(output)
 }
@@ -202,6 +207,7 @@ return(tmp)
 #' @param model rma.mv object
 #' @param mod the moderator variable
 #' @param group The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes.
+#' @param data The data frame used to fit the rma.mv model object
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
 #' @return Returns a data frame
@@ -210,12 +216,13 @@ return(tmp)
 #'  test <- get_data_raw(model, mod = "trait.type", studyID = "group_ID")
 #'  test <- get_data_raw(model, mod = "1", studyID = "group_ID") }
 
-get_data_raw <- function(model, mod, group){
+get_data_raw <- function(model, mod, group, data){
   # Extract data
     # full model delete missing values so need to adjust
      position <- as.numeric(attr(model$X, "dimnames")[[1]])
      # we need to adjust data
-     data <- model$data[position, ]
+     #data <- model$data[position, ] # NOTE: need to probably default to user adding data as metafor no longer seems to save data object.
+     data <- data[position, ]
 
     if(mod == "1"){
     moderator <- "Intrcpt"
@@ -265,7 +272,7 @@ firstup <- function(x) {
 #'
 
 print.orchard <- function(object, ...){
-    return(object$mod_table)
+    return(print(object$mod_table))
 }
 
 #' @title weighted_var
