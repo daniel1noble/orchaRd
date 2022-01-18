@@ -54,8 +54,8 @@ orchard_plot <- function(object, mod = "Int", group, xlab, N = "none",
                          alpha = 0.5, angle = 90, cb = FALSE, k = TRUE, g = TRUE,
                          trunk.size = 3, branch.size = 1.2, twig.size = 0.5,
                          transfm = c("none", "tanh"), condition.lab = "Condition")
+{
                          #legend.pos = c("top.left", "", "", "", "top.out", "bottom.out"))
-  {
 
   ## evaluate choices
   transfm <- match.arg(transfm) # if not specified it takes the first choice
@@ -99,7 +99,7 @@ orchard_plot <- function(object, mod = "Int", group, xlab, N = "none",
 	 mod_table$K <- as.vector(by(data, data[,"moderator"], function(x) length(x[,"yi"])))
 
 	# Add in total levels of a grouping variable (e.g., study ID) within each moderator level.
-	 mod_table$g <- as.vector(num_studies(data, moderator, stdy)[,2]) # TO DO: WORK INTO PLOT
+	 mod_table$g <- as.vector(num_studies(data, moderator, stdy)[,2]) 
 
 	 # the number of groups in a moderator & data points
 	 group_no <- length(unique(mod_table[, "name"]))
@@ -140,8 +140,9 @@ orchard_plot <- function(object, mod = "Int", group, xlab, N = "none",
 	     ggplot2::labs(shape = condition.lab) +
 	     ggplot2::theme(axis.text.y = ggplot2::element_text(size = 10, colour ="black",
 	                                               hjust = 0.5,
+	                                                       angle = angle))
 
-	 }else{
+	 } else {
 
 	  plot <- ggplot2::ggplot() +
 	    # pieces of fruit (bee-swarm and bubbles)
@@ -166,6 +167,7 @@ orchard_plot <- function(object, mod = "Int", group, xlab, N = "none",
 	                                                       angle = angle))
 
 	 }
+	  
 	  # putting colors in
 	  if(cb == TRUE){
 	    plot <- plot +
@@ -175,17 +177,18 @@ orchard_plot <- function(object, mod = "Int", group, xlab, N = "none",
 
 
 	  # putting k in
-	  if(k == TRUE & g == FALSE){
+	  if(k == TRUE && g == FALSE){
 	    plot <- plot +
 	      ggplot2::annotate('text', y = (max(data$yi) + (max(data$yi)*0.10)), x = (seq(1, group_no, 1)+0.3),
 	                        label= paste("italic(k)==", mod_table$K[1:group_no]), parse = TRUE, hjust = "right", size = 3.5)
 	  }
 
 	  # putting groups
-	  if(k == TRUE & g == TRUE){
+	  if(k == TRUE && g == TRUE){
+	  	# get group numbers for moderator
 	    plot <- plot +
 	      ggplot2::annotate('text', y = (max(data$yi) + (max(data$yi)*0.10)), x = (seq(1, group_no, 1)+0.3),
-	                        label= paste("italic(k)==", mod_table$K[1:group_no]), parse = TRUE, hjust = "right", size = 3.5)
+	                        label= paste("italic(k)==", mod_table$K[1:group_no], " (", mod_table$g[1:group_no], ")"), parse = TRUE, hjust = "right", size = 3.5)
 	  }
 
 	  return(plot)

@@ -78,7 +78,9 @@ marginal_means <- function(model, mod = "1", group, data, weights = "prop", by =
      # Extract data
    data2 <- get_data_raw(model, mod, group, data)
 
-     grid <- emmeans::qdrg(object = model, at = at)
+      model$data <- data
+     grid <- emmeans::qdrg(object = model, at = at) 
+     
        mm <- emmeans::emmeans(grid, specs = mod, df = as.numeric(model$ddf[[1]]), by = by, weights = weights, ...)
     mm_pi <- pred_interval_esmeans(model, mm, mod = mod)
 
