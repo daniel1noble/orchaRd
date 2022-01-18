@@ -55,7 +55,7 @@ mod_results <- function(model, mod, group) {
 #' data(fish)
 #' warm_dat <- fish
 #' model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 | es_ID), mods = ~ experimental_design + trait.type + deg_dif + treat_end_days, method = "REML", test = "t", data = warm_dat, control=list(optimizer="optim", optmethod="Nelder-Mead"))
-#'   overall <- marginal_means(model, group = "group_ID") 
+#'   overall <- marginal_means(model, group = "group_ID")
 #' across_trait <- marginal_means(model, group = "group_ID", mod = "trait.type")
 #' across_trait_by_degree_diff <- marginal_means(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif")
 #' across_trait_by_degree_diff_at_treat_end_days10 <- marginal_means(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = 10), by = "deg_dif")
@@ -207,7 +207,7 @@ return(tmp)
 #' @return Returns a data frame
 #' @export
 #' @examples \dontrun{
-#'  test <- get_data_raw(model, mod = "trait.type", studyID = "group_ID") 
+#'  test <- get_data_raw(model, mod = "trait.type", studyID = "group_ID")
 #'  test <- get_data_raw(model, mod = "1", studyID = "group_ID") }
 
 get_data_raw <- function(model, mod, group){
@@ -216,7 +216,7 @@ get_data_raw <- function(model, mod, group){
      position <- as.numeric(attr(model$X, "dimnames")[[1]])
      # we need to adjust data
      data <- model$data[position, ]
-    
+
     if(mod == "1"){
     moderator <- "Intrcpt"
     }else{
@@ -225,9 +225,9 @@ get_data_raw <- function(model, mod, group){
      moderator <- firstup(moderator)
     }
 
-    # Extract study grouping variable to calculate the 
+    # Extract study grouping variable to calculate the
     stdy <- data[,group] # Could default to base instead of tidy
-    
+
     # Extract effect sizes
     yi <- model$yi
     vi <- model$vi

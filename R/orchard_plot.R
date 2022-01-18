@@ -7,7 +7,7 @@
 #' @param N  The vector of sample size which an effect size is based on. If default, we use precision (the inverse of sampling standard error)
 #' @param alpha The level of transparency for pieces of fruit (effect size)
 #' @param angle The angle of y labels. The default is 90 degrees
-#' @param cb If TRUE, it uses 8 colour blind friendly colors (7 colours plus grey)
+#' @param cb If TRUE, it uses 12 colour blind friendly colors (7 colours plus grey)
 #' @param k If TRUE, it displays k (number of effect sizes) on the plot
 #' @param transfm If set to "tanh", a tanh transformation will be applied to effect sizes, converting Zr will to a correlation or pulling in extreme values for other effect sizes (lnRR, lnCVR, SMD). If "none" is chosen then it will default to
 #' @param condition.lab
@@ -106,7 +106,8 @@ orchard_plot <- function(object, mod = "Int", group, xlab, N = "none",
 	 #data_no <- nrow(data)
 
 	# colour blind friendly colours with grey
-	 #cbpl <- c("#E69F00","#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#56B4E9", "#999999")
+	 cbpl <- c("#88CCEE", "#CC6677", "#DDCC77", "#117733", "#332288", "#AA4499",
+	 "#44AA99", "#999933", "#882255", "#661100", "#6699CC", "#888888", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#999999")
 
 
 	 # whether marginal
@@ -147,35 +148,6 @@ orchard_plot <- function(object, mod = "Int", group, xlab, N = "none",
 	   }
 
 	 }else{
-
-	# Make the orchard plot
-	  # plot <- ggplot2::ggplot(data = mod_table, ggplot2::aes(x = estimate, y = name)) +
-	  #   # pieces of fruit (bee-swarm and bubbles)
-	  # 	ggbeeswarm::geom_quasirandom(data = data, ggplot2::aes(x = yi, y = moderator, size = scale, colour = moderator), groupOnX = FALSE, alpha=alpha) +
-	  # 	# 95 %prediction interval (PI): twigs
-	  # 	ggplot2::geom_errorbarh(ggplot2::aes(xmin = lowerPR, xmax = upperPR),  height = 0, show.legend = FALSE, size = 0.5, alpha = 0.6) +
-	  # 	# 95 %CI: branches
-	  # 	ggplot2::geom_errorbarh(ggplot2::aes(xmin = lowerCL, xmax = upperCL),  height = 0, show.legend = FALSE, size = 1.2) +
-	  # 	ggplot2::geom_vline(xintercept = 0, linetype = 2, colour = "black", alpha = alpha) +
-	  # 	# creating dots for truncks
-	  # 	ggplot2::geom_point(ggplot2::aes(fill = name), size = 3, shape = 21) +
-	  # 	# putting labels
-	  # 	#ggplot2::annotate('text', x = (max(data$yi) + (max(data$yi)*0.10)), y = (seq(1, group_no, 1)+0.3),
-	  # 	#                 label= paste("italic(k)==", mod_table$K), parse = TRUE, hjust = "right", size = 3.5) +
-	  # 	ggplot2::theme_bw() +
-	  #   ggplot2::guides(fill = "none", colour = "none") +
-	  #   ggplot2::theme(legend.position= c(1, 0), legend.justification = c(1, 0)) +
-	  #   ggplot2::theme(legend.title = ggplot2::element_text(size = 9)) +
-	  #   ggplot2::theme(legend.direction="horizontal") +
-	  #   ggplot2::theme(legend.background = ggplot2::element_blank()) +
-	  # 	ggplot2::labs(x = label, y = "", size = legend) +
-	  #   ggplot2::theme(axis.text.y = ggplot2::element_text(size = 10, colour ="black",
-	  #                                             hjust = 0.5,
-	  #                                             angle = angle))
-
-
-	 # the number of levels in name
-	  # name_no <- length(unique(mod_table[, "name"]))
 
 	  plot <- ggplot2::ggplot() +
 	    # pieces of fruit (bee-swarm and bubbles)
