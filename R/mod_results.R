@@ -19,7 +19,7 @@
 #' # fit a MLMR - accouting for some non-independence
 #' eklof_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~ Grazer.type-1, random=list(~1|ExptID,
 #' ~1|Datapoint), data=eklof)
-#' results <- mod_results(eklof_MR, mod = "Grazer.type", group = "ExptID")
+#' results <- mod_results(eklof_MR, mod = "Grazer.type", group = "ExptID", data=eklof)
 #' }
 #' @export
 #'
@@ -38,7 +38,7 @@ mod_results <- function(model, mod, group, data) {
 
   model_results <- list(mod_table = cbind(CI, PI[,-1]), data = data)
 
-  class(model_results) <- "orchard"
+  class(model_results) <- c("orchard", "data.frame")
 
   model_results
 
@@ -58,16 +58,16 @@ mod_results <- function(model, mod, group, data) {
 #' data(fish)
 #' warm_dat <- fish
 #' model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 | es_ID), mods = ~ experimental_design + trait.type + deg_dif + treat_end_days, method = "REML", test = "t", data = warm_dat, control=list(optimizer="optim", optmethod="Nelder-Mead"))
-#'   overall <- marginal_means(model, group = "group_ID")
-#' across_trait <- marginal_means(model, group = "group_ID", mod = "trait.type")
-#' across_trait_by_degree_diff <- marginal_means(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif")
-#' across_trait_by_degree_diff_at_treat_end_days10 <- marginal_means(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = 10), by = "deg_dif")
-#' across_trait_by_degree_diff_at_treat_end_days10And50 <- marginal_means(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "deg_dif")
-#' across_trait_by_treat_end_days10And50 <- marginal_means(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "treat_end_days")
-#' across_trait_by_treat_end_days10And50_ordinaryMM <- marginal_means(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "treat_end_days", weights = "prop")
+#'   overall <- marginal_means(model, group = "group_ID", data = warm_dat)
+#' across_trait <- marginal_means(model, group = "group_ID", mod = "trait.type", data = warm_dat)
+#' across_trait_by_degree_diff <- marginal_means(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif", data = warm_dat)
+#' across_trait_by_degree_diff_at_treat_end_days10 <- marginal_means(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = 10), by = "deg_dif",data = warm_dat)
+#' across_trait_by_degree_diff_at_treat_end_days10And50 <- marginal_means(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "deg_dif", data = warm_dat)
+#' across_trait_by_treat_end_days10And50 <- marginal_means(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "treat_end_days", data = warm_dat)
+#' across_trait_by_treat_end_days10And50_ordinaryMM <- marginal_means(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "treat_end_days", weights = "prop", data = warm_dat)
 #' model_het <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 + trait.type| es_ID), mods = ~ trait.type + deg_dif, method = "REML", test = "t", rho = 0, struc = "HCS", data = warm_dat, control=list(optimizer="optim", optmethod="Nelder-Mead"))
-#' HetModel <- marginal_means(model_het, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif", weights = "prop")
-#' orchard_plot(HetModel, xlab = "lnRR")
+#' HetModel <- marginal_means(model_het, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif", weights = "prop", data = warm_dat)
+#' orchard_plot(HetModel, xlab = "lnRR", data = warm_dat)
 #' }
 #' @export
 #'
@@ -98,7 +98,7 @@ marginal_means <- function(model, mod = "1", group, data, weights = "prop", by =
     output <- list(mod_table = mod_table,
                         data = data2)
 
-    class(output) <- "orchard"
+    class(output) <- c("orchard", "data.frame")
 
   return(output)
 }
@@ -272,7 +272,7 @@ firstup <- function(x) {
 #'
 
 print.orchard <- function(object, ...){
-    return(object$mod_table)
+    return(print(object$mod_table))
 }
 
 #' @title weighted_var

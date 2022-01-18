@@ -3,6 +3,7 @@
 #' @param object model object of class 'rma.mv', 'rma' or 'orchard' table of model results
 #' @param mod the name of a moderator. Otherwise, "Int" for intercept only model.
 #' @param group The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes.
+#' @param data The data frame used to fit the rma.mv model object
 #' @param xlab The effect size measure label.
 #' @param N  The vector of sample size which an effect size is based on. If default, we use precision (the inverse of sampling standard error)
 #' @param alpha The level of transparency for pieces of fruit (effect size)
@@ -28,17 +29,17 @@
 #' eklof$Datapoint<-as.factor(seq(1, dim(eklof)[1], 1))
 #' # fit a MLMR - accounting for some non-independence
 #' eklof_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~ Grazer.type-1, random=list(~1|ExptID, ~1|Datapoint), data=eklof)
-#' results <- mod_results(eklof_MR, mod = "Grazer.type", group = "ExptID")
+#' results <- mod_results(eklof_MR, mod = "Grazer.type", group = "ExptID", data = eklof)
 #' orchard_plot(results, mod = "Grazer.type", group = "ExptID", xlab = "log(Response ratio) (lnRR)")
 #' # or
-#' orchard_plot(eklof_MR, mod = "Grazer.type", group = "ExptID", xlab = "log(Response ratio) (lnRR)")
+#' orchard_plot(eklof_MR, mod = "Grazer.type", group = "ExptID", xlab = "log(Response ratio) (lnRR)", data = eklof)
 #'
 #' # Example 2
 #' data(lim)
 #' lim$vi<- 1/(lim$N - 3)
 #' lim_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~Phylum-1, random=list(~1|Article,
 #' ~1|Datapoint), data=lim)
-#' orchard_plot(lim_MR, mod = "Phylum", group = "Article", xlab = "Correlation coefficient", transfm = "tanh", N = lim$N)
+#' orchard_plot(lim_MR, mod = "Phylum", group = "Article", xlab = "Correlation coefficient", transfm = "tanh", N = lim$N, data = lim)
 #' }
 #' @export
 
@@ -50,7 +51,7 @@
 # TODO - we do not really need "Int" for marginal_means
 # TODO - suppress one or more levels within a categorical moderator
 
-orchard_plot <- function(object, mod = "Int", group, xlab, N = "none",
+orchard_plot <- function(object, mod = "Int", group, data, xlab, N = "none",
                          alpha = 0.5, angle = 90, cb = FALSE, k = TRUE, g = TRUE,
                          trunk.size = 3, branch.size = 1.2, twig.size = 0.5,
                          transfm = c("none", "tanh"), condition.lab = "Condition")
@@ -63,9 +64,9 @@ orchard_plot <- function(object, mod = "Int", group, xlab, N = "none",
 
 	if(any(class(object) %in% c("rma.mv", "rma"))){
 		if(mod != "Int"){
-			results <- mod_results(object, mod, group)
+			results <- mod_results(object, mod, group, data)
 		} else{
-			results <- mod_results(object, mod = "Int", group)
+			results <- mod_results(object, mod = "Int", group, data)
 			}
 	}
 
