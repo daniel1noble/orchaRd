@@ -27,7 +27,7 @@ res <- rma(yi, vi, data=dat)
 res
 
 # marginal overall
-overall <- marginal_means(model, mod = "experimental_design", group = "group_ID")
+overall <- marginal_means(model, mod = "experimental_design", group = "group_ID", data = warm_dat)
 orchard_plot(overall, xlab = "lnRR", trunk.size = 2, branch.size = 2, twig.size = 0.5, angle = 45)
 overall1.1 <- marginal_means(model, group = "group_ID")
 orchard_plot(overall1.1, xlab = "lnRR", trunk.size = 2, branch.size = 1.2, twig.size = 2)

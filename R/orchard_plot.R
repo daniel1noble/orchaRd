@@ -9,6 +9,7 @@
 #' @param angle The angle of y labels. The default is 90 degrees
 #' @param cb If TRUE, it uses 12 colour blind friendly colors (7 colours plus grey)
 #' @param k If TRUE, it displays k (number of effect sizes) on the plot
+#' @param g If TRUE, it displays g (number of grouping levels for each level of the moderator) on the plot
 #' @param transfm If set to "tanh", a tanh transformation will be applied to effect sizes, converting Zr will to a correlation or pulling in extreme values for other effect sizes (lnRR, lnCVR, SMD). If "none" is chosen then it will default to
 #' @param condition.lab
 #' @param trunk.size
@@ -50,7 +51,7 @@
 # TODO - suppress one or more levels within a categorical moderator
 
 orchard_plot <- function(object, mod = "Int", group, xlab, N = "none",
-                         alpha = 0.5, angle = 90, cb = FALSE, k = TRUE,
+                         alpha = 0.5, angle = 90, cb = FALSE, k = TRUE, g = TRUE,
                          trunk.size = 3, branch.size = 1.2, twig.size = 0.5,
                          transfm = c("none", "tanh"), condition.lab = "Condition")
                          #legend.pos = c("top.left", "", "", "", "top.out", "bottom.out"))
@@ -139,13 +140,6 @@ orchard_plot <- function(object, mod = "Int", group, xlab, N = "none",
 	     ggplot2::labs(shape = condition.lab) +
 	     ggplot2::theme(axis.text.y = ggplot2::element_text(size = 10, colour ="black",
 	                                               hjust = 0.5,
-	                                               angle = angle))
-	   # putting k in
-	   if(k == TRUE){
-	   plot <- plot +
-	     ggplot2::annotate('text', y = (max(data$yi) + (max(data$yi)*0.10)), x = (seq(1, group_no, 1)+0.3),
-	                       label= paste("italic(k)==", mod_table$K[1:group_no]), parse = TRUE, hjust = "right", size = 3.5)
-	   }
 
 	 }else{
 
@@ -171,20 +165,27 @@ orchard_plot <- function(object, mod = "Int", group, xlab, N = "none",
 	                                                       hjust = 0.5,
 	                                                       angle = angle))
 
-
-	  # putting k in
-	  if(k == TRUE){
-	    plot <- plot +
-	      ggplot2::annotate('text', y = (max(data$yi) + (max(data$yi)*0.10)), x = (seq(1, group_no, 1)+0.3),
-	                        label= paste("italic(k)==", mod_table$K[1:group_no]), parse = TRUE, hjust = "right", size = 3.5)
-	  }
-
 	 }
 	  # putting colors in
 	  if(cb == TRUE){
 	    plot <- plot +
 	      ggplot2::scale_fill_manual(values=cbpl) +
 	      ggplot2::scale_colour_manual(values=cbpl)
+	  }
+
+
+	  # putting k in
+	  if(k == TRUE & g == FALSE){
+	    plot <- plot +
+	      ggplot2::annotate('text', y = (max(data$yi) + (max(data$yi)*0.10)), x = (seq(1, group_no, 1)+0.3),
+	                        label= paste("italic(k)==", mod_table$K[1:group_no]), parse = TRUE, hjust = "right", size = 3.5)
+	  }
+
+	  # putting groups
+	  if(k == TRUE & g == TRUE){
+	    plot <- plot +
+	      ggplot2::annotate('text', y = (max(data$yi) + (max(data$yi)*0.10)), x = (seq(1, group_no, 1)+0.3),
+	                        label= paste("italic(k)==", mod_table$K[1:group_no]), parse = TRUE, hjust = "right", size = 3.5)
 	  }
 
 	  return(plot)

@@ -4,6 +4,8 @@
 #' @description Using a metafor model object of class rma or rma.mv it creates a table of model results containing the mean effect size estimates for all levels of a given categorical moderator, their corresponding confidence intervals and prediction intervals
 #' @param model rma.mv or rma object
 #' @param mod the name of a moderator; put "Int" if the intercept model (meta-analysis) or no moderators.
+#' @param group The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes.
+#' @param data The data frame used to fit the rma.mv model object
 #' @return A data frame containing all the model results including mean effect size estimate, confidence and prediction intervals
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
@@ -22,11 +24,11 @@
 #' @export
 #'
 
-mod_results <- function(model, mod, group) {
+mod_results <- function(model, mod, group, data) {
 
   if(all(class(model) %in% c("rma.mv", "rma")) == FALSE) {stop("Sorry, you need to fit a metafor model of class rma.mv or rma")}
 
-  data <- get_data_raw(model, mod, group)
+  data <- get_data_raw(model, mod, group, data)
 
   # Get confidence intervals
   CI <- get_est(model, mod)
@@ -48,6 +50,7 @@ mod_results <- function(model, mod, group) {
 #' @param model rma.mv object
 #' @param mod moderator variable of interest that one wants marginal means for.
 #' @param group The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes.
+#' @param data The data frame used to fit the rma.mv model object
 #' @param weights how to marginalize categorical variables. The default is weights = "prop", which wights means for moderator levels based on their proportional representation in the data. For example, if "sex" is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal. IN the case if sex, for example, males and females are roughly equally prevalent in a population. As such, you can give the moderator levels equal weight using weights = "equal".
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
@@ -71,9 +74,9 @@ mod_results <- function(model, mod, group) {
 #'
 # We will need to make sure people use "1" or"moderator_names"
 
-marginal_means <- function(model, mod = "1", group, weights = "prop", by = NULL, at = NULL, ...){
+marginal_means <- function(model, mod = "1", group, data, weights = "prop", by = NULL, at = NULL, ...){
      # Extract data
-   data2 <- get_data_raw(model, mod, group)
+   data2 <- get_data_raw(model, mod, group, data)
 
      grid <- emmeans::qdrg(object = model, at = at)
        mm <- emmeans::emmeans(grid, specs = mod, df = as.numeric(model$ddf[[1]]), by = by, weights = weights, ...)
@@ -202,6 +205,7 @@ return(tmp)
 #' @param model rma.mv object
 #' @param mod the moderator variable
 #' @param group The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes.
+#' @param data The data frame used to fit the rma.mv model object
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
 #' @return Returns a data frame
@@ -210,12 +214,13 @@ return(tmp)
 #'  test <- get_data_raw(model, mod = "trait.type", studyID = "group_ID")
 #'  test <- get_data_raw(model, mod = "1", studyID = "group_ID") }
 
-get_data_raw <- function(model, mod, group){
+get_data_raw <- function(model, mod, group, data){
   # Extract data
     # full model delete missing values so need to adjust
      position <- as.numeric(attr(model$X, "dimnames")[[1]])
      # we need to adjust data
-     data <- model$data[position, ]
+     #data <- model$data[position, ] # NOTE: need to probably default to user adding data as metafor no longer seems to save data object.
+     data <- data[position, ]
 
     if(mod == "1"){
     moderator <- "Intrcpt"
