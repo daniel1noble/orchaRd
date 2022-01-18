@@ -4,12 +4,16 @@
 \alias{mod_results}
 \title{mod_results}
 \usage{
-mod_results(model, mod, group)
+mod_results(model, mod, group, data)
 }
 \arguments{
 \item{model}{rma.mv or rma object}
 
 \item{mod}{the name of a moderator; put "Int" if the intercept model (meta-analysis) or no moderators.}
+
+\item{group}{The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes.}
+
+\item{data}{The data frame used to fit the rma.mv model object}
 }
 \value{
 A data frame containing all the model results including mean effect size estimate, confidence and prediction intervals
@@ -27,7 +31,7 @@ eklof$Datapoint<-as.factor(seq(1, dim(eklof)[1], 1))
 # fit a MLMR - accouting for some non-independence
 eklof_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~ Grazer.type-1, random=list(~1|ExptID,
 ~1|Datapoint), data=eklof)
-results <- mod_results(eklof_MR, mod = "Grazer.type", group = "ExptID")
+results <- mod_results(eklof_MR, mod = "Grazer.type", group = "ExptID", data=eklof)
 }
 }
 \author{

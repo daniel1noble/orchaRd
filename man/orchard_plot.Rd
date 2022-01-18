@@ -8,15 +8,17 @@ orchard_plot(
   object,
   mod = "Int",
   group,
+  data,
   xlab,
   N = "none",
   alpha = 0.5,
   angle = 90,
   cb = FALSE,
   k = TRUE,
+  g = TRUE,
   trunk.size = 3,
-  branch.size = 2,
-  twig.size = 2,
+  branch.size = 1.2,
+  twig.size = 0.5,
   transfm = c("none", "tanh"),
   condition.lab = "Condition"
 )
@@ -28,6 +30,8 @@ orchard_plot(
 
 \item{group}{The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes.}
 
+\item{data}{The data frame used to fit the rma.mv model object}
+
 \item{xlab}{The effect size measure label.}
 
 \item{N}{The vector of sample size which an effect size is based on. If default, we use precision (the inverse of sampling standard error)}
@@ -36,9 +40,11 @@ orchard_plot(
 
 \item{angle}{The angle of y labels. The default is 90 degrees}
 
-\item{cb}{If TRUE, it uses 8 colour blind friendly colors (7 colours plus grey)}
+\item{cb}{If TRUE, it uses 12 colour blind friendly colors (7 colours plus grey)}
 
 \item{k}{If TRUE, it displays k (number of effect sizes) on the plot}
+
+\item{g}{If TRUE, it displays g (number of grouping levels for each level of the moderator) on the plot}
 
 \item{transfm}{If set to "tanh", a tanh transformation will be applied to effect sizes, converting Zr will to a correlation or pulling in extreme values for other effect sizes (lnRR, lnCVR, SMD). If "none" is chosen then it will default to}
 }
@@ -58,17 +64,17 @@ data=eklof)
 eklof$Datapoint<-as.factor(seq(1, dim(eklof)[1], 1))
 # fit a MLMR - accounting for some non-independence
 eklof_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~ Grazer.type-1, random=list(~1|ExptID, ~1|Datapoint), data=eklof)
-results <- mod_results(eklof_MR, mod = "Grazer.type", group = "ExptID")
+results <- mod_results(eklof_MR, mod = "Grazer.type", group = "ExptID", data = eklof)
 orchard_plot(results, mod = "Grazer.type", group = "ExptID", xlab = "log(Response ratio) (lnRR)")
 # or
-orchard_plot(eklof_MR, mod = "Grazer.type", group = "ExptID", xlab = "log(Response ratio) (lnRR)")
+orchard_plot(eklof_MR, mod = "Grazer.type", group = "ExptID", xlab = "log(Response ratio) (lnRR)", data = eklof)
 
 # Example 2
 data(lim)
 lim$vi<- 1/(lim$N - 3)
 lim_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~Phylum-1, random=list(~1|Article,
 ~1|Datapoint), data=lim)
-orchard_plot(lim_MR, mod = "Phylum", group = "Article", xlab = "Correlaiton coefficent", transfm = "tanh", N = lim$N)
+orchard_plot(lim_MR, mod = "Phylum", group = "Article", xlab = "Correlation coefficient", transfm = "tanh", N = lim$N, data = lim)
 }
 }
 \author{

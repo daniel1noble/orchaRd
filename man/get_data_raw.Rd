@@ -4,7 +4,7 @@
 \alias{get_data_raw}
 \title{get_data_raw}
 \usage{
-get_data_raw(model, mod, group)
+get_data_raw(model, mod, group, data)
 }
 \arguments{
 \item{model}{rma.mv object}
@@ -12,6 +12,8 @@ get_data_raw(model, mod, group)
 \item{mod}{the moderator variable}
 
 \item{group}{The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes.}
+
+\item{data}{The data frame used to fit the rma.mv model object}
 }
 \value{
 Returns a data frame
@@ -21,7 +23,7 @@ Collects and builds the data used to fit the rma.mv or rma model in metafor
 }
 \examples{
 \dontrun{
- test <- get_data_raw(model, mod = "trait.type", studyID = "group_ID") 
+ test <- get_data_raw(model, mod = "trait.type", studyID = "group_ID")
  test <- get_data_raw(model, mod = "1", studyID = "group_ID") }
 }
 \author{
