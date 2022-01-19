@@ -1,6 +1,6 @@
 Package: orchaRd
 Title: Orchard Plots and Prediction Intervals for Meta-analysis
-Version: 0.0.0.9000
+Version: 2.0
 Authors@R: 
     person(given = "Shinichi",
            family = "Nakagawa",
@@ -24,7 +24,8 @@ Imports: tidyverse,
     tibble,
     stringr,
     ggplot2,
-    ggbeeswarm
+    ggbeeswarm,
+    emmeans
 Suggests: R.rsp, 
   testthat,
     knitr,

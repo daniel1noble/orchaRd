@@ -46,7 +46,15 @@ orchard_plot(
 
 \item{g}{If TRUE, it displays g (number of grouping levels for each level of the moderator) on the plot}
 
+\item{trunk.size}{Size of the mean, or central point.}
+
+\item{branch.size}{Size of the confidence intervals}
+
+\item{twig.size}{Size of the prediction intervals}
+
 \item{transfm}{If set to "tanh", a tanh transformation will be applied to effect sizes, converting Zr will to a correlation or pulling in extreme values for other effect sizes (lnRR, lnCVR, SMD). If "none" is chosen then it will default to}
+
+\item{condition.lab}{Label for the condition being marginalized over.}
 }
 \value{
 Orchard plot

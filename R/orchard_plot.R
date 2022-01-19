@@ -12,10 +12,10 @@
 #' @param k If TRUE, it displays k (number of effect sizes) on the plot
 #' @param g If TRUE, it displays g (number of grouping levels for each level of the moderator) on the plot
 #' @param transfm If set to "tanh", a tanh transformation will be applied to effect sizes, converting Zr will to a correlation or pulling in extreme values for other effect sizes (lnRR, lnCVR, SMD). If "none" is chosen then it will default to
-#' @param condition.lab
-#' @param trunk.size
-#' @param branch.size
-#' @param twig.size
+#' @param condition.lab Label for the condition being marginalized over.
+#' @param trunk.size Size of the mean, or central point.
+#' @param branch.size Size of the confidence intervals
+#' @param twig.size Size of the prediction intervals
 #' @return Orchard plot
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au

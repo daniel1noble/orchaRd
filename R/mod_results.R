@@ -50,6 +50,8 @@ mod_results <- function(model, mod, group, data) {
 #' @param model rma.mv object
 #' @param mod moderator variable of interest that one wants marginal means for.
 #' @param group The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes.
+#' @param by The 'condition' variable that one wishes to have the mean for the moderator vary. 
+#' @param at The 'condition' that one wishes to calculate the means at, but is not presented in output
 #' @param data The data frame used to fit the rma.mv model object
 #' @param weights how to marginalize categorical variables. The default is weights = "prop", which wights means for moderator levels based on their proportional representation in the data. For example, if "sex" is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal. IN the case if sex, for example, males and females are roughly equally prevalent in a population. As such, you can give the moderator levels equal weight using weights = "equal".
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
@@ -263,7 +265,7 @@ firstup <- function(x) {
 
 #' @title print.orchard
 #' @description Print method for class 'orchard'
-#' @param object x an R object of class orchard
+#' @param x an R object of class orchard
 #' @param ... Other arguments passed to print
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
@@ -271,8 +273,8 @@ firstup <- function(x) {
 #' @export
 #'
 
-print.orchard <- function(object, ...){
-    return(print(object$mod_table))
+print.orchard <- function(x, ...){
+    return(print(x$mod_table))
 }
 
 #' @title weighted_var

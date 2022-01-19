@@ -4,10 +4,10 @@
 \alias{print.orchard}
 \title{print.orchard}
 \usage{
-\method{print}{orchard}(object, ...)
+\method{print}{orchard}(x, ...)
 }
 \arguments{
-\item{object}{x an R object of class orchard}
+\item{x}{an R object of class orchard}
 
 \item{...}{Other arguments passed to print}
 }
