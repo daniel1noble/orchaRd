@@ -39,13 +39,15 @@
 caterpillars <- function(object, mod = "1", data, group, xlab, overall = TRUE, transfm = c("none", "tanh"), k = TRUE, g = TRUE) {
   if(any(class(object) %in% c("rma.mv", "rma"))){
     if(mod != "1"){
-      results <- mod_results(object, mod, data, group)
+      results <- orchaRd::mod_results(object, mod, data, group)
     } else{
-      results <- mod_results(object, mod = "1", data, group)
+      results <- orchaRd::mod_results(object, mod = "1", data, group)
     }
   }
 
-  ## evaluate choices
+  if (any(class(object) %in% c("orchard"))) {results <- object}
+
+       ## evaluate choices
   transfm <- match.arg(transfm) # if not sepcificed it takes the first choice
 
   # meta-analytic results
