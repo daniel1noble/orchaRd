@@ -1,7 +1,7 @@
 #' @title orchard_plot
 #' @description Using a metafor model object of class rma or rma.mv or a results table of class orchard, it creates a an orchard plot from mean effect size estimates for all levels of a given categorical moderator, their corresponding confidence intervals and prediction intervals
 #' @param object model object of class 'rma.mv', 'rma' or 'orchard' table of model results
-#' @param mod the name of a moderator. Otherwise, "Int" for intercept only model.
+#' @param mod the name of a moderator. Otherwise, "1" for intercept only model.
 #' @param group The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes.
 #' @param data The data frame used to fit the rma.mv model object
 #' @param xlab The effect size measure label.
@@ -51,7 +51,7 @@
 # TODO - we do not really need "Int" for marginal_means
 # TODO - suppress one or more levels within a categorical moderator
 
-orchard_plot <- function(object, mod = "Int", group, data, xlab, N = "none",
+orchard_plot <- function(object, mod = "1", group, data, xlab, N = "none",
                          alpha = 0.5, angle = 90, cb = FALSE, k = TRUE, g = TRUE,
                          trunk.size = 3, branch.size = 1.2, twig.size = 0.5,
                          transfm = c("none", "tanh"), condition.lab = "Condition")
@@ -100,7 +100,7 @@ orchard_plot <- function(object, mod = "Int", group, data, xlab, N = "none",
 	 mod_table$K <- as.vector(by(data, data[,"moderator"], function(x) length(x[,"yi"])))
 
 	# Add in total levels of a grouping variable (e.g., study ID) within each moderator level.
-	 mod_table$g <- as.vector(num_studies(data, moderator, stdy)[,2]) 
+	 mod_table$g <- as.vector(num_studies(data, moderator, stdy)[,2])
 
 	 # the number of groups in a moderator & data points
 	 group_no <- length(unique(mod_table[, "name"]))
@@ -167,7 +167,7 @@ orchard_plot <- function(object, mod = "Int", group, data, xlab, N = "none",
 	                                                       angle = angle))
 
 	 }
-	  
+
 	  # putting colors in
 	  if(cb == TRUE){
 	    plot <- plot +

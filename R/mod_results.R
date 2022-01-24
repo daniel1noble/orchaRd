@@ -3,7 +3,7 @@
 #' @title mod_results
 #' @description Using a metafor model object of class rma or rma.mv it creates a table of model results containing the mean effect size estimates for all levels of a given categorical moderator, their corresponding confidence intervals and prediction intervals
 #' @param model rma.mv or rma object
-#' @param mod the name of a moderator; put "Int" if the intercept model (meta-analysis) or no moderators.
+#' @param mod the name of a moderator; put "1" if the intercept model (meta-analysis) or no moderators.
 #' @param group The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes.
 #' @param data The data frame used to fit the rma.mv model object
 #' @return A data frame containing all the model results including mean effect size estimate, confidence and prediction intervals
@@ -48,7 +48,7 @@ mod_results <- function(model, mod, group, data) {
 #' @title marginal_means
 #' @description Function to to get marginal means from meta-regression models with single or multiple moderator variables that are both continuous or categorical.
 #' @param model rma.mv object
-#' @param mod moderator variable of interest that one wants marginal means for.
+#' @param mod Moderator variable of interest that one wants marginal means for. Defaults to intercept "1".
 #' @param group The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes.
 #' @param by The 'condition' variable that one wishes to have the mean for the moderator vary.
 #' @param at The 'condition' that one wishes to calculate the means at, but is not presented in output
