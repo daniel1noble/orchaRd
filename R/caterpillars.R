@@ -24,7 +24,7 @@
 #' eklof_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~ Grazer.type-1, random=list(~1|ExptID,
 #' ~1|Datapoint), data=eklof)
 #' results <- mod_results(eklof_MR, mod = "Grazer.type", data = eklof, group = "ExptID")
-#' caterpillars(results, mod = "Grazer.type", data = eklof, group = "ExptID", xlab = "log(Response ratio) (lnRR)")
+#' caterpillars(results, mod = "Grazer.type", data = eklof, group = "ExptID", xlab = "log(Response ratio) (lnRR)", g = FALSE)
 #'
 #' # Example 2
 #' data(lim)
@@ -35,10 +35,7 @@
 #' caterpillars(results_lim, mod = "Phylum", data = lim, group = "Article", xlab = "Correlaiton coefficent", transfm = "tanh")
 #' }
 #' @export
-object = lim_MR
-mod = "Phylum"
-group = "Article"
-data = lim
+
 caterpillars <- function(object, mod = "1", data, group, xlab, overall = TRUE, transfm = c("none", "tanh"), k = TRUE, g = TRUE) {
   if(any(class(object) %in% c("rma.mv", "rma"))){
     if(mod != "1"){
@@ -75,11 +72,10 @@ caterpillars <- function(object, mod = "1", data, group, xlab, overall = TRUE, t
   }
 
   # adding moderator names
-  data$moderator <- factor(data$moderator, labels = results$mod_table$name)
+  data$moderator <- factor(data$moderator, labels = mod_table$name)
 
   # data frame for the meta-analytic results
   mod_table$K <- as.vector(by(data, data[,"moderator"], function(x) length(x[,"yi"])))
-  mod_table$moderator <- mod_table$name
 
   # Add in total levels of a grouping variable (e.g., study ID) within each moderator level.
   mod_table$g <- as.vector(num_studies(data, moderator, stdy)[,2])
@@ -125,7 +121,7 @@ caterpillars <- function(object, mod = "1", data, group, xlab, overall = TRUE, t
     # creating dots for point estimates
     ggplot2::geom_point(colour = "#FFD700", size = 1) +
     # creating 95% prediction intervals
-    ggplot2::geom_segment(data = mod_table, aes(x = lowerPR, y = Y, xend = upperPR, yend = Y, group = moderator)) +
+    ggplot2::geom_segment(data = mod_table, aes(x = lowerPR, y = Y, xend = upperPR, yend = Y, group = name)) +
     # creating diamonsts (95% CI)
     ggplot2::geom_polygon(data = sum_data, aes(x = x.diamond, y = y.diamond, group = moderator), fill = "red") +
     #ggplot2::facet_wrap(~moderator, scales = "free_y", nrow = GN,  strip.position = "left") + # using facet_wrap - does not really work well
@@ -139,7 +135,7 @@ caterpillars <- function(object, mod = "1", data, group, xlab, overall = TRUE, t
     ggplot2::labs(x = label, y = "", parse = TRUE) +
 
     ggplot2::annotate('text', x = min(data$lower)*0.975, y = mod_table$Y,
-                      label= mod_table$moderator, hjust = "left", size = 3.5) +
+                      label= mod_table$name, hjust = "left", size = 3.5) +
     coord_cartesian(xlim = c(min(data$lower)*1.05, max(data$upper)*1.05),
                     ylim = c((min(data$Y)-10), (max(data$Y)+4))
                     , expand = F)
@@ -147,15 +143,15 @@ caterpillars <- function(object, mod = "1", data, group, xlab, overall = TRUE, t
   # putting k in
   if(k == TRUE && g == FALSE){
     plot <- plot +
-      ggplot2::annotate('text', y = (max(data$yi) + (max(data$yi)*0.10)), x = (seq(1, group_no, 1)+0.3),
-                        label= paste("italic(k)==", mod_table$K[1:group_no]), parse = TRUE, hjust = "right", size = 3.5)
+      ggplot2::annotate('text', x = max(data$upper)*0.975, y = mod_table$Y-1.7,
+                        label= paste("italic(k)==", mod_table$K), parse = TRUE, hjust = "right", size = 3.5)
   }
 
   # putting groups
   if(k == TRUE && g == TRUE){
     # get group numbers for moderator
     plot <- plot +
-      ggplot2::annotate('text', y = (max(data$yi) + (max(data$yi)*0.10)), x = (seq(1, group_no, 1)+0.3),
+      ggplot2::annotate('text', x = max(data$upper)*0.975, y = mod_table$Y-1.7,
                         label= paste("italic(k)==", mod_table$K[1:group_no], " (", mod_table$g[1:group_no], ")"), parse = TRUE, hjust = "right", size = 3.5)
   }
 
