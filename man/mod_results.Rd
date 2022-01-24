@@ -9,7 +9,7 @@ mod_results(model, mod, group, data)
 \arguments{
 \item{model}{rma.mv or rma object}
 
-\item{mod}{the name of a moderator; put "Int" if the intercept model (meta-analysis) or no moderators.}
+\item{mod}{the name of a moderator; put "1" if the intercept model (meta-analysis) or no moderators.}
 
 \item{group}{The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes.}
 

@@ -6,7 +6,7 @@
 \usage{
 orchard_plot(
   object,
-  mod = "Int",
+  mod = "1",
   group,
   data,
   xlab,
@@ -26,7 +26,7 @@ orchard_plot(
 \arguments{
 \item{object}{model object of class 'rma.mv', 'rma' or 'orchard' table of model results}
 
-\item{mod}{the name of a moderator. Otherwise, "Int" for intercept only model.}
+\item{mod}{the name of a moderator. Otherwise, "1" for intercept only model.}
 
 \item{group}{The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes.}
 

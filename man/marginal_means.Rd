@@ -18,7 +18,7 @@ marginal_means(
 \arguments{
 \item{model}{rma.mv object}
 
-\item{mod}{moderator variable of interest that one wants marginal means for.}
+\item{mod}{Moderator variable of interest that one wants marginal means for. Defaults to intercept "1".}
 
 \item{group}{The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes.}
 
