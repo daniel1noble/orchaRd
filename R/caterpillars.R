@@ -7,6 +7,8 @@
 #' @param xlab The effect size measure label.
 #' @param overall Logical indicating whether to relabel "Intrcpt" (the default label from rma or rma.mv intercept only models or meta-analyses) to "Overall".
 #' @param transfm If set to "tanh", a tanh transformation will be applied to effect sizes, converting Zr will to a correlation or pulling in extreme, values for other effect sizes (lnRR, lnCVR, SMD). If "none" is chosen then it will default.
+#' @param k If TRUE, it displays k (number of effect sizes) on the plot
+#' @param g If TRUE, it displays g (number of grouping levels for each level of the moderator) on the plot
 #' @return Caterpillars plot
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
@@ -33,13 +35,16 @@
 #' caterpillars(results_lim, mod = "Phylum", data = lim, group = "Article", xlab = "Correlaiton coefficent", transfm = "tanh")
 #' }
 #' @export
-
-caterpillars <- function(object, mod = "1", data, group, xlab, overall = TRUE, transfm = c("none", "tanh")) {
+object = lim_MR
+mod = "Phylum"
+group = "Article"
+data = lim
+caterpillars <- function(object, mod = "1", data, group, xlab, overall = TRUE, transfm = c("none", "tanh"), k = TRUE, g = TRUE) {
   if(any(class(object) %in% c("rma.mv", "rma"))){
     if(mod != "1"){
-      object <- mod_results(object, mod, data, group)
+      results <- mod_results(object, mod, data, group)
     } else{
-      object <- mod_results(object, mod = "1", data, group)
+      results <- mod_results(object, mod = "1", data, group)
     }
   }
 
@@ -47,10 +52,10 @@ caterpillars <- function(object, mod = "1", data, group, xlab, overall = TRUE, t
   transfm <- match.arg(transfm) # if not sepcificed it takes the first choice
 
   # meta-analytic results
-  mod_table <- object$mod_table
+  mod_table <- results$mod_table
 
   # data set
-  data <- object$data
+  data <- results$data
   data$lower <- data$yi - stats::qnorm(0.975)*sqrt(data$vi)
   data$upper <- data$yi + stats::qnorm(0.975)*sqrt(data$vi)
 
@@ -70,11 +75,14 @@ caterpillars <- function(object, mod = "1", data, group, xlab, overall = TRUE, t
   }
 
   # adding moderator names
-  data$moderator <- factor(data$moderator, labels = object$mod_table$name)
+  data$moderator <- factor(data$moderator, labels = results$mod_table$name)
 
   # data frame for the meta-analytic results
   mod_table$K <- as.vector(by(data, data[,"moderator"], function(x) length(x[,"yi"])))
   mod_table$moderator <- mod_table$name
+
+  # Add in total levels of a grouping variable (e.g., study ID) within each moderator level.
+  mod_table$g <- as.vector(num_studies(data, moderator, stdy)[,2])
 
   # the number of groups in a moderator & data points
   group_no <- nrow(mod_table)
@@ -129,15 +137,28 @@ caterpillars <- function(object, mod = "1", data, group, xlab, overall = TRUE, t
                    axis.text.y = element_blank(),
                    axis.ticks.y = element_blank()) +
     ggplot2::labs(x = label, y = "", parse = TRUE) +
-    # putting k
-    ggplot2::annotate('text', x = max(data$upper)*0.975, y = mod_table$Y-1.7,
-                      label= paste("italic(k)==", mod_table$K), parse = TRUE, hjust = "right", size = 3.5) +
-    # putting moderator names
+
     ggplot2::annotate('text', x = min(data$lower)*0.975, y = mod_table$Y,
                       label= mod_table$moderator, hjust = "left", size = 3.5) +
     coord_cartesian(xlim = c(min(data$lower)*1.05, max(data$upper)*1.05),
                     ylim = c((min(data$Y)-10), (max(data$Y)+4))
                     , expand = F)
+
+  # putting k in
+  if(k == TRUE && g == FALSE){
+    plot <- plot +
+      ggplot2::annotate('text', y = (max(data$yi) + (max(data$yi)*0.10)), x = (seq(1, group_no, 1)+0.3),
+                        label= paste("italic(k)==", mod_table$K[1:group_no]), parse = TRUE, hjust = "right", size = 3.5)
+  }
+
+  # putting groups
+  if(k == TRUE && g == TRUE){
+    # get group numbers for moderator
+    plot <- plot +
+      ggplot2::annotate('text', y = (max(data$yi) + (max(data$yi)*0.10)), x = (seq(1, group_no, 1)+0.3),
+                        label= paste("italic(k)==", mod_table$K[1:group_no], " (", mod_table$g[1:group_no], ")"), parse = TRUE, hjust = "right", size = 3.5)
+  }
+
 
   return(plot)
 }
