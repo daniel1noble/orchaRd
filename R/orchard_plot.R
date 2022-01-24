@@ -66,10 +66,10 @@ orchard_plot <- function(object, mod = "1", group, data, xlab, N = "none",
 
 
 	if(any(class(object) %in% c("rma.mv", "rma"))){
-		if(mod != "Int"){
-			results <- mod_results(object, mod, group, data)
+		if(mod != "1"){
+			results <-  orchaRd::mod_results(object, mod, group, data)
 		} else{
-			results <- mod_results(object, mod = "Int", group, data)
+			results <-  orchaRd::mod_results(object, mod = "1", group, data)
 			}
 	}
 

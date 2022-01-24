@@ -23,8 +23,8 @@
 #' # fit a MLMR - accouting for some non-independence
 #' eklof_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~ Grazer.type-1, random=list(~1|ExptID,
 #' ~1|Datapoint), data=eklof)
-#' results <- mod_results(eklof_MR, mod = "Grazer.type", data = eklof, group = "ExptID")
-#' caterpillars(results, mod = "Grazer.type", data = eklof, group = "ExptID", xlab = "log(Response ratio) (lnRR)", g = FALSE)
+#' results <- mod_results(eklof_MR, mod = "Grazer.type", data = eklof, group = "First.author")
+#' caterpillars(results, mod = "Grazer.type", data = eklof, group = "First.author", xlab = "log(Response ratio) (lnRR)", g = FALSE)
 #'
 #' # Example 2
 #' data(lim)
@@ -37,6 +37,7 @@
 #' @export
 
 caterpillars <- function(object, mod = "1", data, group, xlab, overall = TRUE, transfm = c("none", "tanh"), k = TRUE, g = TRUE) {
+
   if(any(class(object) %in% c("rma.mv", "rma"))){
     if(mod != "1"){
       results <- orchaRd::mod_results(object, mod, data, group)
