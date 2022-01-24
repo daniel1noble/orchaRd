@@ -6,7 +6,9 @@
 \usage{
 caterpillars(
   object,
-  mod = "Int",
+  mod = "1",
+  data,
+  group,
   xlab,
   overall = TRUE,
   transfm = c("none", "tanh")
@@ -15,7 +17,11 @@ caterpillars(
 \arguments{
 \item{object}{Model object of class 'rma.mv', 'rma' or 'orchard' table of model results}
 
-\item{mod}{The name of a moderator. Otherwise, "Int" for intercept only model.}
+\item{mod}{The name of a moderator. Otherwise, "1" for intercept only model.}
+
+\item{data}{The data frame used to fit the rma.mv model object}
+
+\item{group}{The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes.}
 
 \item{xlab}{The effect size measure label.}
 
@@ -40,17 +46,16 @@ eklof$Datapoint<-as.factor(seq(1, dim(eklof)[1], 1))
 # fit a MLMR - accouting for some non-independence
 eklof_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~ Grazer.type-1, random=list(~1|ExptID,
 ~1|Datapoint), data=eklof)
-results <- mod_results(eklof_MR, mod = "Grazer.type")
-caterpillars(results, mod = Grazer.type, xlab = "log(Response ratio) (lnRR)")
-# or
-caterpillars(eklof_MR, mod = Grazer.type, xlab = "log(Response ratio) (lnRR)")
+results <- mod_results(eklof_MR, mod = "Grazer.type", data = eklof, group = "ExptID")
+caterpillars(results, mod = "Grazer.type", data = eklof, group = "ExptID", xlab = "log(Response ratio) (lnRR)")
 
 # Example 2
 data(lim)
 lim$vi<- 1/(lim$N - 3)
 lim_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~Phylum-1, random=list(~1|Article,
 ~1|Datapoint), data=lim)
-caterpillars(lim_MR, mod = "Phylum", xlab = "Correlaiton coefficent", transfm = "tanh", N = lim$N)
+results_lim <- mod_results(lim_MR, mod = "Phylum", data = lim, group = "Article")
+caterpillars(results_lim, mod = "Phylum", data = lim, group = "Article", xlab = "Correlaiton coefficent", transfm = "tanh")
 }
 }
 \author{
