@@ -1,7 +1,9 @@
 #' @title caterpillars
 #' @description Using a metafor model object of class rma or rma.mv or a results table of class orchard, it creates a an caterpillars plot from mean effect size estimates for all levels of a given categorical moderator, their corresponding confidence intervals and prediction intervals
 #' @param object Model object of class 'rma.mv', 'rma' or 'orchard' table of model results
-#' @param mod The name of a moderator. Otherwise, "Int" for intercept only model.
+#' @param mod The name of a moderator. Otherwise, "1" for intercept only model.
+#' @param group The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes.
+#' @param data The data frame used to fit the rma.mv model object
 #' @param xlab The effect size measure label.
 #' @param overall Logical indicating whether to relabel "Intrcpt" (the default label from rma or rma.mv intercept only models or meta-analyses) to "Overall".
 #' @param transfm If set to "tanh", a tanh transformation will be applied to effect sizes, converting Zr will to a correlation or pulling in extreme, values for other effect sizes (lnRR, lnCVR, SMD). If "none" is chosen then it will default.
@@ -19,26 +21,25 @@
 #' # fit a MLMR - accouting for some non-independence
 #' eklof_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~ Grazer.type-1, random=list(~1|ExptID,
 #' ~1|Datapoint), data=eklof)
-#' results <- mod_results(eklof_MR, mod = "Grazer.type")
-#' caterpillars(results, mod = Grazer.type, xlab = "log(Response ratio) (lnRR)")
-#' # or
-#' caterpillars(eklof_MR, mod = Grazer.type, xlab = "log(Response ratio) (lnRR)")
+#' results <- mod_results(eklof_MR, mod = "Grazer.type", data = eklof, group = "ExptID")
+#' caterpillars(results, mod = "Grazer.type", data = eklof, group = "ExptID", xlab = "log(Response ratio) (lnRR)")
 #'
 #' # Example 2
 #' data(lim)
 #' lim$vi<- 1/(lim$N - 3)
 #' lim_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~Phylum-1, random=list(~1|Article,
 #' ~1|Datapoint), data=lim)
-#' caterpillars(lim_MR, mod = "Phylum", xlab = "Correlaiton coefficent", transfm = "tanh", N = lim$N)
+#' results_lim <- mod_results(lim_MR, mod = "Phylum", data = lim, group = "Article")
+#' caterpillars(results_lim, mod = "Phylum", data = lim, group = "Article", xlab = "Correlaiton coefficent", transfm = "tanh")
 #' }
 #' @export
 
-caterpillars <- function(object, mod = "Int", xlab, overall = TRUE, transfm = c("none", "tanh")) {
+caterpillars <- function(object, mod = "1", data, group, xlab, overall = TRUE, transfm = c("none", "tanh")) {
   if(any(class(object) %in% c("rma.mv", "rma"))){
-    if(mod != "Int"){
-      object <- mod_results(object, mod)
+    if(mod != "1"){
+      object <- mod_results(object, mod, data, group)
     } else{
-      object <- mod_results(object, mod = "Int")
+      object <- mod_results(object, mod = "1", data, group)
     }
   }
 
