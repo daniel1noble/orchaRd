@@ -28,7 +28,7 @@ mod_results <- function(model, mod, group, data) {
 
   if(all(class(model) %in% c("rma.mv", "rma")) == FALSE) {stop("Sorry, you need to fit a metafor model of class rma.mv or rma")}
 
-  data <- get_data_raw(model, mod, group, data)
+  data_new <- get_data_raw(model, mod, group, data)
 
   # Get confidence intervals
   CI <- get_est(model, mod)
@@ -36,7 +36,7 @@ mod_results <- function(model, mod, group, data) {
   # Get prediction intervals
   PI <- get_pred(model, mod)
 
-  model_results <- list(mod_table = cbind(CI, PI[,-1]), data = data)
+  model_results <- list(mod_table = cbind(CI, PI[,-1]), data = data_new)
 
   class(model_results) <- c("orchard", "data.frame")
 
