@@ -50,7 +50,7 @@ mod_results <- function(model, mod, group, data) {
 #' @param model rma.mv object
 #' @param mod moderator variable of interest that one wants marginal means for.
 #' @param group The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes.
-#' @param by The 'condition' variable that one wishes to have the mean for the moderator vary. 
+#' @param by The 'condition' variable that one wishes to have the mean for the moderator vary.
 #' @param at The 'condition' that one wishes to calculate the means at, but is not presented in output
 #' @param data The data frame used to fit the rma.mv model object
 #' @param weights how to marginalize categorical variables. The default is weights = "prop", which wights means for moderator levels based on their proportional representation in the data. For example, if "sex" is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal. IN the case if sex, for example, males and females are roughly equally prevalent in a population. As such, you can give the moderator levels equal weight using weights = "equal".
@@ -81,8 +81,8 @@ marginal_means <- function(model, mod = "1", group, data, weights = "prop", by =
    data2 <- get_data_raw(model, mod, group, data)
 
       model$data <- data
-     grid <- emmeans::qdrg(object = model, at = at) 
-     
+     grid <- emmeans::qdrg(object = model, at = at)
+
        mm <- emmeans::emmeans(grid, specs = mod, df = as.numeric(model$ddf[[1]]), by = by, weights = weights, ...)
     mm_pi <- pred_interval_esmeans(model, mm, mod = mod)
 
@@ -215,16 +215,27 @@ return(tmp)
 #' @return Returns a data frame
 #' @export
 #' @examples \dontrun{
-#'  test <- get_data_raw(model, mod = "trait.type", studyID = "group_ID")
-#'  test <- get_data_raw(model, mod = "1", studyID = "group_ID") }
+#' data(fish)
+#' warm_dat <- fish
+#' model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 | es_ID), mods = ~ experimental_design + trait.type + deg_dif + treat_end_days, method = "REML", test = "t", data = warm_dat, control=list(optimizer="optim", optmethod="Nelder-Mead"))
+#'  test <- get_data_raw(model, mod = "trait.type", group = "group_ID", data = warm_dat)
+#'  test2 <- get_data_raw(model, mod = "1", group = "group_ID", data = warm_dat)
+#'
+#'  data(english)
+#'  # We need to calculate the effect sizes, in this case d
+#'  english <- escalc(measure = "SMD", n1i = NStartControl, sd1i = SD_C, m1i = MeanC, n2i = NStartExpt, sd2i = SD_E, m2i = MeanE, var.names=c("SMD","vSMD"), data = english)
+#'  model <- rma.mv(yi = SMD, V = vSMD, random = list( ~ 1 | StudyNo, ~ 1 | EffectID), data = english)
+#'  test3 <-  get_data_raw(english_MA, mod = "1", group = "StudyNo", data = english)}
 
 get_data_raw <- function(model, mod, group, data){
   # Extract data
+  # Check first if missing data exists
+  if(length(attr(model$X, "dimnames")[[1]]) > 0){
     # full model delete missing values so need to adjust
      position <- as.numeric(attr(model$X, "dimnames")[[1]])
      # we need to adjust data
      #data <- model$data[position, ] # NOTE: need to probably default to user adding data as metafor no longer seems to save data object.
-     data <- data[position, ]
+     data <- data[position, ] }
 
     if(mod == "1"){
     moderator <- "Intrcpt"
