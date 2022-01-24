@@ -8,7 +8,7 @@
 #' @param N  The vector of sample size which an effect size is based on. If default, we use precision (the inverse of sampling standard error)
 #' @param alpha The level of transparency for pieces of fruit (effect size)
 #' @param angle The angle of y labels. The default is 90 degrees
-#' @param cb If TRUE, it uses 12 colour blind friendly colors (7 colours plus grey)
+#' @param cb If TRUE, it uses 20 colour blind friendly colors
 #' @param k If TRUE, it displays k (number of effect sizes) on the plot
 #' @param g If TRUE, it displays g (number of grouping levels for each level of the moderator) on the plot
 #' @param transfm If set to "tanh", a tanh transformation will be applied to effect sizes, converting Zr will to a correlation or pulling in extreme values for other effect sizes (lnRR, lnCVR, SMD). If "none" is chosen then it will default to
@@ -16,6 +16,8 @@
 #' @param trunk.size Size of the mean, or central point.
 #' @param branch.size Size of the confidence intervals
 #' @param twig.size Size of the prediction intervals
+#' @param legend.pos Where to place the legend
+#' @param k.pos Where to put k (number of effect sizes) on the plot
 #' @return Orchard plot
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
@@ -54,10 +56,11 @@
 orchard_plot <- function(object, mod = "1", group, data, xlab, N = "none",
                          alpha = 0.5, angle = 90, cb = FALSE, k = TRUE, g = TRUE,
                          trunk.size = 3, branch.size = 1.2, twig.size = 0.5,
-                         transfm = c("none", "tanh"), condition.lab = "Condition")
+                         transfm = c("none", "tanh"), condition.lab = "Condition",
+                         legend.pos = c("bottom.right", "bottom.left",  "top.right", "top.left", "top.out", "bottom.out"),
+                         k.pos = c("right", "left"),
+                         k.size = 3.5)
 {
-                         #legend.pos = c("top.left", "", "", "", "top.out", "bottom.out"))
-
   ## evaluate choices
   transfm <- match.arg(transfm) # if not specified it takes the first choice
 
@@ -157,15 +160,30 @@ orchard_plot <- function(object, mod = "1", group, data, xlab, N = "none",
 	    ggplot2::coord_flip() +
 	    ggplot2::theme_bw() +
 	    ggplot2::guides(fill = "none", colour = "none") +
-	    ggplot2::theme(legend.position= c(1, 0), legend.justification = c(1, 0)) +
 	    ggplot2::theme(legend.title = ggplot2::element_text(size = 9)) +
 	    ggplot2::theme(legend.direction="horizontal") +
 	    ggplot2::theme(legend.background = ggplot2::element_blank()) +
 	    ggplot2::labs(y = label, x = "", size = legend) +
 	    ggplot2::theme(axis.text.y = ggplot2::element_text(size = 10, colour ="black",
 	                                                       hjust = 0.5,
-	                                                       angle = angle))
+	                                                       angle = angle)) #+
+	    #ggplot2::theme(legend.position= c(1, 0), legend.justification = c(1, 0))
 
+	 }
+
+	   # adding legend
+	 if(legend.pos == "bottom.right"){
+	   plot <- plot + ggplot2::theme(legend.position= c(1, 0), legend.justification = c(1, 0))
+	 } else if ( legend.pos == "bottom.left") {
+	   plot <- plot + ggplot2::theme(legend.position= c(0, 0), legend.justification = c(0, 0))
+	 } else if ( legend.pos == "top.right") {
+	   plot <- plot + ggplot2::theme(legend.position= c(1, 1), legend.justification = c(1, 1))
+	 } else if (legend.pos == "top.left") {
+	   plot <- plot + ggplot2::theme(legend.position= c(0, 1), legend.justification = c(0, 1))
+	 } else if (legend.pos == "top.out") {
+	   plot <- plot + ggplot2::theme(legend.position="top")
+	 } else if (legend.pos == "bottom.out") {
+	   plot <- plot + ggplot2::theme(legend.position="bottom")
 	 }
 
 	  # putting colors in
@@ -176,20 +194,29 @@ orchard_plot <- function(object, mod = "1", group, data, xlab, N = "none",
 	  }
 
 
-	  # putting k in
-	  if(k == TRUE && g == FALSE){
+	  # putting k and g in
+	  if(k == TRUE && g == FALSE && k.pos == "right"){
 	    plot <- plot +
 	      ggplot2::annotate('text', y = (max(data$yi) + (max(data$yi)*0.10)), x = (seq(1, group_no, 1)+0.3),
 	                        label= paste("italic(k)==", mod_table$K[1:group_no]), parse = TRUE, hjust = "right", size = 3.5)
+	  } else if(k == TRUE && g == FALSE && k.pos == "left") {
+	    plot <- plot +  ggplot2::annotate('text', y = (min(data$yi) + (min(data$yi)*0.10)), x = (seq(1, group_no, 1)+0.3),
+	                                      label= paste("italic(k)==", mod_table$K[1:group_no]), parse = TRUE, hjust = "left", size = 3.5)
+	  } else if (k == TRUE && g == TRUE && k.pos == "right"){
+	    # get group numbers for moderator
+	    plot <- plot + ggplot2::annotate('text', y = (max(data$yi) + (max(data$yi)*0.10)), x = (seq(1, group_no, 1)+0.3),
+	                        label= paste("italic(k)==", mod_table$K[1:group_no], " (", mod_table$g[1:group_no], ")"),
+	                        parse = TRUE, hjust = "right", size = 3.5)
+	  } else if (k == TRUE && g == TRUE && k.pos == "left"){
+	    # get group numbers for moderator
+	    plot <- plot + ggplot2::annotate('text',  y = (min(data$yi) + (min(data$yi)*0.10)), x = (seq(1, group_no, 1)+0.3),
+	                        label= paste("italic(k)==", mod_table$K[1:group_no], " (", mod_table$g[1:group_no], ")"),
+	                        parse = TRUE, hjust = "left", size = 3.5)
 	  }
 
+
 	  # putting groups
-	  if(k == TRUE && g == TRUE){
-	  	# get group numbers for moderator
-	    plot <- plot +
-	      ggplot2::annotate('text', y = (max(data$yi) + (max(data$yi)*0.10)), x = (seq(1, group_no, 1)+0.3),
-	                        label= paste("italic(k)==", mod_table$K[1:group_no], " (", mod_table$g[1:group_no], ")"), parse = TRUE, hjust = "right", size = 3.5)
-	  }
+
 
 	  return(plot)
 }
