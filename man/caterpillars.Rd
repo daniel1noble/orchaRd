@@ -11,7 +11,9 @@ caterpillars(
   group,
   xlab,
   overall = TRUE,
-  transfm = c("none", "tanh")
+  transfm = c("none", "tanh"),
+  k = TRUE,
+  g = TRUE
 )
 }
 \arguments{
@@ -28,6 +30,10 @@ caterpillars(
 \item{overall}{Logical indicating whether to relabel "Intrcpt" (the default label from rma or rma.mv intercept only models or meta-analyses) to "Overall".}
 
 \item{transfm}{If set to "tanh", a tanh transformation will be applied to effect sizes, converting Zr will to a correlation or pulling in extreme, values for other effect sizes (lnRR, lnCVR, SMD). If "none" is chosen then it will default.}
+
+\item{k}{If TRUE, it displays k (number of effect sizes) on the plot}
+
+\item{g}{If TRUE, it displays g (number of grouping levels for each level of the moderator) on the plot}
 }
 \value{
 Caterpillars plot
@@ -47,7 +53,7 @@ eklof$Datapoint<-as.factor(seq(1, dim(eklof)[1], 1))
 eklof_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~ Grazer.type-1, random=list(~1|ExptID,
 ~1|Datapoint), data=eklof)
 results <- mod_results(eklof_MR, mod = "Grazer.type", data = eklof, group = "ExptID")
-caterpillars(results, mod = "Grazer.type", data = eklof, group = "ExptID", xlab = "log(Response ratio) (lnRR)")
+caterpillars(results, mod = "Grazer.type", data = eklof, group = "ExptID", xlab = "log(Response ratio) (lnRR)", g = FALSE)
 
 # Example 2
 data(lim)

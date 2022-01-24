@@ -20,7 +20,11 @@ orchard_plot(
   branch.size = 1.2,
   twig.size = 0.5,
   transfm = c("none", "tanh"),
-  condition.lab = "Condition"
+  condition.lab = "Condition",
+  legend.pos = c("bottom.right", "bottom.left", "top.right", "top.left", "top.out",
+    "bottom.out"),
+  k.pos = c("right", "left"),
+  k.size = 3.5
 )
 }
 \arguments{
@@ -40,7 +44,7 @@ orchard_plot(
 
 \item{angle}{The angle of y labels. The default is 90 degrees}
 
-\item{cb}{If TRUE, it uses 12 colour blind friendly colors (7 colours plus grey)}
+\item{cb}{If TRUE, it uses 20 colour blind friendly colors}
 
 \item{k}{If TRUE, it displays k (number of effect sizes) on the plot}
 
@@ -55,6 +59,10 @@ orchard_plot(
 \item{transfm}{If set to "tanh", a tanh transformation will be applied to effect sizes, converting Zr will to a correlation or pulling in extreme values for other effect sizes (lnRR, lnCVR, SMD). If "none" is chosen then it will default to}
 
 \item{condition.lab}{Label for the condition being marginalized over.}
+
+\item{legend.pos}{Where to place the legend}
+
+\item{k.pos}{Where to put k (number of effect sizes) on the plot}
 }
 \value{
 Orchard plot
