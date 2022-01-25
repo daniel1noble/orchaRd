@@ -5,3 +5,6 @@
 .Rbuildignore
 .gitignore
 orchaRd_vignette.Rmd
+orchaRd_vignette_cache/
+orchaRd_vignette_files/
+orchaRd_vignette.html
