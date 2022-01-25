@@ -80,7 +80,7 @@ marginal_means <- function(model, mod = "1", group, data, weights = "prop", by =
      # Extract data
    data2 <- get_data_raw(model, mod, group, data)
 
-      model$data <- data
+      model$data <- data2
      grid <- emmeans::qdrg(object = model, at = at)
 
        mm <- emmeans::emmeans(grid, specs = mod, df = as.numeric(model$ddf[[1]]), by = by, weights = weights, ...)
