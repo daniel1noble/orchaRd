@@ -58,18 +58,18 @@ orchard_plot <- function(object, mod = "1", group, data, xlab, N = "none",
                          trunk.size = 3, branch.size = 1.2, twig.size = 0.5,
                          transfm = c("none", "tanh"), condition.lab = "Condition",
                          legend.pos = c("bottom.right", "bottom.left",  "top.right", "top.left", "top.out", "bottom.out"),
-                         k.pos = c("right", "left"),
-                         k.size = 3.5)
+                         k.pos = c("right", "left"))
+                         #k.size = 3.5)
 {
   ## evaluate choices
   transfm <- match.arg(transfm) # if not specified it takes the first choice
 
 
 	if(any(class(object) %in% c("rma.mv", "rma"))){
-		if(mod != "Int"){
-			results <- mod_results(object, mod, group, data)
+		if(mod != "1"){
+			results <-  orchaRd::mod_results(object, mod, group, data)
 		} else{
-			results <- mod_results(object, mod = "Int", group, data)
+			results <-  orchaRd::mod_results(object, mod = "1", group, data)
 			}
 	}
 
