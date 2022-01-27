@@ -52,8 +52,8 @@ eklof$Datapoint<-as.factor(seq(1, dim(eklof)[1], 1))
 # fit a MLMR - accouting for some non-independence
 eklof_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~ Grazer.type-1, random=list(~1|ExptID,
 ~1|Datapoint), data=eklof)
-results <- mod_results(eklof_MR, mod = "Grazer.type", data = eklof, group = "ExptID")
-caterpillars(results, mod = "Grazer.type", data = eklof, group = "ExptID", xlab = "log(Response ratio) (lnRR)", g = FALSE)
+results <- mod_results(eklof_MR, mod = "Grazer.type", data = eklof, group = "First.author")
+caterpillars(results, mod = "Grazer.type", data = eklof, group = "First.author", xlab = "log(Response ratio) (lnRR)", g = FALSE)
 
 # Example 2
 data(lim)

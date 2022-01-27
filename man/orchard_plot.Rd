@@ -23,8 +23,7 @@ orchard_plot(
   condition.lab = "Condition",
   legend.pos = c("bottom.right", "bottom.left", "top.right", "top.left", "top.out",
     "bottom.out"),
-  k.pos = c("right", "left"),
-  k.size = 3.5
+  k.pos = c("right", "left")
 )
 }
 \arguments{
