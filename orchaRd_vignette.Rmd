@@ -1,0 +1,381 @@
+---
+title: "orchaRd 2.0: An R package for drawing 'orchard' plots (and 'caterpillars' plots) from meta-analyses and meta-regressions"
+author: "S. Nakagawa, M. Lagisz, R. E. O’Dea, J. Rutkowska, Y. Yang, D.W.A. Noble, & A. M. Senior"
+date: "`r Sys.Date()`"
+geometry: margin=1.5cm
+fontsize: 10pt
+output: 
+  bookdown::html_document2:
+    code_folding: hide
+    number_sections: no
+    toc: yes
+    toc_depth: 6
+    toc_float: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE, tidy = TRUE)
+options(digits=2)
+```
+
+```{r klippy, echo=FALSE, include=TRUE, message=FALSE, warning=FALSE}
+#install.packages("devtools")
+remotes::install_github("rlesur/klippy")
+klippy::klippy(tooltip_message = 'Click to Copy Code', tooltip_success = 'Done', position = 'right', color = "red")
+```
+
+# Introduction
+
+`orchaRd` 2.0 allows users to create pretty orchard plots that contain both confidence intervals (CIs) and prediction intervals (PIs) around point estimates for different categorical moderators, plots the effect size distribution over top such estimates and weights effect sizes by their precision (1/standard error, SE) or sample size. `orchaRd` takes a `metafor` object of class `rma.mv` or `rma` (Viechtbauer, 2010) and plots the results for the meta-analytic or meta-regression model. 
+
+`orchaRd` 2.0 now allows users to take meta-regression models with a multitude of moderator variables that are categorical or continuous along with heterogenous residual variance models. This is achieved by allowing the user to produce marginalised mean estimates using the `emmeans` package. For plotting, `orchaRd` uses `ggplot2` (Wickham, 2009), and as such, layers can be added directly to make plots customizable to the users needs. Also, the function `orchard_plot` uses the principles of bee swarm plots to visualise individual effect sizes (Elund 2012; also see Clarke & Sherrill-Mix 2012; Sherrill-Mix & Clarke 2012).
+
+In addition to orchard plots, we have another plotting function `caterpillars` to draw caterpillar(s) plots. Furthermore, the pacakge `orchaRd` comes with two functions that are useful for mulitlevel meta-analysis and meta-regression (i.e., `rma.mv`): 1) `i2_ml` to calculate the 'total' I^2^ along with I^2^ for each level (*sensu* Nakagawa & Santos 2012; see also ; Senior et al. 2016) and 2) `r2_ml` to calcuate marginal and conditional R^2^ for mixed models (*sensu* Nakagawa & Schielzeth 2013). 
+
+# Citing orchaRd
+
+To cite `orchaRd` in publications one can use the following reference:
+
+Nakagawa, S. et al. 2021. The Orchard Plot: Cultivatinng the Forest Plot for Use in Ecology, Evolution and Beyond. *Research Synthesis Methods*, 12, 4--12.
+
+# Installation
+
+To install `orchaRd` use the following code in R:
+
+```{r echo = TRUE, eval = TRUE, results = 'hide', warning=FALSE, message=FALSE,  class.source='klippy'}
+#install.packages("pacman")
+devtools::install_github("daniel1noble/orchaRd", force = TRUE)
+pacman::p_load(devtools, tidyverse, metafor, patchwork, R.rsp, orchaRd)
+```
+
+Installation will make the primary functions accessible to users along with their help files. You will also need the `tidyverse` and `metafor` packages.
+
+# Examples of orchard and caterpillars plot
+
+In this vignette we'll walk the reader through a number of case studies and show you how you can create beautiful looking orchard plots. We overview three different case studies that make use of different effect sizes and moderators. The datasets associated with each case study come as part of the `orchaRd` package.
+
+#### Example 1: Dietary Restriction and Lifespan
+
+English and Uller (2016) performed a systematic review and meta-analysis on the effects of early life dietary restriction (a reduction in a major component of the diet without malnutrition; e.g. caloric restriction) on average age at death, using the standardised mean difference (often called *d*). They found that, across the whole dataset, there was little evidence for an effect of dietary restriction on mean age at death. Here we'll use the dataset to first calculate the effect size measures and then fit an intercept only, meta-analytic model.
+
+```{r echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE, class.source='klippy'}
+
+data(english)
+
+# We need to calculate the effect sizes, in this case d
+english <- escalc(measure = "SMD", n1i = NStartControl, sd1i = SD_C, m1i = MeanC, n2i = NStartExpt, sd2i = SD_E, m2i = MeanE, 
+                  var.names=c("SMD","vSMD"),
+                  data = english)
+
+english_MA <- rma.mv(yi = SMD, V = vSMD, random = list( ~ 1 | StudyNo, ~ 1 | EffectID), data = english)
+summary(english_MA)
+```
+
+We have fit a meta-analytic model and thus the only estimate we see is the overall effect size on the effects of caloric restriction on mean death across all studies examined. Now that we have fit our meta-analytic model we can get the confidence intervals and prediction intervals with a few functions in the `orchaRd` package. If one is interested in getting the table of results we can use the `mod_results` function. This will allow users to make nice tables of the results if needed. We can do that as follows:
+
+```{r echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE, class.source='klippy'}
+
+model_results <- orchaRd::mod_results(english_MA, mod = "1", data = english, group = "StudyNo")
+model_results
+ 
+```
+
+If we instead want to create an orchard plot and visualise the results we can do so quite simply as:
+
+```{r Figure1, echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE, class.source='klippy', fig.width = 6, fig.height = 4, fig.cap = "Orchard plot of the impact caloric restriction using standardised mean difference"}
+orchaRd::orchard_plot(english_MA, mod="1", data = english, group = "StudyNo", xlab = "Standardised mean difference", 
+  transfm = "none") 
+```
+
+In Figure \@ref(fig:Figure1), we simply add in the metafor model and it will create a default orchard plot. Alternatively, we could also add in the table of results. Also. some people may wish to present the heterogeneity index, I^2^ and, at the same time, change the colours of the 'trunk and furit' by adding a few arguments.
+
+```{r Figure2, echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE, class.source='klippy', fig.width = 6, fig.height = 4, fig.cap = "Orchard plot of the impact caloric restriction using standardised mean difference but instead of using the metafor model, using the model results table", messages = FALSE, warnings = FALSE}
+
+# use i2_sn function to obtain the total I^2
+
+I2 <- orchaRd::i2_ml(english_MA)
+
+orchaRd::orchard_plot(model_results, mod="1", xlab = "Standardised mean difference") + 
+  annotate(geom="text", x= 0.80, y= 1, label= paste0("italic(I)^{2} == ", round(I2[1],4)*100), # I want to use % but cannot do should come back
+              color="black", parse = TRUE, size = 5) +
+  scale_fill_manual(values="grey") +
+  scale_colour_manual(values="grey")
+```
+
+Figure \@ref(fig:Figure2) and Figure \@ref(fig:Figure1) above show that overall estimate from a random-effects meta-analysis of 77 effect sizes is centered on zero, with a 95% CI that spans the line of no-effect. The prediction intervals clearly demonstrate the high level of heterogeneity (over 75%), with effects size less than -0.5 and greater than 0.5 predicted to be observed. 
+
+We can now draw a comparable caterpillar plot by using the function `caterpillars`.
+
+```{r Figure3, echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE, class.source='klippy', fig.width = 6, fig.height = 6, fig.cap = "Catterpilar plot of the impact caloric restriction using standardised mean difference", messages = FALSE, warnings = FALSE}
+
+# a caterpillar plot (not a caterpillars plot)
+orchaRd::caterpillars(model_results, mod="Int", xlab = "Standardised mean difference") 
+```
+
+It is now interesting to compare how the same data set can be visualised different by look at Figure \@ref(fig:Figure2) and Figure \@ref(fig:Figure3). It is good that the caterpillar plot can show CIs for each effect size. An equivalent function was done with the size of fruit in the orchard plot. 
+
+In a subsequent publication, Senior et al. (2017) analysed this dataset for effects of dietary-restriction on among-individual variation in the age at death using the log coefficient of variation ratio. A major prediction in both English & Uller (2016) and Senior et al. (2017) was that the type of manipulation, whether the study manipulated quality of food versus the quantity of food would be important. As such, we can fit a meta-regression model to test whether the moderator "Manipulation Type" `ManipType` impacts our results on the mean and variance
+
+```{r Figure4, class.source='klippy', warning=FALSE, message=FALSE, fig.width = 6, fig.height = 8, fig.cap = "Orchard plot of diet qualities impact on SMD (top) and log coefficient of variation (bottom)"}
+# First we need to calculate the lnCVR
+english <- escalc(measure = "CVR", n1i = NStartControl, sd1i = SD_C, m1i = MeanC, 
+                        n2i = NStartExpt, sd2i = SD_E, m2i = MeanE,
+                        var.names=c("lnCVR","vlnCVR"),
+                        data = english)
+
+# Now we can fit the meta-regression model (contrast)
+english_MR0 <- rma.mv(yi = SMD, V = vSMD, mods = ~ ManipType, 
+                     random = list(~ 1 | StudyNo, ~ 1 | EffectID), data = english)
+summary(english_MR0)
+
+# Now we can fit the meta-regression model without the intercept
+# we need this intercept-less model for the orchard plot
+english_MR <- rma.mv(yi = SMD, V = vSMD, mods = ~ ManipType - 1, 
+                     random = list(~ 1 | StudyNo, ~ 1 | EffectID), data = english)
+summary(english_MR)
+
+# Again, we can create a table of results
+res2 <- orchaRd::mod_results(english_MR, mod = "ManipType", data = english, group = "StudyNo")
+res2
+
+# we fit a meta-regression (contrast) for the log coefficient of variation
+senior_MR0 <- rma.mv(
+  yi = lnCVR, V = vlnCVR, mods = ~ ManipType, random = list(~ 1 | StudyNo, ~ 1 | EffectID),
+  data = english
+)
+summary(senior_MR0)
+
+# Let's fit a meta-regression without the intercept
+senior_MR <- rma.mv(
+  yi = lnCVR, V = vlnCVR, mods = ~ ManipType - 1, random = list(~ 1 | StudyNo, ~ 1 | EffectID),
+  data = english
+)
+summary(senior_MR)
+
+# creating a table of results
+res3 <- orchaRd::mod_results(senior_MR, mod = "ManipType", data = english, group = "StudyNo")
+res3
+
+
+# We can now plot SMD and lnCVR beside each other and compare the results
+p1 <- orchaRd::orchard_plot(res2, 
+                   mod = "ManipType", data = english, group = "StudyNo", xlab = "Standardised mean difference")
+
+p2 <- orchaRd::orchard_plot(res3,
+  mod = "ManipType", data = english, group = "StudyNo", xlab = "log(CV ratio) (lnCVR)")
+
+p1 / p2
+```
+
+Our orchard plot for the log coefficient of variation demonstrates that, while restrictions on dietary quality and quantity do not affect the average age at death (top of Figure \@ref(fig:Figure4)), among-individual variation may be altered by quality restrictions (bottom of Figure \@ref(fig:Figure4)). The effect is negative suggesting that the coefficient of variation in the control group is lower than that in the treatment group, and the 95% CI does not span zero. Again though, the effect is heterogeneous; a substantial number of positive effects are still predicted. 
+
+Let's draw comparable caterpillars plots to compare these two results again. 
+
+```{r Figure5, echo = TRUE, eval = TRUE,  warning=FALSE, message=FALSE, class.source='klippy', fig.width = 6, fig.height = 8, fig.cap = "Catterpilar plot of diet qualities impact on the log coefficient of variation (lnCVR)", messages = FALSE, warnings = FALSE}
+# We can now plot SMD and lnCVR beside each other and compare the results
+p1c <- orchaRd::caterpillars(res2, 
+                   mod = "ManipType",data = english, group = "StudyNo",  xlab = "Standardised mean difference")
+
+p2c <- orchaRd::caterpillars(res3,
+  mod = "ManipType", data = english, group = "StudyNo", xlab = "log(CV ratio) (lnCVR)")
+
+p1c / p2c
+```
+
+Now compare between Figure \@ref(fig:Figure4) and Figure \@ref(fig:Figure5). We think they both look nice. 
+
+#### Example 2: Predation and Invertebrate Community
+
+Eklof et al. (2012) evaluated the effects of predation on benthic invertebrate communities. Using the log response ratio they quantified differences in abundance and/or biomass of gastropods and Amphipods in groups with and without predation in an experimental setting. 
+
+Here again, we can create orchard plots of the model results, but we'll show how a few simple things can be modified. Again, we can fit the meta-analytic model first: 
+
+```{r echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE, class.source='klippy'}
+
+data(eklof)
+
+# Calculate the effect size
+eklof <- escalc(
+  measure = "ROM", n1i = N_control, sd1i = SD_control, m1i = mean_control,
+  n2i = N_treatment, sd2i = SD_treatment, m2i = mean_treatment,
+  var.names = c("lnRR", "vlnRR"),
+  data = eklof
+)
+
+# Add the observation level factor
+eklof$Datapoint <- as.factor(seq(1, dim(eklof)[1], 1))
+
+# Also, we can get the sample size, which we can use for weighting if we would like
+eklof$N <- rowSums(eklof[, c("N_control", "N_treatment")])
+
+# fit a meta-regression with the intercept (contrast)
+eklof_MR0 <- rma.mv(
+  yi = lnRR, V = vlnRR, mods = ~ Grazer.type, random = list(~ 1 | ExptID, ~ 1 | Datapoint),
+  data = eklof
+)
+
+summary(eklof_MR0)
+
+# fit a meta-regression without the intercept and we can use this model for the orchard plot
+eklof_MR <- rma.mv(
+  yi = lnRR, V = vlnRR, mods = ~ Grazer.type - 1, random = list(~ 1 | ExptID, ~ 1 | Datapoint),
+  data = eklof
+)
+
+```
+
+Above we have fit a meta-regression model using "Grazer Type" as a moderator which is predicted to explain variation in log response ratios. We can demonstrate a few simple changes users can make, but we note here that users can make far more complex changes down the line if needed, but we'll save explaining these more complex changes for the last example. The first is the angle at which the y-axis labels are positioned (bottom of Figure \@ref(fig:Figure6)):
+
+```{r Figure6, echo = TRUE, eval = TRUE, class.source='klippy', warning=FALSE, message=FALSE, fig.width = 6, fig.height = 8, fig.cap = "Orchard plots of the effects of predation on benthic invertebrate communities compared using the log response ratio. Top panel is the default plot and bottom panel a plot containing changes in label axes"}
+
+p3 <- orchaRd::orchard_plot(eklof_MR, mod = "Grazer.type", data = eklof, group = "ExptID", xlab = "log(Response ratio) (lnRR)", 
+  transfm = "none") 
+
+p4 <- orchaRd::orchard_plot(eklof_MR, mod = "Grazer.type", data = eklof, group = "ExptID", xlab = "log(Response ratio) (lnRR)", 
+  transfm = "none", angle = 45, g = FALSE) 
+
+p3/p4
+
+```
+
+The other thing we can change is the type of scaling we wish to use. Let's say we are interested in scaling the effect size by the total sample size of the study we use a vector of N, sample size (bottom of Figure \@ref(fig:Figure7):
+
+```{r Figure7, echo = TRUE, eval = TRUE, class.source='klippy', warning=FALSE, message=FALSE, fig.width = 6, fig.height = 8, fig.cap = "Orchard plots of the effects of predation on benthic invertebrate communities compared using the log response ratio. Top panel is the default plot and bottom panel a plot containing changes in label axes and scaling with sample size instead of precision"}
+
+p5 <- orchaRd::orchard_plot(eklof_MR, mod = "Grazer.type", data = eklof, group = "ExptID", xlab = "log(Response ratio) (lnRR)") 
+
+p6 <- orchaRd::orchard_plot(eklof_MR, mod = "Grazer.type", data = eklof, group = "ExptID", xlab = "log(Response ratio) (lnRR)", angle = 45, N = eklof$N, g = FALSE) 
+
+p5/p6
+
+```
+
+Overall, our orchard plot shows the results of a re-analysis of their data. The estimated mean effects are negative for both gastropods and amphipods suggesting that mean abundance/biomass in the control group is lower than in the treatment groups, although the effect is largest, and is statistically significant, for amphipods. In both cases the prediction intervals reveal the extent of heterogeneity, with positive effects predicted to be observed.
+
+Again, we can also draw the caterpillars-plot couterpart for this dataset (bottom of Figure \@ref(fig:Figure8)):
+
+```{r Figure8, echo = TRUE, eval = TRUE, class.source='klippy', warning=FALSE, message=FALSE, fig.width = 6, fig.height = 4, fig.cap = "Caterpillars plot of the effects of predation on benthic invertebrate communities compared using the log response ratio"}
+
+eklof_MR_result <- mod_results(eklof_MR, mod = "Grazer.type", data = eklof, group = "ExptID")
+orchaRd::caterpillars(eklof_MR_result, mod = "Grazer.type", data = eklof, group = "ExptID", xlab = "log(Response ratio) (lnRR)") 
+
+```
+Like last time, we compare between Figure \@ref(fig:Figure7) and Figure \@ref(fig:Figure8). Again, they both look quite informative. 
+
+#### Example 3: Maternal-Offspring Morphological Correlations
+
+Finally, we also look at the case discussed by Lim et al. (2014), who meta-analysed the strength of correlation between maternal and offspring size within-species, across a very wide range of taxa. They found, that typically, there is a moderate positive correlation between maternal size and offspring size within species (i.e. larger mothers have larger offspring). However, they also found evidence for relatively strong phylogenetic effects suggesting that the strength of the association is dependent on evolutionary lineage.
+
+Here we have used an orchard plot to represent the results obtained when meta-analysing the data from Lim et al. (2014) by taxonomic Phylum. 
+
+```{r echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE, class.source='klippy'}
+	data(lim)
+
+# Add in the sampling variance
+	lim$vi<-(1/sqrt(lim$N - 3))^2
+
+# Lets fit a meta-regression - I will do Article non-independence. The phylogenetic model found phylogenetic effects, however, instead we could fit Phylum as a fixed effect and explore them with an Orchard Plot
+  lim_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~Phylum-1, random=list(~1|Article, ~1|Datapoint), data=lim)
+  summary(lim_MR)
+  
+```
+
+Noe we can plot a default orchard plot, scaling each effect size by N. Also, because we are using Zr, we can use transfm = "tanh" and it will do the conversions for us:
+
+```{r Figure9, echo = TRUE, eval = TRUE, class.source='klippy', warning=FALSE, message=FALSE, fig.width = 6, fig.height = 8, fig.cap = "Orchard plot of the the strength of correlation between maternal and offspring size within-species"}
+  
+  #Plot the meta-regression model
+  orchaRd::orchard_plot(lim_MR, mod = "Phylum", group = "Article", data = lim, xlab = "Correlation coefficient", 
+    alpha = 0.5, transfm = "tanh", angle = 45, N = lim$N, cb = FALSE)
+```
+
+Now that we have Figure \@ref(fig:Figure9), we can do some small changes to make it pretty and add some more details, such as between study heterogenity and R2 for phylum (we use ). Currently, the cb argument is "FALSE", we can change this to "TRUE" to use colour blind friendly colours. Additionally, because we are using `ggplot` we can add element to the figure to make it look pretty. 
+
+```{r Figure10, echo = TRUE, eval = TRUE, class.source='klippy', warning=FALSE, message=FALSE, fig.width = 6.5, fig.height = 8, fig.cap = "Orchard plot of the the strength of correlation between maternal and offspring size within-species"}
+  # Lets add the R2 on the figure as well as little modifications:
+  R2 <- orchaRd::r2_ml(lim_MR)
+
+  # We can draw an orchard plot with R2
+  orchaRd::orchard_plot(lim_MR, mod = "Phylum", group = "Article", data = lim, xlab = "Correlation coefficient (r)", 
+                        alpha = 0.5, transfm = "tanh", angle = 45, N = lim$N, cb = TRUE) +
+theme(legend.position= c(0.05, 0.99), legend.justification = c(0,1), legend.key.size = unit(1, "mm")) +
+theme(legend.direction="horizontal", legend.title = element_text(size =8),legend.text = element_text(size = 10)) + 
+annotate(geom="text", x=0.8, y=0.7, label=paste0("italic(R)^{2} == ", round(R2[1],4)*100), color="black", parse = TRUE, size = 4)
+
+```
+
+As in Figure \@ref(fig:Figure10), new elements can be added to the `orchard_plot` to modify it as one sees fit. It will overwrite existing elements. From our orchard plots above, it is clear that the analysis is dominated by data from Chordates and Arthropods, with the other Phyla being much more poorly represented. Second, there is a difference between the strength of a typical correlation within these two well represented groups (the correlation is stronger in Chordates), which arguably would explain the phylogenetic signals detected by Lim et al. (2014). Lastly, although there are differences within the typical correlation between Chordates and Arthropods, there remains a large overlap in predicted range of individual effect sizes; individual species within Phyla are still highly variable.
+
+Finally, we make a comparable caterpillars plot.
+```{r Figure11, echo = TRUE, eval = TRUE, class.source='klippy', warning=FALSE, message=FALSE, fig.width = 6, fig.height = 10, fig.cap = "Caterpillars plot of the the strength of correlation between maternal and offspring size within-species"}
+  
+  #Plot the meta-regression model
+  lim_MR_results <- orchaRd::mod_results(lim_MR, mod = "Phylum", group = "Article", data = lim)
+  orchaRd::caterpillars(lim_MR_results, mod = "Phylum", group = "Article", data = lim, xlab = "Correlation coefficient", transfm = "tanh", g = FALSE)
+```
+
+Compared to the orchard plot (Figure \@ref(fig:Figure10), Figure \@ref(fig:Figure11)) does not look as elegant, unlike the previous comparisions. This is becuase the groups with samll sample sizes are packed at the top of the figure. 
+
+# Orchard Plots with Meta-regression Models: Marginalised means and heteroscedastic residual variances
+
+In `orchaRd` 2.0 we've made some major updates to the types of models that can be used with the package. Meta-analyses in ecology and evolution often fit a multitude of moderators and random effects within a single model. This is even desiredable in many cases to deal with high heterogeneity and disentangle the independent contributions of modeators to changes in mean effect size. The challenge with previous versions of the package was that it was difficult to accomodate these models. However, the `emmeans` packages is an excellent solution to the problem. It will produce marginsalised mean estimates for a given level of moderator -- producing mean estimates that average over all other moderators in the model. This includes models with categorical and continuous moderators. 
+
+An additional issue that is of importance with meta-regerssion models is the need to deal with heteroscedastic variance across levels of a moderator. Homogeneity of variance assumptions are often violated in meta-analysis. `orchaRd` 2.0 allows the user to fit models that explicitly estaimte different residual variance reducing the probability of type I errors. 
+
+In this section, we show users: 1) how to fit these models using `metafor` and 2) how these models intrface with the `orchaRd` package to produce pretty plots that capture the model predictions. 
+
+#### Example 4: Meta-regerssion and marginalised mean effect sizes
+
+For this example, we turn to a fish meta-analysis conducted by O'Dea et al. 2019. In this analysis a suite of different moderators were of interst. 
+
+```{r echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE, class.source='klippy'}
+
+  # Load the dataset that comes with orchaRd
+  data(fish)
+
+  # Subset data for demonstration purposes.
+  warm_dat <- fish
+
+```
+
+Now that we have the data loaded we can fit a few meta-regression models. For now, we'll keep the model simple. We'll assume that the variance in the moderator of interst is the same across levels. We'll relax that assumption down the line.
+
+```{r echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE, class.source='klippy'}
+
+ # Fit the metaregerssion model
+model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, 
+                         random = list(~1 | group_ID, ~1 | es_ID), 
+                         mods = ~ experimental_design + trait.type + deg_dif + treat_end_days,
+                         method = "REML", test = "t", 
+                         data = warm_dat, 
+                         control=list(optimizer="optim", optmethod="Nelder-Mead"))
+
+model
+```
+
+\newpage
+# References
+
+Clarke E, Sherrill-Mix S. ggbeeswarm: categorical scatter (violin point) plots. 2017. *R package* version 0.6.0 
+
+Eklof J.S., Alsterberg C., Havenhand J.N., Sundback K., Wood H.L., Gamfeldt L. 2012. Experimental climate change weakens the insurance effect of biodiversity. *Ecology Letters*, 15:864-872.
+
+Eklund A. Beeswarm: the bee swarm plot, an alternative to stripchart. 2012. *R package* version 0.1. 
+
+English S, Uller T. 2016. Does early-life diet affect longevity? A meta-analysis across experimental studies. *Biology Letters*, 12: http://doi:10.1098/rsbl.2016.0291
+
+Lim J.N., Senior A.M., Nakagawa S. 2014. Heterogeneity in individual quality and reproductive trade-offs within species. *Evolution*. 68(8):2306-18. doi: 10.1111/evo.12446
+
+Nakagawa, S, and Santos, E.S.A. 2012. Methodological issues and advances in biological meta-analysis. *Evolutionary Ecology* 26(5): 1253-1274.
+
+Nakagawa, S, and Schielzeth, H. 2013. A general and simple method for obtaining R2 from generalized linear mixed‐effects models. *Methods in Ecology and Evolution* 4(2): 133-142.
+
+Sherrill-Mix S, Clarke E. Plot categorical data using quasirandom noise and density estimates. 2017. *R package* version 0.4.5. 
+
+Senior, A. M., Grueber, C. E., Kamiya, T., Lagisz, M., O’Dwyer, K., Santos, E. S. A. & Nakagawa S. 2016. Heterogeneity in ecological and evolutionary meta-analyses: its magnitudes and implications. *Ecology* 97(12): 3293-3299.
+
+Senior, A.M., Nakagawa, S., Simpson, S.J., Raubenheimer, D., Noble D.W.A. 2017. Dietary restriction increases variability in longevity. *Biology Letters*, 13: http://doi.org/10.1098/rsbl.2017.0057
+
+Viechtbauer W. 2010. Conducting meta-analyses in R with the metafor package. *Journal of Statistical Software*, 36(3):1-48.
+
+Wickham H. 2009. ggplot2: elegant graphics for data analysis. New York ; London: Springer.
