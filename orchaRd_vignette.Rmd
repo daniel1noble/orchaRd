@@ -353,6 +353,8 @@ model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi,
 model
 ```
 
+Here, we are modelling the log response ratio effect size (`lnrr`) controlling for the fact that many effect sizes come from the same study (`group_ID`) We're controlling for trait type, exerimental design, and degree difference between treatments and how long the treatments were applied. 
+
 \newpage
 # References
 
