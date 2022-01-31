@@ -4,6 +4,10 @@
 #' @param mod the name of a moderator. Otherwise, "1" for intercept only model. Not needed of a orchard_plot is provided with a mod_results object of class 'orchard'.
 #' @param group The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes. Not needed of a orchard_plot is provided with a mod_results object of class 'orchard'.
 #' @param data The data frame used to fit the rma.mv model object. Not needed of a orchard_plot is provided with a mod_results object of class 'orchard'.
+#' #' @param by Used when one wants marginalised means. The 'condition' variable that one wishes to have the mean for the moderator vary.
+#' @param at Used when one wants marginalised means. The 'condition' that one wishes to calculate the means at, but is not presented in output
+#' @param data The data frame used to fit the rma.mv model object
+#' @param weights Used when one wants marginalised means. How to marginalize categorical variables. The default is weights = "prop", which wights means for moderator levels based on their proportional representation in the data. For example, if "sex" is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal. IN the case if sex, for example, males and females are roughly equally prevalent in a population. As such, you can give the moderator levels equal weight using weights = "equal".
 #' @param xlab The effect size measure label.
 #' @param N  The vector of sample size which an effect size is based on. If default, we use precision (the inverse of sampling standard error)
 #' @param alpha The level of transparency for pieces of fruit (effect size)
@@ -58,21 +62,34 @@ orchard_plot <- function(object, mod = "1", group, data, xlab, N = "none",
                          trunk.size = 3, branch.size = 1.2, twig.size = 0.5,
                          transfm = c("none", "tanh"), condition.lab = "Condition",
                          legend.pos = c("bottom.right", "bottom.left",  "top.right", "top.left", "top.out", "bottom.out"),
-                         k.pos = c("right", "left"))
+                         k.pos = c("right", "left"),
+                         weights = "prop", by = NULL, at = NULL, marginal = FALSE)
                          #k.size = 3.5)
 {
   ## evaluate choices
-  transfm <- match.arg(transfm) # if not specified it takes the first choice
+     transfm <- match.arg(transfm) # if not specified it takes the first choice
   legend.pos <- match.arg(legend.pos)
-  k.pos <- match.arg(k.pos)
-
+       k.pos <- match.arg(k.pos)
 
 	if(any(class(object) %in% c("rma.mv", "rma"))){
-		if(mod != "1"){
-			results <-  orchaRd::mod_results(object, mod, group, data)
-		} else{
-			results <-  orchaRd::mod_results(object, mod = "1", group, data)
-			}
+
+	  if(marginal == FALSE){
+  	    if(mod != "1"){
+  			results <-  orchaRd::mod_results(object, mod, group, data)
+  		} else{
+  			results <-  orchaRd::mod_results(object, mod = "1", group, data)
+  		}
+	  }
+
+	  if(marginal == TRUE){
+	    if(mod != "1"){
+	    results <-  orchaRd::marginal_means(object, mod, group, data,
+	                                        by = by, at = at, weights = weights)
+	  } else {
+	    results <-  orchaRd::marginal_means(object, mod = "1", group, data,
+	                                        by = by, at = at, weights = weights)
+	    }
+	  }
 	}
 
 	if(any(class(object) %in% c("orchard"))) {
