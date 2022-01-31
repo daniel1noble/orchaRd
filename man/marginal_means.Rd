@@ -29,6 +29,8 @@ marginal_means(
 \item{by}{The 'condition' variable that one wishes to have the mean for the moderator vary.}
 
 \item{at}{The 'condition' that one wishes to calculate the means at, but is not presented in output}
+
+\item{...}{Additonal arguments passed to emmeans::emmeans()}
 }
 \description{
 Function to to get marginal means from meta-regression models with single or multiple moderator variables that are both continuous or categorical.
