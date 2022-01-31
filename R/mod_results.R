@@ -229,6 +229,15 @@ return(tmp)
 #'  test3 <-  get_data_raw(english_MA, mod = "1", group = "StudyNo", data = english)}
 
 get_data_raw <- function(model, mod, group, data){
+
+  if(missing(group)){
+    stop("Please specify the 'group' argument by providing the name of the grouping variable. See ?marginal_means.")
+  }
+
+  if(missing(data)){
+    stop("Please specify the 'data' argument by providing the data used to fit the model. See ?marginal_means")
+  }
+
   # Extract data
   # Check first if missing data exists
   if(length(attr(model$X, "dimnames")[[1]]) > 0){
@@ -254,7 +263,7 @@ get_data_raw <- function(model, mod, group, data){
 
   data_reorg <- data.frame(yi, vi, moderator, stdy, type)
   row.names(data_reorg) <- 1:nrow(data_reorg)
-  return(data)
+  return(data_reorg)
 }
 
 ############# Helper-functions #############
