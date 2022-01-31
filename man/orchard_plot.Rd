@@ -23,15 +23,19 @@ orchard_plot(
   condition.lab = "Condition",
   legend.pos = c("bottom.right", "bottom.left", "top.right", "top.left", "top.out",
     "bottom.out"),
-  k.pos = c("right", "left")
+  k.pos = c("right", "left"),
+  weights = "prop",
+  by = NULL,
+  at = NULL,
+  marginal = FALSE
 )
 }
 \arguments{
 \item{object}{model object of class 'rma.mv', 'rma' or 'orchard' table of model results}
 
-\item{mod}{the name of a moderator. Otherwise, "1" for intercept only model.}
+\item{mod}{the name of a moderator. Otherwise, "1" for intercept only model. Not needed of a orchard_plot is provided with a mod_results object of class 'orchard'.}
 
-\item{group}{The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes.}
+\item{group}{The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes. Not needed of a orchard_plot is provided with a mod_results object of class 'orchard'.}
 
 \item{data}{The data frame used to fit the rma.mv model object}
 
@@ -62,6 +66,10 @@ orchard_plot(
 \item{legend.pos}{Where to place the legend}
 
 \item{k.pos}{Where to put k (number of effect sizes) on the plot}
+
+\item{weights}{Used when one wants marginalised means. How to marginalize categorical variables. The default is weights = "prop", which wights means for moderator levels based on their proportional representation in the data. For example, if "sex" is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal. IN the case if sex, for example, males and females are roughly equally prevalent in a population. As such, you can give the moderator levels equal weight using weights = "equal".}
+
+\item{at}{Used when one wants marginalised means. The 'condition' that one wishes to calculate the means at, but is not presented in output}
 }
 \value{
 Orchard plot
