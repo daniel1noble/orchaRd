@@ -91,3 +91,26 @@ orchard_plot(across_trait_by_treat_end_days10And50, xlab = "lnRR")
 
 # With model directly
 orchard_plot(model, data = warm_dat, mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "treat_end_days", weights = "equal", group = "group_ID", xlab = "lnRR", marginal = TRUE)
+
+# Example 9: Marginalised means for each trait category assuming heteroscedastic error within each
+# Model
+model_het <- metafor::rma.mv(yi = lnrr, V = lnrr_vi,
+                             random = list(~1 | group_ID, ~1 + trait.type| es_ID),
+                             mods = ~ trait.type + deg_dif, method = "REML",
+                             test = "t", rho = 0, struc = "HCS", data = warm_dat,
+                             control=list(optimizer="optim", optmethod="Nelder-Mead"))
+
+# Two step process
+HetModel <- marginal_means(model_het,
+                           group = "group_ID",
+                           mod = "trait.type",
+                           at = list(deg_dif = c(5, 10, 15)),
+                           by = "deg_dif", weights = "prop", data = warm_dat)
+orchard_plot(HetModel, xlab = "lnRR")
+
+# With model directly
+orchard_plot(model_het, group = "group_ID",
+             mod = "trait.type",
+             at = list(deg_dif = c(5, 10, 15)),
+             by = "deg_dif", weights = "prop", data = warm_dat,
+             xlab = "lnRR", marginal = TRUE)
