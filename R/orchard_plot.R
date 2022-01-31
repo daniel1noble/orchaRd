@@ -1,9 +1,9 @@
 #' @title orchard_plot
 #' @description Using a metafor model object of class rma or rma.mv or a results table of class orchard, it creates a an orchard plot from mean effect size estimates for all levels of a given categorical moderator, their corresponding confidence intervals and prediction intervals
 #' @param object model object of class 'rma.mv', 'rma' or 'orchard' table of model results
-#' @param mod the name of a moderator. Otherwise, "1" for intercept only model.
-#' @param group The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes.
-#' @param data The data frame used to fit the rma.mv model object
+#' @param mod the name of a moderator. Otherwise, "1" for intercept only model. Not needed of a orchard_plot is provided with a mod_results object of class 'orchard'.
+#' @param group The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes. Not needed of a orchard_plot is provided with a mod_results object of class 'orchard'.
+#' @param data The data frame used to fit the rma.mv model object. Not needed of a orchard_plot is provided with a mod_results object of class 'orchard'.
 #' @param xlab The effect size measure label.
 #' @param N  The vector of sample size which an effect size is based on. If default, we use precision (the inverse of sampling standard error)
 #' @param alpha The level of transparency for pieces of fruit (effect size)
