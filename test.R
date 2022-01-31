@@ -38,10 +38,10 @@ orchard_plot(overall2, xlab = "lnRR", group = "group_ID", condition.lab = "Tempa
 across_trait <- marginal_means(model,  mod = "trait.type", group = "group_ID", data = warm_dat)
 orchard_plot(across_trait, xlab = "lnRR", group = "group_ID")
 
-across_trait_by_degree_diff <- marginal_means(model, mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif", data = warm_dat)
+across_trait_by_degree_diff <- marginal_means(model, mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif", group = "group_ID", data = warm_dat)
 orchard_plot(across_trait_by_degree_diff, mod = "trait.type", xlab = "lnRR", group = "group_ID", data = warm_dat)
 
-across_trait_by_degree_diff_at_treat_end_days10 <- marginal_means(model, data = warm_dat, mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = 10), by = "deg_dif")
+across_trait_by_degree_diff_at_treat_end_days10 <- marginal_means(model, data = warm_dat, mod = "trait.type", at = list(deg_dif = c(5, 10, 15),  treat_end_days = 10), group = "group_ID", by = "deg_dif")
 orchard_plot(across_trait_by_degree_diff_at_treat_end_days10,mod = "trait.type", xlab = "lnRR",group = "group_ID")
 
 across_trait_by_degree_diff_at_treat_end_days10And50 <- marginal_means(model, data = warm_dat, mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "deg_dif")
