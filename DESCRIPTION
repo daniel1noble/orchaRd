@@ -27,7 +27,8 @@ Imports:
     ggplot2,
     ggbeeswarm,
     emmeans,
-    magrittr
+    magrittr,
+    dplyr
 Suggests: R.rsp, 
   testthat,
     knitr,
