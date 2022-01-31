@@ -324,17 +324,53 @@ An additional issue that is of importance with meta-regerssion models is the nee
 
 In this section, we show users: 1) how to fit these models using `metafor` and 2) how these models intrface with the `orchaRd` package to produce pretty plots that capture the model predictions. 
 
-#### Example 4: Meta-regerssion and marginalised mean effect sizes
+#### Example 4: Meta-regression and heterogeneous variance models
+
+Meta-regression models with single categorical moderators are extremely common. Meta-analyst's want to estimate the mean effect size within levels of a moderator and test whether these means are significantly different from each other. One inherent assumption to fitting these models is that we are assuming that the within study (or residual) variance within these groups is the same (i.e., "homogeneity of variance assumption"). This assumption will likely be violated in many situations in meta-regression models. Unless one conducts a sub-group analysis for each level of the moderator (although this is less powerful and makes it hard to test whether levels are significantly different) different residual variances need to be explicitly modelled in `metafor`. Fortunately, this can be done, and `orchaRd` 2.0 now allows plotting of these models with their corresponding CI's and PI's.
+
+We'll work with a meta-analysis by O'Dea et al. 2019. In this meta-analysis, the authors were interested in testing whether developmental temperaure in fish had an effect on mean and variance in a host of phenotypic traits. They categorised effect sizes as having come from one of 4 trait categories: Behaviour, Life-history, Morphology and Physiology. We'll explore how to fit a meta-regression model that explictly estimates residual variance in each of these trait levels. 
+
+First, load the data. 
+```{r echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE, class.source='klippy'}
+
+  # Load the dataset that comes with orchaRd
+    data(fish)
+
+  # Subset data for demonstration purposes.
+    warm_dat <- fish
+
+```
+
+To fit a heterogeneous variance model in `metafor` we need to use some additional arguments and specify the random effect structure differently (i.e., specify inner argument). To do this, we need to add the `struc = HCS` to the argument list, which specifies the variance structure of an ~inner|outer formula of a particular random effect. In this case, we're assuming a heteroscedastic compound symmetry structure. To avoid estimating the correlation / covariance between levels we need to also add the `rho` argument and set this to 0. This will assume that the covariance between the levels is set to 0 (although it could be estimated). 
+
+Once we have these additional arguments we need to modify our random effect structure. Note that `metafor` does not estimate a residual / within study variance. We need to explictly add an observation level random effect, in this case `es_ID`. If we have more than one effect size / study (which is common) then we want to have this random effect in our models. 
+
+```{r echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE, class.source='klippy'}
+
+model_het <- metafor::rma.mv(    yi = lnrr, V = lnrr_vi, 
+                               mods = ~ trait.type, method = "REML", test = "t", 
+                             random = list(~1 | group_ID, ~1 + trait.type| es_ID), 
+                                rho = 0, struc = "HCS", 
+                               data = warm_dat, 
+                            control = list(optimizer="optim", optmethod="Nelder-Mead"))
+
+het_model <- orchaRd::marginal_means(model_het, group = "group_ID", mod = "trait.type", 
+                           weights = "prop", data = warm_dat)
+
+orchaRd::orchard_plot(het_model, xlab = "lnRR", data = warm_dat)
+```
+
+#### Example 5: Meta-regression and marginalised mean effect sizes
 
 For this example, we turn to a fish meta-analysis conducted by O'Dea et al. 2019. In this analysis a suite of different moderators were of interst. 
 
 ```{r echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE, class.source='klippy'}
 
   # Load the dataset that comes with orchaRd
-  data(fish)
+    data(fish)
 
   # Subset data for demonstration purposes.
-  warm_dat <- fish
+    warm_dat <- fish
 
 ```
 
@@ -354,6 +390,8 @@ model
 ```
 
 Here, we are modelling the log response ratio effect size (`lnrr`) controlling for the fact that many effect sizes come from the same study (`group_ID`) We're controlling for trait type, exerimental design, and degree difference between treatments and how long the treatments were applied. 
+
+
 
 \newpage
 # References
