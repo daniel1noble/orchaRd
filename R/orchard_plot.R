@@ -63,6 +63,8 @@ orchard_plot <- function(object, mod = "1", group, data, xlab, N = "none",
 {
   ## evaluate choices
   transfm <- match.arg(transfm) # if not specified it takes the first choice
+  legend.pos <- match.arg(legend.pos)
+  k.pos <- match.arg(k.pos)
 
 
 	if(any(class(object) %in% c("rma.mv", "rma"))){
@@ -87,7 +89,7 @@ orchard_plot <- function(object, mod = "1", group, data, xlab, N = "none",
 
 	if(any(N != "none")){
 		  data$scale <- N
-		  legend <- "Sample Size (N)"
+		  legend <- paste0("Sample Size (", "N)",")") # we want to use italic
 	}
 
 	if(transfm == "tanh"){
@@ -139,7 +141,7 @@ orchard_plot <- function(object, mod = "1", group, data, xlab, N = "none",
 	     ggplot2::theme(legend.title = ggplot2::element_text(size = 9)) +
 	     ggplot2::theme(legend.direction="horizontal") +
 	     ggplot2::theme(legend.background = ggplot2::element_blank()) +
-	     ggplot2::labs(y = label, x = "", size = legend) +
+	     ggplot2::labs(y = label, x = "", size = legend, parse = TRUE) +
 	     ggplot2::labs(shape = condition.lab) +
 	     ggplot2::theme(axis.text.y = ggplot2::element_text(size = 10, colour ="black",
 	                                               hjust = 0.5,
