@@ -234,28 +234,26 @@ get_data_raw <- function(model, mod, group, data){
   if(length(attr(model$X, "dimnames")[[1]]) > 0){
     # full model delete missing values so need to adjust
      position <- as.numeric(attr(model$X, "dimnames")[[1]])
-     # we need to adjust data
-     #data <- model$data[position, ] # NOTE: need to probably default to user adding data as metafor no longer seems to save data object.
-     data <- data[position, ] }
+         data <- data[position, ] }
 
     if(mod == "1"){
-    moderator <- "Intrcpt"
+      moderator <- "Intrcpt"
     }else{
-    # Get moderator
-     moderator <- as.character(data[,mod]) # Could default to base instead of tidy
-     moderator <- firstup(moderator)
+      # Get moderator
+       moderator <- as.character(data[,mod]) # Could default to base instead of tidy
+       moderator <- firstup(moderator)
     }
 
     # Extract study grouping variable to calculate the
-    stdy <- data[,group] # Could default to base instead of tidy
+      stdy <- data[,group] # Could default to base instead of tidy
 
     # Extract effect sizes
-    yi <- model$yi
-    vi <- model$vi
-  type <- attr(model$yi, "measure")
+        yi <- model$yi
+        vi <- model$vi
+      type <- attr(model$yi, "measure")
 
-  data <- data.frame(yi, vi, moderator, stdy, type)
-  row.names(data) <- 1:nrow(data)
+  data_reorg <- data.frame(yi, vi, moderator, stdy, type)
+  row.names(data_reorg) <- 1:nrow(data_reorg)
   return(data)
 }
 
