@@ -15,7 +15,8 @@ License: GPL (>=2)
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.2
-Imports: tidyverse, 
+Imports: 
+    tidyverse,
     stats,
     graphics,
     utils,
@@ -25,7 +26,8 @@ Imports: tidyverse,
     stringr,
     ggplot2,
     ggbeeswarm,
-    emmeans
+    emmeans,
+    magrittr
 Suggests: R.rsp, 
   testthat,
     knitr,
