@@ -47,12 +47,12 @@ i2_ml <- function(model, method = c("ns", "wv"), boot = NULL) {
     sim <- simulate(model, nsim=1)
 
     # Get formula from model object. This is needed for the function to work. Slightly tricky to generalise but doable with careful checks
-    random_formula <- paste0("~ 1 | ", sapply(model$mf.r, function(x) names(x)), collapse = " , ")
+    random_formula <- as.formula(paste0("~ 1 | ", model$s.names, collapse = " "))
       mods_formula <- formula(model, type = "mods") #in case moderators
 
 
      I2_total <- sapply(sim, function(ysim) { # Need to get this working with formula of model
-      tmp <- rma.mv(ysim, vSMD, random = list(as.formula(random_formula)), data=english)
+      tmp <- rma.mv(ysim, vSMD, random = list(random_formula), data=english)
       100 * sum(tmp$sigma2) / (sum(tmp$sigma2) + tmp$vi)
     })
 
