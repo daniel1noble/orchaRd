@@ -43,14 +43,20 @@ i2_ml <- function(model, method = c("ns", "wv"), boot = NULL) {
   I2s <- c(I2_total = I2_total, I2_each)
 
   if(!is.null(boot)){
+    # Simulate the vector of effect sizes
     sim <- simulate(model, nsim=boot)
 
-     I2s <- sapply(sim, function(ysim) { # Need to get this working with formula of model
-      tmp <- rma.mv(ysim, vi, random = ~ 1 | district/school, data=dat)
-      100 * tmp$sigma2 / (tmp$sigma2[1] + tmp$sigma2[2] + vt)
+    # Get formula from model object. This is needed for the function to work. Slightly tricky to generalise but doable with careful checks
+    random_formula <- paste0("~ 1 | ", sapply(model$mf.r, function(x) names(x)), collapse = " , ")
+      mods_formula <- formula(model, type = "mods") #in case moderators
+
+
+     I2_total <- sapply(sim, function(ysim) { # Need to get this working with formula of model
+      tmp <- rma.mv(ysim, vSMD, random = list(random_formula), data=english)
+      100 * sum(tmp$sigma2) / (sum(tmp$sigma2) + tmp$vi)
     })
 
-    apply(I2s, 1, quantile, probs=c(.025, .975))
+    apply(I2_total, 1, quantile, probs=c(.025, .975))
   }
 
   return(I2s)
