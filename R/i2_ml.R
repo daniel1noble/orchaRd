@@ -1,10 +1,11 @@
 #' @title i2_ml
 #' @description I2 (I-squared) for mulilevel meta-analytic models, based on Nakagawa & Santos (2012). Under multilevel models, we can have a multiple I2 (see also Senior et al. 2016). Alternatively, the method proposed by Wolfgang Viechtbauer (http://www.metafor-project.org/doku.php/tips:i2_multilevel_multivariate?s[]=multilevel) can also be used.
-#' @param model Model object of class 'rma.mv', 'rma' 
-#' @param method Method used to calculate I2. Two options exist, Nakagawa & Santos ('ns') or Wolfgang Viechtbauer's method ("wv"). 
+#' @param model Model object of class 'rma.mv', 'rma'
+#' @param method Method used to calculate I2. Two options exist, Nakagawa & Santos ('ns') or Wolfgang Viechtbauer's method ("wv").
+#' @param boot Number of simulations to run to produce 95% CI's for I2. Default is NULL and only point estimate is provided.
 #' @return A data frame containing all the model results including mean effect size estimate, confidence and prediction intervals with estimates converted back to r
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
-#' @author Daniel Noble - daniel.noble@anu.edu.au 
+#' @author Daniel Noble - daniel.noble@anu.edu.au
 #' @examples
 #' \dontrun{
 #' data(english)
@@ -16,11 +17,11 @@
 #' @references Nakagawa, S, and Santos, E.S.A. 2012. Methodological issues and advances in biological meta-analysis. *Evolutionary Ecology* 26(5): 1253-1274.
 #' @export
 
-i2_ml <- function(model, method = c("ns", "wv")) {
-  
+i2_ml <- function(model, method = c("ns", "wv"), boot = NULL) {
+
   ## evaluate choices
   method <- match.arg(method)
-  
+
   # Wolfgang Viechtbauer's method
   if (method == "wv") {
     W <- solve(model$V)
@@ -37,10 +38,21 @@ i2_ml <- function(model, method = c("ns", "wv")) {
     I2_each <- model$sigma2 / (sum(model$sigma2) + sigma2_v)
     names(I2_each) <- paste0("I2_", model$s.names)
   }
-  
+
   # putting all together
   I2s <- c(I2_total = I2_total, I2_each)
-  
+
+  if(!is.null(boot)){
+    sim <- simulate(model, nsim=boot)
+
+     I2s <- sapply(sim, function(ysim) { # Need to get this working with formula of model
+      tmp <- rma.mv(ysim, vi, random = ~ 1 | district/school, data=dat)
+      100 * tmp$sigma2 / (tmp$sigma2[1] + tmp$sigma2[2] + vt)
+    })
+
+    apply(I2s, 1, quantile, probs=c(.025, .975))
+  }
+
   return(I2s)
 }
 
