@@ -44,7 +44,7 @@ i2_ml <- function(model, method = c("ns", "wv"), boot = NULL) {
 
   if(!is.null(boot)){
     # Simulate the vector of effect sizes
-    sim <- simulate(model, nsim=boot)
+    sim <- simulate(model, nsim=1)
 
     # Get formula from model object. This is needed for the function to work. Slightly tricky to generalise but doable with careful checks
     random_formula <- paste0("~ 1 | ", sapply(model$mf.r, function(x) names(x)), collapse = " , ")
@@ -52,11 +52,11 @@ i2_ml <- function(model, method = c("ns", "wv"), boot = NULL) {
 
 
      I2_total <- sapply(sim, function(ysim) { # Need to get this working with formula of model
-      tmp <- rma.mv(ysim, vSMD, random = list(random_formula), data=english)
+      tmp <- rma.mv(ysim, vSMD, random = list(as.formula(random_formula)), data=english)
       100 * sum(tmp$sigma2) / (sum(tmp$sigma2) + tmp$vi)
     })
 
-    apply(I2_total, 1, quantile, probs=c(.025, .975))
+    apply(I2s,1, quantile, probs=c(.025, .975))
   }
 
   return(I2s)
