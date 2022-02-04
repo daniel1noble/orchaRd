@@ -11,7 +11,7 @@
 #' data(english)
 #' english <- escalc(measure = "SMD", n1i = NStartControl, sd1i = SD_C, m1i = MeanC, n2i = NStartExpt, sd2i = SD_E, m2i = MeanE, var.names=c("SMD","vSMD"),data = english)
 #' english_MA <- rma.mv(yi = SMD, V = vSMD, random = list( ~ 1 | StudyNo, ~ 1 | EffectID), data = english)
-#' I2 <- i2_ml(english_MA)
+#' I2 <- i2_ml(english_MA, boot = 1000)
 #' }
 #' @references Senior, A. M., Grueber, C. E., Kamiya, T., Lagisz, M., O’Dwyer, K., Santos, E. S. A. & Nakagawa S. 2016. Heterogeneity in ecological and evolutionary meta-analyses: its magnitudes and implications. *Ecology* 97(12): 3293-3299.
 #' @references Nakagawa, S, and Santos, E.S.A. 2012. Methodological issues and advances in biological meta-analysis. *Evolutionary Ecology* 26(5): 1253-1274.
@@ -80,15 +80,12 @@ i2_ml <- function(model, method = c("ns", "wv"), boot = NULL) {
             return(I2_each)
      })
 
-          I2_tot_x <-     mean(I2_total)
-         I2_tot_95 <- quantile(I2_total, probs=c(.025, .975))
-       I2s_each_95 <- t(apply(I2_each, 1, quantile, probs=c(.025, .975)))
-     I2s_each_mean <-   apply(I2_each, 1, mean, probs=c(.025, .975))
 
-    I2s = round(data.frame(    Est. = c(I2s_each_mean, I2_tot_x),
-                       "2.5%" = c(I2s_each_95[1,], I2_tot_95[1]),
-                      "97.5%" = c(I2s_each_95[2,], I2_tot_95[2]), check.names = FALSE), digits = 3)
+         I2_tot_95 <- quantile(I2_total, probs=c(0.5, .025, .975))
+       I2s_each_95 <- t(apply(I2_each, 1, quantile, probs=c(0.5, .025, .975)))
+               I2s <-  round(rbind(I2s_each_95, I2_tot_95), digits = 3)
       row.names(I2s)[dim(I2s)[2]] <- "I2_Total"
+      colnames(I2s)[1] = "Est."
   }
 
   return(I2s)
