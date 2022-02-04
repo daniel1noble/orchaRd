@@ -44,7 +44,7 @@ i2_ml <- function(model, method = c("ns", "wv"), boot = NULL) {
 
   if(!is.null(boot)){
     # Simulate the vector of effect sizes
-    sim <- simulate(model, nsim=1)
+    sim <- simulate(model, nsim=boot)
 
     # Get formula from model object. This is needed for the function to work. Slightly tricky to generalise but doable with careful checks
     random_formula <- as.formula(paste0("~ 1 | ", model$s.names, collapse = " "))
@@ -52,11 +52,34 @@ i2_ml <- function(model, method = c("ns", "wv"), boot = NULL) {
 
 
      I2_total <- sapply(sim, function(ysim) { # Need to get this working with formula of model
-      tmp <- rma.mv(ysim, vSMD, random = list(random_formula), data=english)
-      100 * sum(tmp$sigma2) / (sum(tmp$sigma2) + tmp$vi)
+
+      # The model
+       tmp <- rma.mv(ysim, vSMD,
+                         random = list( ~ 1 | StudyNo, ~ 1 | EffectID),
+                         data=english)
+      # Typical sampling error variance
+      sigma2_v <- sum(1 / tmp$vi) * (tmp$k - 1) / (sum(1 / tmp$vi)^2 - sum((1 / tmp$vi)^2))
+
+      # I2_total calculation
+      100 * sum(tmp$sigma2) / (sum(tmp$sigma2) + sigma2_v)
     })
 
-    apply(I2s,1, quantile, probs=c(.025, .975))
+     I2_each <- sapply(sim, function(ysim) { # Need to get this working with formula of model
+
+       # The model
+       tmp <- rma.mv(ysim, vSMD,
+                     random = list( ~ 1 | StudyNo, ~ 1 | EffectID),
+                     data=english)
+       # Typical sampling error variance
+       sigma2_v <- sum(1 / tmp$vi) * (tmp$k - 1) / (sum(1 / tmp$vi)^2 - sum((1 / tmp$vi)^2))
+
+       # I2_total calculation
+       I2_each <- 100 * (tmp$sigma2 / (sum(tmp$sigma2) + sigma2_v))
+       names(I2_each) <- paste0("I2_", tmp$s.names)
+
+     })
+
+    I2s <- quantile(I2_total, probs=c(.025, .975))
   }
 
   return(I2s)
