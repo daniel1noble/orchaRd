@@ -53,33 +53,42 @@ i2_ml <- function(model, method = c("ns", "wv"), boot = NULL) {
 
      I2_total <- sapply(sim, function(ysim) { # Need to get this working with formula of model
 
-      # The model
-       tmp <- rma.mv(ysim, vSMD,
-                         random = list( ~ 1 | StudyNo, ~ 1 | EffectID),
-                         data=english)
-      # Typical sampling error variance
-      sigma2_v <- sum(1 / tmp$vi) * (tmp$k - 1) / (sum(1 / tmp$vi)^2 - sum((1 / tmp$vi)^2))
+            # The model
+             tmp <- rma.mv(ysim, vSMD,
+                               random = list( ~ 1 | StudyNo, ~ 1 | EffectID),
+                               data=english)
+            # Typical sampling error variance
+            sigma2_v <- sum(1 / tmp$vi) * (tmp$k - 1) / (sum(1 / tmp$vi)^2 - sum((1 / tmp$vi)^2))
 
-      # I2_total calculation
-      100 * sum(tmp$sigma2) / (sum(tmp$sigma2) + sigma2_v)
+            # I2_total calculation
+            I2_total = 100 * sum(tmp$sigma2) / (sum(tmp$sigma2) + sigma2_v)
+            return(I2_total)
     })
 
      I2_each <- sapply(sim, function(ysim) { # Need to get this working with formula of model
 
-       # The model
-       tmp <- rma.mv(ysim, vSMD,
-                     random = list( ~ 1 | StudyNo, ~ 1 | EffectID),
-                     data=english)
-       # Typical sampling error variance
-       sigma2_v <- sum(1 / tmp$vi) * (tmp$k - 1) / (sum(1 / tmp$vi)^2 - sum((1 / tmp$vi)^2))
+             # The model
+             tmp <- rma.mv(ysim, vSMD,
+                           random = list( ~ 1 | StudyNo, ~ 1 | EffectID),
+                           data=english)
+             # Typical sampling error variance
+             sigma2_v <- sum(1 / tmp$vi) * (tmp$k - 1) / (sum(1 / tmp$vi)^2 - sum((1 / tmp$vi)^2))
 
-       # I2_total calculation
-       I2_each <- 100 * (tmp$sigma2 / (sum(tmp$sigma2) + sigma2_v))
-       names(I2_each) <- paste0("I2_", tmp$s.names)
-
+             # I2_total calculation
+             I2_each <- 100 * (tmp$sigma2 / (sum(tmp$sigma2) + sigma2_v))
+             names(I2_each) <- paste0("I2_", tmp$s.names)
+            return(I2_each)
      })
 
-    I2s <- quantile(I2_total, probs=c(.025, .975))
+          I2_tot_x <-     mean(I2_total)
+         I2_tot_95 <- quantile(I2_total, probs=c(.025, .975))
+       I2s_each_95 <- t(apply(I2_each, 1, quantile, probs=c(.025, .975)))
+     I2s_each_mean <-   apply(I2_each, 1, mean, probs=c(.025, .975))
+
+    I2s = round(data.frame(    Est. = c(I2s_each_mean, I2_tot_x),
+                       "2.5%" = c(I2s_each_95[1,], I2_tot_95[1]),
+                      "97.5%" = c(I2s_each_95[2,], I2_tot_95[2]), check.names = FALSE), digits = 3)
+      row.names(I2s)[dim(I2s)[2]] <- "I2_Total"
   }
 
   return(I2s)
