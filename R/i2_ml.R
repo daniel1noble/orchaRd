@@ -59,7 +59,7 @@ i2_ml <- function(model, method = c("ns", "wv"), boot = NULL) {
              # Typical sampling error variance
              sigma2_v <- sum(1 / tmp$vi) * (tmp$k - 1) / (sum(1 / tmp$vi)^2 - sum((1 / tmp$vi)^2))
 
-             # I2_total calculation
+             # I2 calculations fro each level and also total
              I2_each <- 100 * (tmp$sigma2 / (sum(tmp$sigma2) + sigma2_v))
              names(I2_each) <- paste0("I2_", tmp$s.names)
              I2_total = 100 * sum(tmp$sigma2) / (sum(tmp$sigma2) + sigma2_v)

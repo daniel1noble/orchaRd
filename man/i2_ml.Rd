@@ -4,12 +4,14 @@
 \alias{i2_ml}
 \title{i2_ml}
 \usage{
-i2_ml(model, method = c("ns", "wv"))
+i2_ml(model, method = c("ns", "wv"), boot = NULL)
 }
 \arguments{
 \item{model}{Model object of class 'rma.mv', 'rma'}
 
 \item{method}{Method used to calculate I2. Two options exist, Nakagawa & Santos ('ns') or Wolfgang Viechtbauer's method ("wv").}
+
+\item{boot}{Number of simulations to run to produce 95% CI's for I2. Default is NULL and only point estimate is provided.}
 }
 \value{
 A data frame containing all the model results including mean effect size estimate, confidence and prediction intervals with estimates converted back to r
@@ -22,7 +24,7 @@ I2 (I-squared) for mulilevel meta-analytic models, based on Nakagawa & Santos (2
 data(english)
 english <- escalc(measure = "SMD", n1i = NStartControl, sd1i = SD_C, m1i = MeanC, n2i = NStartExpt, sd2i = SD_E, m2i = MeanE, var.names=c("SMD","vSMD"),data = english)
 english_MA <- rma.mv(yi = SMD, V = vSMD, random = list( ~ 1 | StudyNo, ~ 1 | EffectID), data = english)
-I2 <- i2_ml(english_MA)
+I2 <- i2_ml(english_MA, boot = 1000)
 }
 }
 \references{
