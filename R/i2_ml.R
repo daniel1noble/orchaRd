@@ -50,21 +50,6 @@ i2_ml <- function(model, method = c("ns", "wv"), boot = NULL) {
     random_formula <- as.formula(paste0("~ 1 | ", model$s.names, collapse = " "))
       mods_formula <- formula(model, type = "mods") #in case moderators
 
-
-     I2_total <- sapply(sim, function(ysim) { # Need to get this working with formula of model
-
-            # The model
-             tmp <- rma.mv(ysim, vSMD,
-                               random = list( ~ 1 | StudyNo, ~ 1 | EffectID),
-                               data=english)
-            # Typical sampling error variance
-            sigma2_v <- sum(1 / tmp$vi) * (tmp$k - 1) / (sum(1 / tmp$vi)^2 - sum((1 / tmp$vi)^2))
-
-            # I2_total calculation
-            I2_total = 100 * sum(tmp$sigma2) / (sum(tmp$sigma2) + sigma2_v)
-            return(I2_total)
-    })
-
      I2_each <- sapply(sim, function(ysim) { # Need to get this working with formula of model
 
              # The model
@@ -77,15 +62,16 @@ i2_ml <- function(model, method = c("ns", "wv"), boot = NULL) {
              # I2_total calculation
              I2_each <- 100 * (tmp$sigma2 / (sum(tmp$sigma2) + sigma2_v))
              names(I2_each) <- paste0("I2_", tmp$s.names)
-            return(I2_each)
+             I2_total = 100 * sum(tmp$sigma2) / (sum(tmp$sigma2) + sigma2_v)
+             names(I2_total) <- "I2_Total"
+             I2 <- c(I2_each, I2_total)
+            return(I2)
      })
 
 
-         I2_tot_95 <- quantile(I2_total, probs=c(0.5, .025, .975))
-       I2s_each_95 <- t(apply(I2_each, 1, quantile, probs=c(0.5, .025, .975)))
-               I2s <-  round(rbind(I2s_each_95, I2_tot_95), digits = 3)
-      row.names(I2s)[dim(I2s)[2]] <- "I2_Total"
-      colnames(I2s)[1] = "Est."
+       I2s_each_95 <- data.frame(t(apply(I2_each, 1, quantile, probs=c(0.5, .025, .975))))
+               I2s <-  round(I2s_each_95, digits = 3)
+      colnames(I2s)= c("Est.", "2.5%", "97.5%")
   }
 
   return(I2s)
