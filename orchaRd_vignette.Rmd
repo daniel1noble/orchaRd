@@ -318,17 +318,17 @@ Compared to the orchard plot (Figure \@ref(fig:Figure10), Figure \@ref(fig:Figur
 
 # Orchard Plots with Meta-regression Models: Marginalised means and heteroscedastic residual variances
 
-In `orchaRd` 2.0 we've made some major updates to the types of models that can be used with the package. Meta-analyses in ecology and evolution often fit a multitude of moderators and random effects within a single model. This is even desiredable in many cases to deal with high heterogeneity and disentangle the independent contributions of modeators to changes in mean effect size. The challenge with previous versions of the package was that it was difficult to accomodate these models. However, the `emmeans` packages is an excellent solution to the problem. It will produce marginsalised mean estimates for a given level of moderator -- producing mean estimates that average over all other moderators in the model. This includes models with categorical and continuous moderators. 
+In `orchaRd` 2.0 we've made some major updates to the types of models that can be used with the package. Meta-analyses in ecology and evolution often fit a multitude of moderators and random effects within a single model. This is even desirable in many cases to deal with high heterogeneity and disentangle the independent contributions of modeators to changes in mean effect size. The challenge with the previous version of the package was that it was difficult to accomodate these models. However, the `emmeans` package is an excellent solution to the problem. It will produce marginsalised mean estimates for a given level of moderator -- producing mean estimates that average over all other moderators in the model. This includes models with categorical and continuous moderators. 
 
-An additional issue that is of importance with meta-regerssion models is the need to deal with heteroscedastic variance across levels of a moderator. Homogeneity of variance assumptions are often violated in meta-analysis. `orchaRd` 2.0 allows the user to fit models that explicitly estaimte different residual variance reducing the probability of type I errors. 
+An additional issue that is of importance with meta-regerssion models is the need to deal with heteroscedastic variance across levels of a moderator. Homogeneity of variance assumptions are often violated in meta-analysis. `orchaRd` 2.0 allows the user to fit models that explicitly estimate different residual variances reducing the probability of type I errors. 
 
-In this section, we show users: 1) how to fit these models using `metafor` and 2) how these models intrface with the `orchaRd` package to produce pretty plots that capture the model predictions. 
+In this section, we show users: 1) how to fit these models using `metafor` and 2) how these models interface with the `orchaRd` package to produce pretty plots that capture the model predictions. 
 
-#### Example 4: Meta-regression and heterogeneous variance models
+#### Example 4: Meta-regression and heterogeneous variance models <a name="sec4"></a>
 
 Meta-regression models with single categorical moderators are extremely common. Meta-analyst's want to estimate the mean effect size within levels of a moderator and test whether these means are significantly different from each other. One inherent assumption to fitting these models is that we are assuming that the within study (or residual) variance within these groups is the same (i.e., "homogeneity of variance assumption"). This assumption will likely be violated in many situations in meta-regression models. Unless one conducts a sub-group analysis for each level of the moderator (although this is less powerful and makes it hard to test whether levels are significantly different) different residual variances need to be explicitly modelled in `metafor`. Fortunately, this can be done. `orchaRd` 2.0 now allows plotting of these models with their corresponding CI's and PI's.
 
-We'll work with a meta-analysis by O'Dea et al. 2019. In this meta-analysis, the authors were interested in testing whether developmental temperaure in fish had an effect on mean and variance in a host of phenotypic traits. They categorised effect sizes as having come from one of 4 trait categories: Behaviour, Life-history, Morphology and Physiology. We'll explore how to fit a meta-regression model that explictly estimates residual variance in each of these trait levels. 
+We'll work with a meta-analysis by O'Dea et al. 2019. In this meta-analysis, the authors were interested in testing whether developmental temperaure in fish had an effect on mean and variance in a host of phenotypic traits. They used experimental studies manipulating developmental temperatures using the log response ratio (`lnrr`) and the log coefficient of variation (`lncvr`) as their effect sizes. We'll only focus on `lnrr` here for demonstration purposes. Importantly, they categorised effect sizes as having come from one of 4 trait categories: Behaviour, Life-history, Morphology and Physiology. They were interested in whether developmental temperature impact trait types differently. We'll first explore how to fit a meta-regression model that explictly estimates residual variance in each of these trait levels. 
 
 First, load the data. 
 ```{r echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE, class.source='klippy'}
@@ -353,13 +353,13 @@ model_het <- metafor::rma.mv(    yi = lnrr, V = lnrr_vi,
                                 rho = 0, struc = "HCS", 
                                data = warm_dat, 
                             control = list(optimizer="optim", optmethod="Nelder-Mead"))
-
+print(model_het)
 
 ```
 
-Now that we have fit our model and estimated the relevant parameters we can produce the orchard plot  using the `mod_results` function.Figure \@ref(fig:Figure11)
+We can see from above that we now have four variances; one estimated for each level of the `trait.type` moderator. Now that we have fit our model and estimated the relevant parameters we can produce the orchard plot  using the `marginal_means` function:
 
-```{r figure 12, fig.cap = "Orchard plot with heteroscedastic error for trait typess", echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE, class.source='klippy'}
+```{r figure12, fig.cap = "Orchard plot with heteroscedastic error for trait typess", echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE, class.source='klippy'}
 
 het_model <- orchaRd::marginal_means(model_het, 
                                      group = "group_ID", 
@@ -369,9 +369,13 @@ het_model <- orchaRd::marginal_means(model_het,
 orchaRd::orchard_plot(het_model, xlab = "lnRR")
 ```
 
+We can now see from Figure \@ref(fig:figure12) that the variance in effects for the morphological and physiological trait categories are smaller than for life-history and behavioural trait categories; likely because of the very small sample sizes in the latter trait categories.
+
 #### Example 5: Meta-regression and marginalised mean effect sizes
 
-For this example, we turn to a fish meta-analysis conducted by O'Dea et al. 2019. In this analysis a suite of different moderators were of interst. 
+We'll now demonstrate how multi-moderator meta-regression models can be used with `orchaRd` 2.0, by plotting marginalised mean effects within categories of a single moderator. Marginalised means are also extremely useful to improve interpretation of overall model results. 
+
+To demonstrate how to do this we'll again turn to O'Dea et al. 2019 as our example dataset. We'll first load the dataset, if you haven't already done so:
 
 ```{r echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE, class.source='klippy'}
 
@@ -380,25 +384,25 @@ For this example, we turn to a fish meta-analysis conducted by O'Dea et al. 2019
 
   # Subset data for demonstration purposes.
     warm_dat <- fish
-
 ```
 
-Now that we have the data loaded we can fit a few meta-regression models. For now, we'll keep the model simple. We'll assume that the variance in the moderator of interst is the same across levels. We'll relax that assumption down the line.
+Now that we have the dataset assume we are interested in modelling multiple moderators that we hypothesise will explain effect size variance. We want to provide a model that will allow us to underatnd the conditional (independent) effects of each moderator on mean effect size. We know that `experimental_design` and the temperature difference between treatments (`deg_diff`) are expected to impacy mean effect size. We also expect experiments that last longer to have stronger effects (`treat_end_days`). We'll now extend our model from [Section 4](#sec4) above to include these moderators so we can look at the effects of each controlling for each other. 
 
 ```{r echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE, class.source='klippy'}
 
  # Fit the metaregerssion model
 model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, 
-                         random = list(~1 | group_ID, ~1 | es_ID), 
                          mods = ~ experimental_design + trait.type + deg_dif + treat_end_days,
                          method = "REML", test = "t", 
+                         random = list(~1 | group_ID, ~1 + trait.type| es_ID), 
+                                rho = 0, struc = "HCS", 
                          data = warm_dat, 
                          control=list(optimizer="optim", optmethod="Nelder-Mead"))
 
 model
 ```
 
-Here, we are modelling the log response ratio effect size (`lnrr`) controlling for the fact that many effect sizes come from the same study (`group_ID`) We're controlling for trait type, exerimental design, and degree difference between treatments and how long the treatments were applied. 
+
 
 
 
