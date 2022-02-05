@@ -408,7 +408,8 @@ Our model is complicated. It not only estimates the effects of trait type, but t
 
 HetModel <- orchaRd::marginal_means(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif", weights = "prop", data = warm_dat)
 
-orchaRd::orchard_plot(HetModel, xlab = "lnRR", data = warm_dat, angle = 45, g = FALSE, legend.pos = "top.right")
+orchaRd::orchard_plot(HetModel, xlab = "lnRR", data = warm_dat, angle = 45, g = FALSE, legend.pos = "top.left") + 
+  theme(legend.direction = "vertical")
 
 ```
 
