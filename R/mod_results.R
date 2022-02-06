@@ -17,8 +17,8 @@
 #' # Add the unit level predictor
 #' eklof$Datapoint<-as.factor(seq(1, dim(eklof)[1], 1))
 #' # fit a MLMR - accouting for some non-independence
-#' eklof_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~ Grazer.type-1, random=list(~1|ExptID,
-#' ~1|Datapoint), data=eklof)
+#' eklof_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~ Grazer.type, random=list(~1|ExptID,
+#' ~1|Datapoint), test = "t", data=eklof)
 #' results <- mod_results(eklof_MR, mod = "Grazer.type", group = "ExptID", data=eklof)
 #' }
 #' @export
