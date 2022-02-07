@@ -4,7 +4,7 @@
 \alias{r2_ml}
 \title{r2_ml}
 \usage{
-r2_ml(model)
+r2_ml(model, data, boot = NULL)
 }
 \arguments{
 \item{model}{Model object of class 'rma.mv', 'rma'}
@@ -20,7 +20,7 @@ R2 (R-squared) for mixed (mulitlevel) models, based on Nakagawa & Schielzeth (20
 data(lim)
 lim$vi<-(1/sqrt(lim$N - 3))^2
 lim_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~Phylum-1, random=list(~1|Article, ~1|Datapoint), data=lim)
-R2 <- r2_ml(lim_MR)
+R2 <- r2_ml(lim_MR,data=lim, boot = 10)
 }
 }
 \references{
