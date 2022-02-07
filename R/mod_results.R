@@ -1,16 +1,21 @@
 ############# Key functions #############
 
 #' @title mod_results
-#' @description Using a metafor model object of class rma or rma.mv it creates a table of model results containing the mean effect size estimates for all levels of a given categorical moderator, their corresponding confidence intervals and prediction intervals
-#' @param model rma.mv or rma object
-#' @param mod the name of a moderator; put "1" if the intercept model (meta-analysis) or no moderators.
+#' @description Using a metafor model object of class rma or rma.mv it creates a table of model results containing the mean effect size estimates for all levels of a given categorical moderator, their corresponding confidence intervals and prediction intervals. Function can calculate marginal means from meta-regression models with single or multiple moderator variables that are both continuous or categorical.
+#' @param model rma.mv object
+#' @param mod Moderator variable of interest that one wants marginal means for. Defaults to intercept "1".
 #' @param group The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes.
+#' @param by The 'condition' variable that one wishes to have the mean for the moderator vary.
+#' @param at The 'condition' that one wishes to calculate the means at, but is not presented in output
 #' @param data The data frame used to fit the rma.mv model object
+#' @param weights how to marginalize categorical variables. The default is weights = "prop", which wights means for moderator levels based on their proportional representation in the data. For example, if "sex" is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal. IN the case if sex, for example, males and females are roughly equally prevalent in a population. As such, you can give the moderator levels equal weight using weights = "equal".
+#' @param ... Additonal arguments passed to emmeans::emmeans()
 #' @return A data frame containing all the model results including mean effect size estimate, confidence and prediction intervals
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
-#' @examples
-#' \dontrun{data(eklof)
+#' @examples \dontrun{
+#' # Simple eklof data
+#' data(eklof)
 #' eklof<-metafor::escalc(measure="ROM", n1i=N_control, sd1i=SD_control,
 #' m1i=mean_control, n2i=N_treatment, sd2i=SD_treatment, m2i=mean_treatment,
 #' data=eklof)
@@ -20,56 +25,22 @@
 #' eklof_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~ Grazer.type, random=list(~1|ExptID,
 #' ~1|Datapoint), data=eklof)
 #' results <- mod_results(eklof_MR, mod = "Grazer.type", group = "ExptID", data=eklof)
-#' }
-#' @export
 #'
-
-mod_results <- function(model, mod, group, data) {
-
-  if(all(class(model) %in% c("rma.mv", "rma")) == FALSE) {stop("Sorry, you need to fit a metafor model of class rma.mv or rma")}
-
-  data_new <- get_data_raw(model, mod, group, data)
-
-  # Get confidence intervals
-  CI <- get_est(model, mod)
-
-  # Get prediction intervals
-  PI <- get_pred(model, mod)
-
-  model_results <- list(mod_table = cbind(CI, PI[,-1]), data = data_new)
-
-  class(model_results) <- c("orchard", "data.frame")
-
-  model_results
-
-}
-
-
-#' @title marginal_means
-#' @description Function to to get marginal means from meta-regression models with single or multiple moderator variables that are both continuous or categorical.
-#' @param model rma.mv object
-#' @param mod Moderator variable of interest that one wants marginal means for. Defaults to intercept "1".
-#' @param group The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes.
-#' @param by The 'condition' variable that one wishes to have the mean for the moderator vary.
-#' @param at The 'condition' that one wishes to calculate the means at, but is not presented in output
-#' @param data The data frame used to fit the rma.mv model object
-#' @param weights how to marginalize categorical variables. The default is weights = "prop", which wights means for moderator levels based on their proportional representation in the data. For example, if "sex" is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal. IN the case if sex, for example, males and females are roughly equally prevalent in a population. As such, you can give the moderator levels equal weight using weights = "equal".
-#' @param ... Additonal arguments passed to emmeans::emmeans()
-#' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
-#' @author Daniel Noble - daniel.noble@anu.edu.au
-#' @examples \dontrun{
+#' # Fish example demonstrating marginalised means
 #' data(fish)
 #' warm_dat <- fish
 #' model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 | es_ID), mods = ~ experimental_design + trait.type + deg_dif + treat_end_days, method = "REML", test = "t", data = warm_dat, control=list(optimizer="optim", optmethod="Nelder-Mead"))
-#'   overall <- marginal_means(model, group = "group_ID", data = warm_dat)
-#' across_trait <- marginal_means(model, group = "group_ID", mod = "trait.type", data = warm_dat)
-#' across_trait_by_degree_diff <- marginal_means(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif", data = warm_dat)
-#' across_trait_by_degree_diff_at_treat_end_days10 <- marginal_means(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = 10), by = "deg_dif",data = warm_dat)
-#' across_trait_by_degree_diff_at_treat_end_days10And50 <- marginal_means(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "deg_dif", data = warm_dat)
-#' across_trait_by_treat_end_days10And50 <- marginal_means(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "treat_end_days", data = warm_dat)
-#' across_trait_by_treat_end_days10And50_ordinaryMM <- marginal_means(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "treat_end_days", weights = "prop", data = warm_dat)
+#'   overall <- mod_results(model, group = "group_ID", data = warm_dat)
+#' across_trait <- mod_results(model, group = "group_ID", mod = "trait.type", data = warm_dat)
+#' across_trait_by_degree_diff <- mod_results(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif", data = warm_dat)
+#' across_trait_by_degree_diff_at_treat_end_days10 <- mod_results(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = 10), by = "deg_dif",data = warm_dat)
+#' across_trait_by_degree_diff_at_treat_end_days10And50 <- mod_results(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "deg_dif", data = warm_dat)
+#' across_trait_by_treat_end_days10And50 <- mod_results(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "treat_end_days", data = warm_dat)
+#' across_trait_by_treat_end_days10And50_ordinaryMM <- mod_results(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "treat_end_days", weights = "prop", data = warm_dat)
+#'
+#' # Fish data example with a heteroscedastic error
 #' model_het <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 + trait.type| es_ID), mods = ~ trait.type + deg_dif, method = "REML", test = "t", rho = 0, struc = "HCS", data = warm_dat, control=list(optimizer="optim", optmethod="Nelder-Mead"))
-#' HetModel <- marginal_means(model_het, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif", weights = "prop", data = warm_dat)
+#' HetModel <- mod_results(model_het, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif", weights = "prop", data = warm_dat)
 #' orchard_plot(HetModel, xlab = "lnRR", data = warm_dat)
 #' }
 #' @export
@@ -129,56 +100,6 @@ marginal_means <- function(model, mod = "1", group, data, weights = "prop", by =
 
 
 ############# Key Sub-functions #############
-
-#' @title get_est
-#' @description Function gets estimates from rma objects (metafor)
-#' @param model rma.mv object
-#' @param mod the name of a moderator. If meta-analysis (i.e. no moderator, se mod = "Int")
-#' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
-#' @author Daniel Noble - daniel.noble@anu.edu.au
-#' @export
-
-get_est <- function (model, mod) {
-  name <- firstup(as.character(stringr::str_replace(row.names(model$beta), {{mod}}, "")))
-
-  estimate <- as.numeric(model$beta)
-  lowerCL <- model$ci.lb
-  upperCL <- model$ci.ub
-
-  table <- tibble::tibble(name = factor(name, levels = name, labels = name), estimate = estimate, lowerCL = lowerCL, upperCL = upperCL)
-
-  return(table)
-}
-
-#' @title get_pred
-#' @description Function to get prediction intervals (credibility intervals) from rma objects (metafor)
-#' @param model rma.mv object
-#' @param mod the name of a moderator
-#' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
-#' @author Daniel Noble - daniel.noble@anu.edu.au
-#' @export
-
-get_pred <- function (model, mod) {
-
-  name <- firstup(as.character(stringr::str_replace(row.names(model$beta), {{mod}}, "")))
-  len <- length(name)
-
-  if(len != 1){
-  newdata <- matrix(NA, ncol = len, nrow = len)
-
-  pred <- metafor::predict.rma(model, newmods = diag(len),
-                               tau2.levels = 1:len,
-                               gamma2.levels = 1:len)
-  }
-  else {
-    pred <- metafor::predict.rma(model)
-    }
-  lowerPR <- pred$cr.lb
-  upperPR <- pred$cr.ub
-
-  table <- tibble::tibble(name = factor(name, levels = name, labels = name), lowerPR = lowerPR, upperPR = upperPR)
-  return(table)
-}
 
 #' @title pred_interval_esmeans
 #' @description Function to get prediction intervals (credibility intervals) from esmeans objects (metafor)
