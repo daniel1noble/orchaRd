@@ -18,7 +18,7 @@
 #' eklof$Datapoint<-as.factor(seq(1, dim(eklof)[1], 1))
 #' # fit a MLMR - accouting for some non-independence
 #' eklof_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~ Grazer.type, random=list(~1|ExptID,
-#' ~1|Datapoint), test = "t", data=eklof)
+#' ~1|Datapoint), data=eklof)
 #' results <- mod_results(eklof_MR, mod = "Grazer.type", group = "ExptID", data=eklof)
 #' }
 #' @export
@@ -84,19 +84,37 @@ marginal_means <- function(model, mod = "1", group, data, weights = "prop", by =
       model$data <- data
      grid <- emmeans::qdrg(object = model, at = at)
 
-       mm <- emmeans::emmeans(grid, specs = mod, df = as.numeric(model$ddf[[1]]), by = by, weights = weights, ...)
+    if(model$test == "t"){
+      df_mod = as.numeric(model$ddf[[1]])
+    } else{
+      df_mod = 1000000
+    }
+
+       mm <- emmeans::emmeans(grid, specs = mod, df = df_mod, by = by, weights = weights, ...)
     mm_pi <- pred_interval_esmeans(model, mm, mod = mod)
 
 
     if(is.null(by)){
-      mod_table <- data.frame(name = firstup(as.character(mm_pi[,1])), estimate = mm_pi[,"emmean"], lowerCL = mm_pi[,"lower.CL"], upperCL = mm_pi[,"upper.CL"], lowerPR = mm_pi[,"lower.PI"], upperPR = mm_pi[,"upper.PI"])
+      mod_table <- data.frame(name = firstup(as.character(mm_pi[,1])),
+                              estimate = mm_pi[,"emmean"],
+                              lowerCL = mm_pi[,"lower.CL"],
+                              upperCL = mm_pi[,"upper.CL"],
+                              lowerPR = mm_pi[,"lower.PI"],
+                              upperPR = mm_pi[,"upper.PI"])
 
     } else{
-      mod_table <- data.frame(name = firstup(as.character(mm_pi[,1])), condition = mm_pi[,2], estimate = mm_pi[,"emmean"], lowerCL = mm_pi[,"lower.CL"], upperCL = mm_pi[,"upper.CL"], lowerPR = mm_pi[,"lower.PI"], upperPR = mm_pi[,"upper.PI"])
+      mod_table <- data.frame(name = firstup(as.character(mm_pi[,1])),
+                              condition = mm_pi[,2], estimate = mm_pi[,"emmean"],
+                              lowerCL = mm_pi[,"lower.CL"],
+                              upperCL = mm_pi[,"upper.CL"],
+                              lowerPR = mm_pi[,"lower.PI"],
+                              upperPR = mm_pi[,"upper.PI"])
 
     }
 
-    mod_table$name <- factor(mod_table$name, levels = mod_table$name, labels = mod_table$name)
+    mod_table$name <- factor(mod_table$name,
+                             levels = mod_table$name,
+                             labels = mod_table$name)
 
     output <- list(mod_table = mod_table,
                         data = data2)
