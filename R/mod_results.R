@@ -61,7 +61,7 @@ marginal_means <- function(model, mod = "1", group, data, weights = "prop", by =
     if(model$test == "t"){
       df_mod = as.numeric(model$ddf[[1]])
     } else{
-      df_mod = 1000000
+      df_mod = 100000000 # almost identical to z value
     }
 
        mm <- emmeans::emmeans(grid, specs = mod, df = df_mod, by = by, weights = weights, ...)
