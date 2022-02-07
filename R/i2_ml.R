@@ -123,7 +123,6 @@ matrix_i2 <- function(model){
 #' @title ratio_i2
 #' @description I2 (I-squared) for mulilevel meta-analytic models based on Nakagawa & Santos (2012). Under multilevel models, we can have a multiple I2 (see also Senior et al. 2016).
 #' @param model Model object of class 'rma.mv', 'rma'
-#' @export
 #' @examples
 #' \dontrun{
 #' # English example
@@ -133,7 +132,7 @@ matrix_i2 <- function(model){
 #' I2_eng_1 <- i2_ml(english_MA, data = english, boot = 1000)
 #' I2_eng_2 <- i2_ml(english_MA, data = english, method = "ratio")
 #' }
-
+#' @export
 ratio_i2 <- function(model){
   # sigma2_v = typical sampling error variance
   sigma2_v <- sum(1 / model$vi) * (model$k - 1) /
