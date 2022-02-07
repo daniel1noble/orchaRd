@@ -15,6 +15,8 @@
 #' @export
 r2_ml <- function(model, data, boot = NULL) {
 
+  if(all(class(model) %in% c("rma.mv", "rma")) == FALSE) {stop("Sorry, you need to fit a metafor model of class rma.mv or rma")}
+
   R2 <- R2_calc(model)
 
   if(!is.null(boot)){
@@ -62,6 +64,7 @@ return(R2)
 #' @export
 
 R2_calc <- function(model){
+  if(all(class(model) %in% c("rma.mv", "rma")) == FALSE) {stop("Sorry, you need to fit a metafor model of class rma.mv or rma")}
   # fixed effect variance
   fix <- var(as.numeric(as.vector(model$b) %*% t(as.matrix(model$X))))
 
