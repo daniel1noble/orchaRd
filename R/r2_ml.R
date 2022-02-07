@@ -47,6 +47,19 @@ return(R2)
 
 }
 
+#' @title R2_calc
+#' @description Calculated R2 (R-squared) for mixed (mulitlevel) models, based on Nakagawa & Schielzeth (2013)
+#' @param model Model object of class 'rma.mv', 'rma'
+#' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
+#' @author Daniel Noble - daniel.noble@anu.edu.au
+#' @examples
+#' \dontrun{
+#' data(lim)
+#' lim$vi<-(1/sqrt(lim$N - 3))^2
+#' lim_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~Phylum-1, random=list(~1|Article, ~1|Datapoint), data=lim)
+#' R2 <- R2_calc(lim_MR)
+#' }
+#' @export
 
 R2_calc <- function(model){
   # fixed effect variance
