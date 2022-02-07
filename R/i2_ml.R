@@ -9,6 +9,7 @@
 #' @author Daniel Noble - daniel.noble@anu.edu.au
 #' @examples
 #' \dontrun{
+#' # ** IMPORTANT NOTE ** boot = 10 is set LOW deliberately to make the models run fast. You should always run for at least boot = 1000
 #' # English example
 #' data(english)
 #' english <- escalc(measure = "SMD", n1i = NStartControl, sd1i = SD_C, m1i = MeanC, n2i = NStartExpt, sd2i = SD_E, m2i = MeanE, var.names=c("SMD","vSMD"),data = english)
