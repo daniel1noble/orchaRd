@@ -2,6 +2,7 @@
 
 S3method(print,orchard)
 export("%>%")
+export(R2_calc)
 export(Zr_to_r)
 export(caterpillars)
 export(firstup)
