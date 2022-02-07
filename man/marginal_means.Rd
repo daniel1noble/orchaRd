@@ -2,7 +2,7 @@
 % Please edit documentation in R/mod_results.R
 \name{marginal_means}
 \alias{marginal_means}
-\title{marginal_means}
+\title{mod_results}
 \usage{
 marginal_means(
   model,
@@ -32,23 +32,41 @@ marginal_means(
 
 \item{...}{Additonal arguments passed to emmeans::emmeans()}
 }
+\value{
+A data frame containing all the model results including mean effect size estimate, confidence and prediction intervals
+}
 \description{
-Function to to get marginal means from meta-regression models with single or multiple moderator variables that are both continuous or categorical.
+Using a metafor model object of class rma or rma.mv it creates a table of model results containing the mean effect size estimates for all levels of a given categorical moderator, their corresponding confidence intervals and prediction intervals. Function can calculate marginal means from meta-regression models with single or multiple moderator variables that are both continuous or categorical.
 }
 \examples{
 \dontrun{
+# Simple eklof data
+data(eklof)
+eklof<-metafor::escalc(measure="ROM", n1i=N_control, sd1i=SD_control,
+m1i=mean_control, n2i=N_treatment, sd2i=SD_treatment, m2i=mean_treatment,
+data=eklof)
+# Add the unit level predictor
+eklof$Datapoint<-as.factor(seq(1, dim(eklof)[1], 1))
+# fit a MLMR - accouting for some non-independence
+eklof_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~ Grazer.type, random=list(~1|ExptID,
+~1|Datapoint), data=eklof)
+results <- mod_results(eklof_MR, mod = "Grazer.type", group = "ExptID", data=eklof)
+
+# Fish example demonstrating marginalised means
 data(fish)
 warm_dat <- fish
 model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 | es_ID), mods = ~ experimental_design + trait.type + deg_dif + treat_end_days, method = "REML", test = "t", data = warm_dat, control=list(optimizer="optim", optmethod="Nelder-Mead"))
-  overall <- marginal_means(model, group = "group_ID", data = warm_dat)
-across_trait <- marginal_means(model, group = "group_ID", mod = "trait.type", data = warm_dat)
-across_trait_by_degree_diff <- marginal_means(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif", data = warm_dat)
-across_trait_by_degree_diff_at_treat_end_days10 <- marginal_means(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = 10), by = "deg_dif",data = warm_dat)
-across_trait_by_degree_diff_at_treat_end_days10And50 <- marginal_means(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "deg_dif", data = warm_dat)
-across_trait_by_treat_end_days10And50 <- marginal_means(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "treat_end_days", data = warm_dat)
-across_trait_by_treat_end_days10And50_ordinaryMM <- marginal_means(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "treat_end_days", weights = "prop", data = warm_dat)
+  overall <- mod_results(model, group = "group_ID", data = warm_dat)
+across_trait <- mod_results(model, group = "group_ID", mod = "trait.type", data = warm_dat)
+across_trait_by_degree_diff <- mod_results(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif", data = warm_dat)
+across_trait_by_degree_diff_at_treat_end_days10 <- mod_results(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = 10), by = "deg_dif",data = warm_dat)
+across_trait_by_degree_diff_at_treat_end_days10And50 <- mod_results(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "deg_dif", data = warm_dat)
+across_trait_by_treat_end_days10And50 <- mod_results(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "treat_end_days", data = warm_dat)
+across_trait_by_treat_end_days10And50_ordinaryMM <- mod_results(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "treat_end_days", weights = "prop", data = warm_dat)
+
+# Fish data example with a heteroscedastic error
 model_het <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 + trait.type| es_ID), mods = ~ trait.type + deg_dif, method = "REML", test = "t", rho = 0, struc = "HCS", data = warm_dat, control=list(optimizer="optim", optmethod="Nelder-Mead"))
-HetModel <- marginal_means(model_het, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif", weights = "prop", data = warm_dat)
+HetModel <- mod_results(model_het, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif", weights = "prop", data = warm_dat)
 orchard_plot(HetModel, xlab = "lnRR", data = warm_dat)
 }
 }
