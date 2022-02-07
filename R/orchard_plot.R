@@ -68,9 +68,9 @@ orchard_plot <- function(object, mod = "1", group, data, xlab, N = "none",
                          #k.size = 3.5)
 {
   ## evaluate choices
-     transfm <- match.arg(transfm) # if not specified it takes the first choice
-  legend.pos <- match.arg(legend.pos)
-       k.pos <- match.arg(k.pos)
+     transfm <- match.arg(NULL, choices = transfm) # if not specified it takes the first choice
+  legend.pos <- match.arg(NULL, choices = legend.pos)
+       k.pos <- match.arg(NULL, choices = k.pos)
 
 	if(any(class(object) %in% c("rma.mv", "rma"))){
 
