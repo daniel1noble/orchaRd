@@ -50,13 +50,6 @@
 #' }
 #' @export
 
-# Note that cb = TRUE - we run out colour quite quickly
-# TODO - we should say more than 8 groups (cb) we use cb = FALSE - we can use
-# TODO- we can only do up to 5 conditions for drawing purposes (add warnings)
-# TODO - make it possible to where we want to put legend - 1, 2, 3, 4 (top.right, top.left, bottom.right, bottom.left)
-# TODO - making we can turn on and off legends too?? - I think we should
-# TODO - we do not really need "Int" for marginal_means
-# TODO - suppress one or more levels within a categorical moderator
 
 orchard_plot <- function(object, mod = "1", group, data, xlab, N = "none",
                          alpha = 0.5, angle = 90, cb = FALSE, k = TRUE, g = TRUE,
