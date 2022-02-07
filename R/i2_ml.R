@@ -11,13 +11,13 @@
 #' data(english)
 #' english <- escalc(measure = "SMD", n1i = NStartControl, sd1i = SD_C, m1i = MeanC, n2i = NStartExpt, sd2i = SD_E, m2i = MeanE, var.names=c("SMD","vSMD"),data = english)
 #' english_MA <- rma.mv(yi = SMD, V = vSMD, random = list( ~ 1 | StudyNo, ~ 1 | EffectID), data = english)
-#' I2 <- i2_ml(english_MA, boot = 1000)
+#' I2 <- i2_ml(english_MA, data = english, boot = 1000)
 #' }
 #' @references Senior, A. M., Grueber, C. E., Kamiya, T., Lagisz, M., O’Dwyer, K., Santos, E. S. A. & Nakagawa S. 2016. Heterogeneity in ecological and evolutionary meta-analyses: its magnitudes and implications. *Ecology* 97(12): 3293-3299.
 #' @references Nakagawa, S, and Santos, E.S.A. 2012. Methodological issues and advances in biological meta-analysis. *Evolutionary Ecology* 26(5): 1253-1274.
 #' @export
 
-i2_ml <- function(model, method = c("ns", "wv"), boot = NULL) {
+i2_ml <- function(model, method = c("ns", "wv"), data, boot = NULL) {
 
   ## evaluate choices
   method <- match.arg(method)
@@ -47,15 +47,17 @@ i2_ml <- function(model, method = c("ns", "wv"), boot = NULL) {
     sim <- simulate(model, nsim=boot)
 
     # Get formula from model object. This is needed for the function to work. Slightly tricky to generalise but doable with careful checks
-    random_formula <- as.formula(paste0("~ 1 | ", model$s.names, collapse = " "))
+    random_formula <- model$random
       mods_formula <- formula(model, type = "mods") #in case moderators
+                vi <- model$vi
 
      I2_each <- sapply(sim, function(ysim) { # Need to get this working with formula of model
 
              # The model
-             tmp <- rma.mv(ysim, vSMD,
-                           random = list( ~ 1 | StudyNo, ~ 1 | EffectID),
-                           data=english)
+             tmp <- rma.mv( ysim, vi,
+                            mods = mods_formula,
+                           random = random_formula,
+                           data=data)
              # Typical sampling error variance
              sigma2_v <- sum(1 / tmp$vi) * (tmp$k - 1) / (sum(1 / tmp$vi)^2 - sum((1 / tmp$vi)^2))
 
