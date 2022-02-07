@@ -112,7 +112,7 @@ marginal_means <- function(model, mod = "1", group, data, weights = "prop", by =
 #' @export
 
 # TODO I think we can make it general and get PI with hetero from predict function
-# TODO we want to add gamma too
+# TODO we want to add gamma too (ask Dan)
 # TODO - if we model Hetero for a particular categorical variable then, we do not want to
 # TODO - this is actually challenging to make it general (they can have tau and gamma but the moderator needs to be the same)
 # TODO - warning for just one kind of categorical variables for taus and gammas
