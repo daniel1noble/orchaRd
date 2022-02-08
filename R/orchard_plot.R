@@ -89,7 +89,7 @@ orchard_plot <- function(object, mod = "1", group, data, xlab, N = "none",
 
 	if(any(N != "none")){
 	  data_trim$scale <- N
-		  legend <- paste0("Sample Size (", "N)",")") # we want to use italic
+		  legend <- paste0("Sample Size (", "N",")") # we want to use italic
 	}
 
 	if(transfm == "tanh"){
