@@ -57,7 +57,6 @@ orchard_plot <- function(object, mod = "1", group, data, xlab, N = "none",
                          legend.pos = c("bottom.right", "bottom.left",  "top.right", "top.left", "top.out", "bottom.out"),
                          k.pos = c("right", "left"),
                          weights = "prop", by = NULL, at = NULL)
-                         #k.size = 3.5)
 {
   ## evaluate choices
      transfm <- match.arg(NULL, choices = transfm) # if not specified it takes the first choice
