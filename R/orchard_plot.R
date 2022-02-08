@@ -81,31 +81,31 @@ orchard_plot <- function(object, mod = "1", group, data, xlab, N = "none",
 
 	mod_table <- results$mod_table
 
-  data <- results$data
-  data$moderator <- factor(data$moderator, levels = mod_table$name, labels = mod_table$name)
+  data_trim <- results$data
+  data_trim$moderator <- factor(data_trim$moderator, levels = mod_table$name, labels = mod_table$name)
 
-	data$scale <- (1/sqrt(data[,"vi"]))
+  data_trim$scale <- (1/sqrt(data[,"vi"]))
 	legend <- "Precision (1/SE)"
 
 	if(any(N != "none")){
-		  data$scale <- N
+	  data_trim$scale <- N
 		  legend <- paste0("Sample Size (", "N)",")") # we want to use italic
 	}
 
 	if(transfm == "tanh"){
 		                   cols <- sapply(mod_table, is.numeric)
 		mod_table[,cols] <- Zr_to_r(mod_table[,cols])
-		                data$yi <- Zr_to_r(data$yi)
+		data_trim$yi <- Zr_to_r(data_trim$yi)
 		                  label <- xlab
 	}else{
 		label <- xlab
 	}
 
 	# Add in total effect sizes for each level
-	 mod_table$K <- as.vector(by(data, data[,"moderator"], function(x) length(x[,"yi"])))
+	 mod_table$K <- as.vector(by(data_trim, data_trim[,"moderator"], function(x) length(x[,"yi"])))
 
 	# Add in total levels of a grouping variable (e.g., study ID) within each moderator level.
-	 mod_table$g <- as.vector(num_studies(data, moderator, stdy)[,2])
+	 mod_table$g <- as.vector(num_studies(data_trim, moderator, stdy)[,2])
 
 	 # the number of groups in a moderator & data points
 	 group_no <- length(unique(mod_table[, "name"]))
@@ -124,7 +124,7 @@ orchard_plot <- function(object, mod = "1", group, data, xlab, N = "none",
 
 	   plot <- ggplot2::ggplot() +
 	     # pieces of fruit (bee-swarm and bubbles)
-	     ggbeeswarm::geom_quasirandom(data = data, ggplot2::aes(y = yi, x = moderator, size = scale, colour = moderator), alpha=alpha) +
+	     ggbeeswarm::geom_quasirandom(data = data_trim, ggplot2::aes(y = yi, x = moderator, size = scale, colour = moderator), alpha=alpha) +
 
 	     ggplot2::geom_hline(yintercept = 0, linetype = 2, colour = "black", alpha = alpha) +
 	     # creating CI
@@ -151,7 +151,7 @@ orchard_plot <- function(object, mod = "1", group, data, xlab, N = "none",
 
 	  plot <- ggplot2::ggplot() +
 	    # pieces of fruit (bee-swarm and bubbles)
-	    ggbeeswarm::geom_quasirandom(data = data, ggplot2::aes(y = yi, x = moderator, size = scale, colour = moderator), alpha=alpha) +
+	    ggbeeswarm::geom_quasirandom(data = data_trim, ggplot2::aes(y = yi, x = moderator, size = scale, colour = moderator), alpha=alpha) +
 
 	    ggplot2::geom_hline(yintercept = 0, linetype = 2, colour = "black", alpha = alpha) +
 	    # creating CI
@@ -199,19 +199,19 @@ orchard_plot <- function(object, mod = "1", group, data, xlab, N = "none",
 	  # putting k and g in
 	  if(k == TRUE && g == FALSE && k.pos == "right"){
 	    plot <- plot +
-	      ggplot2::annotate('text', y = (max(data$yi) + (max(data$yi)*0.10)), x = (seq(1, group_no, 1)+0.3),
+	      ggplot2::annotate('text', y = (max(data_trim$yi) + (max(data_trim$yi)*0.10)), x = (seq(1, group_no, 1)+0.3),
 	                        label= paste("italic(k)==", mod_table$K[1:group_no]), parse = TRUE, hjust = "right", size = 3.5)
 	  } else if(k == TRUE && g == FALSE && k.pos == "left") {
-	    plot <- plot +  ggplot2::annotate('text', y = (min(data$yi) + (min(data$yi)*0.10)), x = (seq(1, group_no, 1)+0.3),
+	    plot <- plot +  ggplot2::annotate('text', y = (min(data_trim$yi) + (min(data_trim$yi)*0.10)), x = (seq(1, group_no, 1)+0.3),
 	                                      label= paste("italic(k)==", mod_table$K[1:group_no]), parse = TRUE, hjust = "left", size = 3.5)
 	  } else if (k == TRUE && g == TRUE && k.pos == "right"){
 	    # get group numbers for moderator
-	    plot <- plot + ggplot2::annotate('text', y = (max(data$yi) + (max(data$yi)*0.10)), x = (seq(1, group_no, 1)+0.3),
+	    plot <- plot + ggplot2::annotate('text', y = (max(data_trim$yi) + (max(data_trim$yi)*0.10)), x = (seq(1, group_no, 1)+0.3),
 	                        label= paste("italic(k)==", mod_table$K[1:group_no], " (", mod_table$g[1:group_no], ")"),
 	                        parse = TRUE, hjust = "right", size = 3.5)
 	  } else if (k == TRUE && g == TRUE && k.pos == "left"){
 	    # get group numbers for moderator
-	    plot <- plot + ggplot2::annotate('text',  y = (min(data$yi) + (min(data$yi)*0.10)), x = (seq(1, group_no, 1)+0.3),
+	    plot <- plot + ggplot2::annotate('text',  y = (min(data_trim$yi) + (min(data_trim$yi)*0.10)), x = (seq(1, group_no, 1)+0.3),
 	                        label= paste("italic(k)==", mod_table$K[1:group_no], " (", mod_table$g[1:group_no], ")"),
 	                        parse = TRUE, hjust = "left", size = 3.5)
 	  }
