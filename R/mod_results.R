@@ -171,7 +171,7 @@ return(tmp)
 #'  model <- rma.mv(yi = SMD, V = vSMD, random = list( ~ 1 | StudyNo, ~ 1 | EffectID), data = english)
 #'  test3 <-  get_data_raw(english_MA, mod = "1", group = "StudyNo", data = english)}
 
-get_data_raw <- function(model, mod, group, data){
+get_data_raw <- function(model, mod, group, data, at = NULL){
 
   if(missing(group)){
     stop("Please specify the 'group' argument by providing the name of the grouping variable. See ?mod_results")
@@ -188,12 +188,21 @@ get_data_raw <- function(model, mod, group, data){
      position <- as.numeric(attr(model$X, "dimnames")[[1]])
          data <- data[position, ] }
 
+  if(!is.null(at)){
+    # Find the at slot in list that pertains to the moderator and extract levels
+    at_mod <- at[[mod]]
+
+    # Subset the data to only the levels in the moderator
+    data <- data[data[,mod] %in% at_mod,]
+  }
+
     if(mod == "1"){
       moderator <- "Intrcpt"
     }else{
       # Get moderator
        moderator <- as.character(data[,mod]) # Could default to base instead of tidy
        moderator <- firstup(moderator)
+
     }
 
     # Extract study grouping variable to calculate the
@@ -278,6 +287,7 @@ num_studies <- function(data, mod, group){
             dplyr::group_by({{mod}}) %>%
             dplyr::summarise(stdy = length(unique({{group}})))
 
+   table <- table[!is.na(table$moderator),]
   # Rename, and return
     colnames(table) <- c("Parameter", "Num_Studies")
       return(data.frame(table))
