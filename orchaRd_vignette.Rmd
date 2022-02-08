@@ -45,7 +45,7 @@ To install `orchaRd` use the following code in R:
 ```{r echo = TRUE, eval = TRUE, results = 'hide', warning=FALSE, message=FALSE,  class.source='klippy'}
 #install.packages("pacman")
 devtools::install_github("daniel1noble/orchaRd", force = TRUE)
-pacman::p_load(devtools, tidyverse, metafor, patchwork, R.rsp, orchaRd)
+pacman::p_load(devtools, tidyverse, metafor, patchwork, R.rsp, orchaRd, emmeans)
 ```
 
 Installation will make the primary functions accessible to users along with their help files. You will also need the `tidyverse` and `metafor` packages.
@@ -324,7 +324,7 @@ From Figure \@ref(fig:Figure10) we can see that many taxonimic groups have very 
   lim_MR_results <- orchaRd::mod_results(lim_MR, mod = "Phylum", group = "Article", 
                                          data = lim, 
                                            at = list(Phylum = c("Chordata", "Arthropoda", "Mollusca")))
-  orchaRd::caterpillars(lim_MR_results, mod = "Phylum", group = "Article", data = lim, xlab = "Correlation coefficient", transfm = "tanh", g = FALSE)
+  orchaRd::orchard_plot(lim_MR_results,  data = lim, xlab = "Correlation coefficient", transfm = "tanh", g = FALSE)
 ```
 
 # Orchard Plots with Meta-regression Models: Marginalised means and heteroscedastic residual variances
@@ -372,7 +372,7 @@ We can see from above that we now have four variances; one estimated for each le
 
 ```{r figure12, fig.cap = "Orchard plot with heteroscedastic error for trait typess", echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE, class.source='klippy'}
 
-het_model <- orchaRd::marginal_means(model_het, 
+het_model <- orchaRd::mod_results(model_het, 
                                      group = "group_ID", 
                                        mod = "trait.type", 
                                       data = warm_dat)
@@ -417,7 +417,7 @@ Our model is complicated. It not only estimates the effects of trait type, but t
 
 ```{r, figure13, fig.cap = "Orchard plot of marginalised mean effect sizes for 5, 10, and 15 degree Celcius temperture differences", echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE, class.source='klippy'}
 
-HetModel <- orchaRd::marginal_means(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif", weights = "prop", data = warm_dat)
+HetModel <- orchaRd::mod_results(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif", weights = "prop", data = warm_dat)
 
 orchaRd::orchard_plot(HetModel, xlab = "lnRR", data = warm_dat, angle = 45, g = FALSE, legend.pos = "top.left") + 
   theme(legend.direction = "vertical")
