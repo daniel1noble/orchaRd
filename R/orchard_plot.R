@@ -57,8 +57,8 @@ orchard_plot <- function(object, mod = "1", group, data, xlab, N = "none",
                          k.pos = c("right", "left"),
                          weights = "prop", by = NULL, at = NULL)
 {
-  ## evaluate choices
-     transfm <- match.arg(NULL, choices = transfm) # if not specified it takes the first choice
+  ## evaluate choices, if not specified it takes the first choice
+     transfm <- match.arg(NULL, choices = transfm)
   legend.pos <- match.arg(NULL, choices = legend.pos)
        k.pos <- match.arg(NULL, choices = k.pos)
 
