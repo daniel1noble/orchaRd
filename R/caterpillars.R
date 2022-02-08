@@ -9,6 +9,9 @@
 #' @param transfm If set to "tanh", a tanh transformation will be applied to effect sizes, converting Zr will to a correlation or pulling in extreme, values for other effect sizes (lnRR, lnCVR, SMD). If "none" is chosen then it will default.
 #' @param k If TRUE, it displays k (number of effect sizes) on the plot
 #' @param g If TRUE, it displays g (number of grouping levels for each level of the moderator) on the plot
+#' @param by Used when one wants marginalised means. The 'condition' variable that one wishes to have the mean for the moderator vary.
+#' @param at Used when one wants marginalised means. The 'condition' that one wishes to calculate the means at, but is not presented in output
+#' @param weights Used when one wants marginalised means. How to marginalize categorical variables. The default is weights = "prop", which wights means for moderator levels based on their proportional representation in the data. For example, if "sex" is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal. IN the case if sex, for example, males and females are roughly equally prevalent in a population. As such, you can give the moderator levels equal weight using weights = "equal".
 #' @return Caterpillars plot
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
@@ -36,13 +39,16 @@
 #' }
 #' @export
 
-caterpillars <- function(object, mod = "1", data, group, xlab, overall = TRUE, transfm = c("none", "tanh"), k = TRUE, g = TRUE) {
+caterpillars <- function(object, mod = "1", data, group, xlab, overall = TRUE, transfm = c("none", "tanh"), k = TRUE, g = TRUE, at = NULL, by = NULL, weights = "prop") {
 
   if(any(class(object) %in% c("rma.mv", "rma"))){
+
     if(mod != "1"){
-      results <- orchaRd::mod_results(object, mod, data, group)
-    } else{
-      results <- orchaRd::mod_results(object, mod = "1", data, group)
+      results <-  orchaRd::mod_results(object, mod, group, data,
+                                       by = by, at = at, weights = weights)
+    } else {
+      results <-  orchaRd::mod_results(object, mod = "1", group, data,
+                                       by = by, at = at, weights = weights)
     }
   }
 
