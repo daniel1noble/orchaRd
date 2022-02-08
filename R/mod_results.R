@@ -9,6 +9,7 @@
 #' @param at The 'condition' that one wishes to calculate the means at, but is not presented in output
 #' @param data The data frame used to fit the rma.mv model object
 #' @param weights how to marginalize categorical variables. The default is weights = "prop", which wights means for moderator levels based on their proportional representation in the data. For example, if "sex" is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal. IN the case if sex, for example, males and females are roughly equally prevalent in a population. As such, you can give the moderator levels equal weight using weights = "equal".
+#' @param subset Default is FALSE, but use TRUE if you wish to subset levels of a moderator for plotting based on 'at' argument
 #' @param ... Additonal arguments passed to emmeans::emmeans()
 #' @return A data frame containing all the model results including mean effect size estimate, confidence and prediction intervals
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
@@ -48,12 +49,12 @@
 #'
 # We will need to make sure people use "1" or"moderator_names"
 
-mod_results <- function(model, mod = "1", group, data, weights = "prop", by = NULL, at = NULL, ...){
+mod_results <- function(model, mod = "1", group, data, weights = "prop", by = NULL, at = NULL, subset = FALSE, ...){
 
   if(all(class(model) %in% c("rma.mv", "rma")) == FALSE) {stop("Sorry, you need to fit a metafor model of class rma.mv or rma")}
 
   # Extract data
-   data2 <- get_data_raw(model, mod, group, data, at = at)
+   data2 <- get_data_raw(model, mod, group, data, at = at, subset)
 
       model$data <- data
 
@@ -177,7 +178,7 @@ return(tmp)
 #'  model <- rma.mv(yi = SMD, V = vSMD, random = list( ~ 1 | StudyNo, ~ 1 | EffectID), data = english)
 #'  test3 <-  get_data_raw(model, mod = "1", group = "StudyNo", data = english)}
 
-get_data_raw <- function(model, mod, group, data, at = NULL){
+get_data_raw <- function(model, mod, group, data, at = NULL, subset = TRUE){
 
   if(missing(group)){
     stop("Please specify the 'group' argument by providing the name of the grouping variable. See ?mod_results")
@@ -194,7 +195,7 @@ get_data_raw <- function(model, mod, group, data, at = NULL){
      position <- as.numeric(attr(model$X, "dimnames")[[1]])
          data <- data[position, ] }
 
-  if(!is.null(at)){
+  if(!is.null(at) & subset){
     # Find the at slot in list that pertains to the moderator and extract levels
     at_mod <- at[[mod]]
 

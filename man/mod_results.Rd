@@ -12,6 +12,7 @@ mod_results(
   weights = "prop",
   by = NULL,
   at = NULL,
+  subset = FALSE,
   ...
 )
 }
@@ -29,6 +30,8 @@ mod_results(
 \item{by}{The 'condition' variable that one wishes to have the mean for the moderator vary.}
 
 \item{at}{The 'condition' that one wishes to calculate the means at, but is not presented in output}
+
+\item{subset}{Default is FALSE, but use TRUE if you wish to subset levels of a moderator for plotting based on 'at' argument}
 
 \item{...}{Additonal arguments passed to emmeans::emmeans()}
 }

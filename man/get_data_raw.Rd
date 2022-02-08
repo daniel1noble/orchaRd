@@ -4,7 +4,7 @@
 \alias{get_data_raw}
 \title{get_data_raw}
 \usage{
-get_data_raw(model, mod, group, data, at = NULL)
+get_data_raw(model, mod, group, data, at = NULL, subset = TRUE)
 }
 \arguments{
 \item{model}{rma.mv object}
