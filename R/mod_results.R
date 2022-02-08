@@ -48,7 +48,7 @@
 #'
 # We will need to make sure people use "1" or"moderator_names"
 
-marginal_means <- function(model, mod = "1", group, data, weights = "prop", by = NULL, at = NULL, ...){
+mod_results <- function(model, mod = "1", group, data, weights = "prop", by = NULL, at = NULL, ...){
 
   if(all(class(model) %in% c("rma.mv", "rma")) == FALSE) {stop("Sorry, you need to fit a metafor model of class rma.mv or rma")}
 
