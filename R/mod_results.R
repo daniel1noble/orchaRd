@@ -174,11 +174,11 @@ return(tmp)
 get_data_raw <- function(model, mod, group, data){
 
   if(missing(group)){
-    stop("Please specify the 'group' argument by providing the name of the grouping variable. See ?marginal_means.")
+    stop("Please specify the 'group' argument by providing the name of the grouping variable. See ?mod_results")
   }
 
   if(missing(data)){
-    stop("Please specify the 'data' argument by providing the data used to fit the model. See ?marginal_means")
+    stop("Please specify the 'data' argument by providing the data used to fit the model. See ?mod_results")
   }
 
   # Extract data
