@@ -214,8 +214,8 @@ get_data_raw <- function(model, mod, group, data, at = NULL){
       stdy <- data[,group] # Could default to base instead of tidy
 
     # Extract effect sizes
-        yi <- model$yi
-        vi <- model$vi
+        yi <- data$yi
+        vi <- data$vi
       type <- attr(model$yi, "measure")
 
   data_reorg <- data.frame(yi, vi, moderator, stdy, type)
