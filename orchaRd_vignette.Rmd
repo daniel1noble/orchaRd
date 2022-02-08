@@ -129,14 +129,8 @@ english_MR0 <- rma.mv(yi = SMD, V = vSMD, mods = ~ ManipType,
                      random = list(~ 1 | StudyNo, ~ 1 | EffectID), data = english)
 summary(english_MR0)
 
-# Now we can fit the meta-regression model without the intercept
-# we need this intercept-less model for the orchard plot
-english_MR <- rma.mv(yi = SMD, V = vSMD, mods = ~ ManipType - 1, 
-                     random = list(~ 1 | StudyNo, ~ 1 | EffectID), data = english)
-summary(english_MR)
-
 # Again, we can create a table of results
-res2 <- orchaRd::mod_results(english_MR, mod = "ManipType", data = english, group = "StudyNo")
+res2 <- orchaRd::mod_results(english_MR0, mod = "ManipType", data = english, group = "StudyNo")
 res2
 
 # we fit a meta-regression (contrast) for the log coefficient of variation
@@ -146,15 +140,9 @@ senior_MR0 <- rma.mv(
 )
 summary(senior_MR0)
 
-# Let's fit a meta-regression without the intercept
-senior_MR <- rma.mv(
-  yi = lnCVR, V = vlnCVR, mods = ~ ManipType - 1, random = list(~ 1 | StudyNo, ~ 1 | EffectID),
-  data = english
-)
-summary(senior_MR)
 
 # creating a table of results
-res3 <- orchaRd::mod_results(senior_MR, mod = "ManipType", data = english, group = "StudyNo")
+res3 <- orchaRd::mod_results(senior_MR0, mod = "ManipType", data = english, group = "StudyNo")
 res3
 
 
@@ -217,11 +205,6 @@ eklof_MR0 <- rma.mv(
 
 summary(eklof_MR0)
 
-# fit a meta-regression without the intercept and we can use this model for the orchard plot
-eklof_MR <- rma.mv(
-  yi = lnRR, V = vlnRR, mods = ~ Grazer.type - 1, random = list(~ 1 | ExptID, ~ 1 | Datapoint),
-  data = eklof
-)
 
 ```
 
@@ -229,10 +212,10 @@ Above we have fit a meta-regression model using "Grazer Type" as a moderator whi
 
 ```{r Figure6, echo = TRUE, eval = TRUE, class.source='klippy', warning=FALSE, message=FALSE, fig.width = 6, fig.height = 8, fig.cap = "Orchard plots of the effects of predation on benthic invertebrate communities compared using the log response ratio. Top panel is the default plot and bottom panel a plot containing changes in label axes"}
 
-p3 <- orchaRd::orchard_plot(eklof_MR, mod = "Grazer.type", data = eklof, group = "ExptID", xlab = "log(Response ratio) (lnRR)", 
+p3 <- orchaRd::orchard_plot(eklof_MR0, mod = "Grazer.type", data = eklof, group = "ExptID", xlab = "log(Response ratio) (lnRR)", 
   transfm = "none") 
 
-p4 <- orchaRd::orchard_plot(eklof_MR, mod = "Grazer.type", data = eklof, group = "ExptID", xlab = "log(Response ratio) (lnRR)", 
+p4 <- orchaRd::orchard_plot(eklof_MR0, mod = "Grazer.type", data = eklof, group = "ExptID", xlab = "log(Response ratio) (lnRR)", 
   transfm = "none", angle = 45, g = FALSE) 
 
 p3/p4
@@ -243,9 +226,9 @@ The other thing we can change is the type of scaling we wish to use. Let's say w
 
 ```{r Figure7, echo = TRUE, eval = TRUE, class.source='klippy', warning=FALSE, message=FALSE, fig.width = 6, fig.height = 8, fig.cap = "Orchard plots of the effects of predation on benthic invertebrate communities compared using the log response ratio. Top panel is the default plot and bottom panel a plot containing changes in label axes and scaling with sample size instead of precision"}
 
-p5 <- orchaRd::orchard_plot(eklof_MR, mod = "Grazer.type", data = eklof, group = "ExptID", xlab = "log(Response ratio) (lnRR)") 
+p5 <- orchaRd::orchard_plot(eklof_MR0, mod = "Grazer.type", data = eklof, group = "ExptID", xlab = "log(Response ratio) (lnRR)") 
 
-p6 <- orchaRd::orchard_plot(eklof_MR, mod = "Grazer.type", data = eklof, group = "ExptID", xlab = "log(Response ratio) (lnRR)", angle = 45, N = eklof$N, g = FALSE) 
+p6 <- orchaRd::orchard_plot(eklof_MR0, mod = "Grazer.type", data = eklof, group = "ExptID", xlab = "log(Response ratio) (lnRR)", angle = 45, N = eklof$N, g = FALSE) 
 
 p5/p6
 
@@ -257,7 +240,7 @@ Again, we can also draw the caterpillars-plot couterpart for this data set (bott
 
 ```{r Figure8, echo = TRUE, eval = TRUE, class.source='klippy', warning=FALSE, message=FALSE, fig.width = 6, fig.height = 4, fig.cap = "Caterpillars plot of the effects of predation on benthic invertebrate communities compared using the log response ratio"}
 
-eklof_MR_result <- orchaRd::mod_results(eklof_MR, mod = "Grazer.type", data = eklof, group = "ExptID")
+eklof_MR_result <- orchaRd::mod_results(eklof_MR0, mod = "Grazer.type", data = eklof, group = "ExptID")
 orchaRd::caterpillars(eklof_MR_result, mod = "Grazer.type", data = eklof, group = "ExptID", xlab = "log(Response ratio) (lnRR)") 
 
 ```
@@ -367,7 +350,7 @@ model_het <- metafor::rma.mv(    yi = lnrr, V = lnrr_vi,
                                 rho = 0, struc = "HCS", 
                                data = warm_dat, 
                             control = list(optimizer="optim", optmethod="Nelder-Mead"))
-print(model_het)
+model_het
 
 ```
 
@@ -384,6 +367,7 @@ orchaRd::orchard_plot(het_model, xlab = "lnRR", data = warm_dat)
 ```
 
 We can now see from Figure \@ref(fig:figure12) that the variance in effects for the morphological and physiological trait categories are smaller than for life-history and behavioural trait categories; likely because of the very small sample sizes in the latter trait categories.
+
 
 #### Example 5: Meta-regression and marginalised mean effect sizes
 
