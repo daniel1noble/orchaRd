@@ -84,7 +84,7 @@ orchard_plot <- function(object, mod = "1", group, data, xlab, N = "none",
   data_trim <- results$data
   data_trim$moderator <- factor(data_trim$moderator, levels = mod_table$name, labels = mod_table$name)
 
-  data_trim$scale <- (1/sqrt(data[,"vi"]))
+  data_trim$scale <- (1/sqrt(data_trim[,"vi"]))
 	legend <- "Precision (1/SE)"
 
 	if(any(N != "none")){
