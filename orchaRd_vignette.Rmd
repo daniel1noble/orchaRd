@@ -256,7 +256,7 @@ Again, we can also draw the caterpillars-plot couterpart for this data set (bott
 
 ```{r Figure8, echo = TRUE, eval = TRUE, class.source='klippy', warning=FALSE, message=FALSE, fig.width = 6, fig.height = 4, fig.cap = "Caterpillars plot of the effects of predation on benthic invertebrate communities compared using the log response ratio"}
 
-eklof_MR_result <- mod_results(eklof_MR, mod = "Grazer.type", data = eklof, group = "ExptID")
+eklof_MR_result <- orchaRd::mod_results(eklof_MR, mod = "Grazer.type", data = eklof, group = "ExptID")
 orchaRd::caterpillars(eklof_MR_result, mod = "Grazer.type", data = eklof, group = "ExptID", xlab = "log(Response ratio) (lnRR)") 
 
 ```
@@ -315,6 +315,17 @@ Finally, we make a comparable caterpillars plot.
 ```
 
 Compared to the orchard plot (Figure \@ref(fig:Figure10), Figure \@ref(fig:Figure11)) does not look as elegant, unlike the previous comparisons. This is because the groups with small sample sizes are packed at the top of the figure. 
+
+From Figure \@ref(fig:Figure10) we can see that many taxonimic groups have very little data. We may want instead to just focus the readers attention to means of groups with sufficient data. The new `mod_results` function allows us to do this using the maginalised means approach. We can do that as follows:
+
+```{r Figure11, echo = TRUE, eval = TRUE, class.source='klippy', warning=FALSE, message=FALSE, fig.width = 6, fig.height = 10, fig.cap = "Caterpillars plot of the the strength of correlation between maternal and offspring size within-species"}
+  
+  #Plot the meta-regression model
+  lim_MR_results <- orchaRd::mod_results(lim_MR, mod = "Phylum", group = "Article", 
+                                         data = lim, 
+                                           at = list(Phylum = c("Chordata", "Arthropoda", "Mollusca")))
+  orchaRd::caterpillars(lim_MR_results, mod = "Phylum", group = "Article", data = lim, xlab = "Correlation coefficient", transfm = "tanh", g = FALSE)
+```
 
 # Orchard Plots with Meta-regression Models: Marginalised means and heteroscedastic residual variances
 
