@@ -26,8 +26,7 @@ orchard_plot(
   k.pos = c("right", "left"),
   weights = "prop",
   by = NULL,
-  at = NULL,
-  marginal = FALSE
+  at = NULL
 )
 }
 \arguments{
@@ -72,8 +71,6 @@ orchard_plot(
 \item{by}{Used when one wants marginalised means. The 'condition' variable that one wishes to have the mean for the moderator vary.}
 
 \item{at}{Used when one wants marginalised means. The 'condition' that one wishes to calculate the means at, but is not presented in output}
-
-\item{marginal}{Used when one wishes to produce marginalised means from a model. Used in conjunction with 'by', 'at' and 'weights' arguments. Defaults to "FALSE".}
 }
 \value{
 Orchard plot
