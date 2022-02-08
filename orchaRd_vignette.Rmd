@@ -97,7 +97,7 @@ In Figure \@ref(fig:Figure1), we simply add in the metafor model and it will cre
 I2 <- orchaRd::i2_ml(english_MA)
 
 orchaRd::orchard_plot(model_results, mod="1", xlab = "Standardised mean difference") + 
-  annotate(geom="text", x= 0.80, y= 1, label= paste0("italic(I)^{2} == ", round(I2[1],4)*100), # I want to use % but cannot do should come back
+  annotate(geom="text", x= 0.80, y= 1, label= paste0("italic(I)^{2} == ", round(I2[1],4)), # I want to use % but cannot do should come back
               color="black", parse = TRUE, size = 5) +
   scale_fill_manual(values="grey") +
   scale_colour_manual(values="grey")
@@ -142,9 +142,8 @@ summary(senior_MR0)
 
 
 # creating a table of results
-res3 <- orchaRd::mod_results(senior_MR0, mod = "ManipType", data = english, group = "StudyNo")
+res3 <- orchaRd::mod_results(senior_MR0, mod = "ManipType", data = english, group = "StudyNo", at = list(ManipType = "Quality"), subset = TRUE)
 res3
-
 
 # We can now plot SMD and lnCVR beside each other and compare the results
 p1 <- orchaRd::orchard_plot(res2, 
@@ -307,7 +306,8 @@ From Figure \@ref(fig:Figure10) we can see that many taxonimic groups have very 
   #Plot the meta-regression model
   lim_MR_results <- orchaRd::mod_results(lim_MR, mod = "Phylum", group = "Article", 
                                          data = lim, 
-                                           at = list(Phylum = c("Chordata", "Arthropoda", "Mollusca")))
+                                           at = list(Phylum = c("Chordata", "Arthropoda", "Mollusca")),
+                                           subset = TRUE)
   orchaRd::orchard_plot(lim_MR_results,  data = lim, xlab = "Correlation coefficient", transfm = "tanh", g = TRUE, angle = 45)
 ```
 
