@@ -8,7 +8,6 @@
 #' @param at Used when one wants marginalised means. The 'condition' that one wishes to calculate the means at, but is not presented in output
 #' @param data The data frame used to fit the rma.mv model object
 #' @param weights Used when one wants marginalised means. How to marginalize categorical variables. The default is weights = "prop", which wights means for moderator levels based on their proportional representation in the data. For example, if "sex" is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal. IN the case if sex, for example, males and females are roughly equally prevalent in a population. As such, you can give the moderator levels equal weight using weights = "equal".
-#' @param marginal Used when one wishes to produce marginalised means from a model. Used in conjunction with 'by', 'at' and 'weights' arguments. Defaults to "FALSE".
 #' @param xlab The effect size measure label.
 #' @param N  The vector of sample size which an effect size is based on. If default, we use precision (the inverse of sampling standard error)
 #' @param alpha The level of transparency for pieces of fruit (effect size)
@@ -57,7 +56,7 @@ orchard_plot <- function(object, mod = "1", group, data, xlab, N = "none",
                          transfm = c("none", "tanh"), condition.lab = "Condition",
                          legend.pos = c("bottom.right", "bottom.left",  "top.right", "top.left", "top.out", "bottom.out"),
                          k.pos = c("right", "left"),
-                         weights = "prop", by = NULL, at = NULL, marginal = FALSE)
+                         weights = "prop", by = NULL, at = NULL)
                          #k.size = 3.5)
 {
   ## evaluate choices
@@ -67,24 +66,14 @@ orchard_plot <- function(object, mod = "1", group, data, xlab, N = "none",
 
 	if(any(class(object) %in% c("rma.mv", "rma"))){
 
-	  if(marginal == FALSE){
-  	    if(mod != "1"){
-  			results <-  orchaRd::mod_results(object, mod, group, data)
-  		} else{
-  			results <-  orchaRd::mod_results(object, mod = "1", group, data)
-  		}
-	  }
-
-	  if(marginal == TRUE){
 	    if(mod != "1"){
-	    results <-  orchaRd::marginal_means(object, mod, group, data,
+	    results <-  orchaRd::mod_results(object, mod, group, data,
 	                                        by = by, at = at, weights = weights)
 	  } else {
-	    results <-  orchaRd::marginal_means(object, mod = "1", group, data,
+	    results <-  orchaRd::mod_results(object, mod = "1", group, data,
 	                                        by = by, at = at, weights = weights)
 	    }
 	  }
-	}
 
 	if(any(class(object) %in% c("orchard"))) {
 			results <- object
