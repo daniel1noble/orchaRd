@@ -53,7 +53,7 @@ mod_results <- function(model, mod = "1", group, data, weights = "prop", by = NU
   if(all(class(model) %in% c("rma.mv", "rma")) == FALSE) {stop("Sorry, you need to fit a metafor model of class rma.mv or rma")}
 
   # Extract data
-   data2 <- get_data_raw(model, mod, group, data)
+   data2 <- get_data_raw(model, mod, group, data, at = at)
 
       model$data <- data
 
