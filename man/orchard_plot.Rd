@@ -36,7 +36,7 @@ orchard_plot(
 
 \item{group}{The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes. Not needed of a orchard_plot is provided with a mod_results object of class 'orchard'.}
 
-\item{data}{The data frame used to fit the rma.mv model object}
+\item{data}{The data frame used to fit the rma.mv model object. Not needed of a orchard_plot is provided with a mod_results object of class 'orchard'.}
 
 \item{xlab}{The effect size measure label.}
 

@@ -159,6 +159,7 @@ return(tmp)
 #' @param mod the moderator variable
 #' @param group The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes.
 #' @param data The data frame used to fit the rma.mv model object
+#' @param  at If at is moderator levels then at will be used to subset levels.
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
 #' @return Returns a data frame

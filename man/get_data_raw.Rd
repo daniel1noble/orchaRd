@@ -14,6 +14,8 @@ get_data_raw(model, mod, group, data, at = NULL)
 \item{group}{The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes.}
 
 \item{data}{The data frame used to fit the rma.mv model object}
+
+\item{at}{If at is moderator levels then at will be used to subset levels.}
 }
 \value{
 Returns a data frame
