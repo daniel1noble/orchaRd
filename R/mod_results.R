@@ -56,12 +56,17 @@ mod_results <- function(model, mod = "1", group, data, weights = "prop", by = NU
    data2 <- get_data_raw(model, mod, group, data)
 
       model$data <- data
+
+      if(is.null(formula(model))){
+        model <- stats::update(model, "~1")
+      }
+
      grid <- emmeans::qdrg(object = model, at = at)
 
     if(model$test == "t"){
       df_mod = as.numeric(model$ddf[[1]])
     } else{
-      df_mod = 100000000 # almost identical to z value
+      df_mod = 1.0e6 # almost identical to z value
     }
 
        mm <- emmeans::emmeans(grid, specs = mod, df = df_mod, by = by, weights = weights, ...)
