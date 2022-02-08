@@ -200,6 +200,16 @@ get_data_raw <- function(model, mod, group, data, at = NULL){
 
     # Subset the data to only the levels in the moderator
     data <- data[data[,mod] %in% at_mod,]
+
+    yi <- model$yi[data[,mod] %in% at_mod]
+    vi <- model$vi[data[,mod] %in% at_mod]
+    type <- attr(model$yi, "measure")
+
+  } else {
+    # Extract effect sizes
+    yi <- model$yi
+    vi <- model$vi
+    type <- attr(model$yi, "measure")
   }
 
     if(mod == "1"){
@@ -208,16 +218,10 @@ get_data_raw <- function(model, mod, group, data, at = NULL){
       # Get moderator
        moderator <- as.character(data[,mod]) # Could default to base instead of tidy
        moderator <- firstup(moderator)
-
     }
 
     # Extract study grouping variable to calculate the
       stdy <- data[,group] # Could default to base instead of tidy
-
-    # Extract effect sizes
-        yi <- data$yi
-        vi <- data$vi
-      type <- attr(model$yi, "measure")
 
   data_reorg <- data.frame(yi, vi, moderator, stdy, type)
   row.names(data_reorg) <- 1:nrow(data_reorg)
