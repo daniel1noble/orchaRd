@@ -44,6 +44,7 @@ To install `orchaRd` use the following code in R:
 
 ```{r echo = TRUE, eval = TRUE, results = 'hide', warning=FALSE, message=FALSE,  class.source='klippy'}
 #install.packages("pacman")
+rm(list = ls())
 devtools::install_github("daniel1noble/orchaRd", force = TRUE)
 pacman::p_load(devtools, tidyverse, metafor, patchwork, R.rsp, orchaRd, emmeans)
 ```
@@ -75,7 +76,7 @@ We have fit a meta-analytic model and thus the only estimate we see is the overa
 
 ```{r echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE, class.source='klippy'}
 
-model_results <- orchaRd::mod_results(english_MA, mod = "1", data = english, group = "StudyNo")
+model_results <- orchaRd::mod_results(english_MA, mod = "1", at = NULL, data = english, group = "StudyNo")
 model_results
  
 ```
@@ -379,7 +380,7 @@ het_model <- orchaRd::mod_results(model_het,
                                        mod = "trait.type", 
                                       data = warm_dat)
   
-orchaRd::orchard_plot(het_model, xlab = "lnRR")
+orchaRd::orchard_plot(het_model, xlab = "lnRR", data = warm_dat)
 ```
 
 We can now see from Figure \@ref(fig:figure12) that the variance in effects for the morphological and physiological trait categories are smaller than for life-history and behavioural trait categories; likely because of the very small sample sizes in the latter trait categories.
@@ -432,7 +433,7 @@ We can also specify the specific value of `treat_end_day` if the user would like
 
 ```{r, figure14, fig.cap = "Orchard plot of marginalised mean effect sizes for 5, 10, and 15 degree Celcius temperture differences", echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE, class.source='klippy'}
 
-HetModel2 <- orchaRd::marginal_means(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10)), by = "deg_dif", weights = "prop", data = warm_dat)
+HetModel2 <- orchaRd::mod_results(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10)), by = "deg_dif", weights = "prop", data = warm_dat)
 
 orchaRd::orchard_plot(HetModel2, xlab = "lnRR", data = warm_dat, angle = 45, g = FALSE, legend.pos = "top.left") + 
   theme(legend.direction = "vertical")
