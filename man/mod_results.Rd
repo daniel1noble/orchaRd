@@ -17,7 +17,7 @@ mod_results(
 )
 }
 \arguments{
-\item{model}{rma.mv object}
+\item{model}{rma.mv model object}
 
 \item{mod}{Moderator variable of interest that one wants marginal means for. Defaults to intercept "1".}
 
@@ -25,13 +25,13 @@ mod_results(
 
 \item{data}{The data frame used to fit the rma.mv model object}
 
-\item{weights}{how to marginalize categorical variables. The default is weights = "prop", which wights means for moderator levels based on their proportional representation in the data. For example, if "sex" is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal. IN the case if sex, for example, males and females are roughly equally prevalent in a population. As such, you can give the moderator levels equal weight using weights = "equal".}
+\item{weights}{how to marginalize categorical variables. The default is weights = "prop", which wights means for moderator levels based on their proportional representation in the data. For example, if "sex" is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal. In the case of sex, for example, males and females are roughly equally prevalent in a population. As such, you can give the moderator levels equal weight using weights = "equal".}
 
-\item{by}{The 'condition' variable that one wishes to have the mean for the moderator vary.}
+\item{by}{Character name(s) of the 'condition' variables to use for grouping into separate tables.}
 
-\item{at}{The 'condition' that one wishes to calculate the means at, but is not presented in output}
+\item{at}{Named list of levels for the corresponding 'condition' variable(s). Used for marginalised predcitions or when one wishes to only present a subset of levels of the moderator (defined by 'mod' argument - see also 'subset' argument).}
 
-\item{subset}{Default is FALSE, but use TRUE if you wish to subset levels of a moderator for plotting based on 'at' argument}
+\item{subset}{Used when one wishes to only plot a subset of levels within the main moderator of interest defined by 'mod'. Default is FALSE, but use TRUE if you wish to subset levels of a moderator plotted (defined by 'mod') for plotting. Levels one wishes to plot are specified as a list with the level names as a character string in the 'at' argument. For subsetting to work, 'at' argument also needs to be specified so that 'mod_results' knows what levels one wishes to plot.}
 
 \item{...}{Additonal arguments passed to emmeans::emmeans()}
 }
