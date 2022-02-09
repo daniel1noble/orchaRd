@@ -25,7 +25,7 @@
 #' # fit a MLMR - accouting for some non-independence
 #' eklof_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~ Grazer.type, random=list(~1|ExptID,
 #' ~1|Datapoint), data=eklof)
-#' results <- mod_results(eklof_MR, mod = "Grazer.type", group = "ExptID", data=eklof)
+#' results <- mod_results(eklof_MR, mod = "Grazer.type", group = "ExptID")
 #'
 #' # Fish example demonstrating marginalised means
 #' data(fish)
@@ -52,6 +52,14 @@
 mod_results <- function(model, mod = "1", group, data, weights = "prop", by = NULL, at = NULL, subset = FALSE, ...){
 
   if(all(class(model) %in% c("rma.mv", "rma")) == FALSE) {stop("Sorry, you need to fit a metafor model of class rma.mv or rma")}
+
+  if(missing(group)){
+    stop("Please specify the 'group' argument by providing the name of the grouping variable. See ?mod_results")
+  }
+
+  if(missing(data)){
+    stop("Please specify the 'data' argument by providing the data used to fit the model. See ?mod_results")
+  }
 
   # Extract data
    data2 <- get_data_raw(model, mod, group, data, at = at, subset)
