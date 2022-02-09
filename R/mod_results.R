@@ -2,14 +2,14 @@
 
 #' @title mod_results
 #' @description Using a metafor model object of class rma or rma.mv it creates a table of model results containing the mean effect size estimates for all levels of a given categorical moderator, their corresponding confidence intervals and prediction intervals. Function can calculate marginal means from meta-regression models with single or multiple moderator variables that are both continuous or categorical.
-#' @param model rma.mv object
+#' @param model rma.mv model object
 #' @param mod Moderator variable of interest that one wants marginal means for. Defaults to intercept "1".
 #' @param group The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes.
-#' @param by The 'condition' variable that one wishes to have the mean for the moderator vary.
-#' @param at The 'condition' that one wishes to calculate the means at, but is not presented in output
+#' @param by Character name(s) of the 'condition' variables to use for grouping into separate tables.
+#' @param at Named list of levels for the corresponding 'condition' variable(s). Used for marginalised predcitions or when one wishes to only present a subset of levels of the moderator (defined by 'mod' argument - see also 'subset' argument).
 #' @param data The data frame used to fit the rma.mv model object
-#' @param weights how to marginalize categorical variables. The default is weights = "prop", which wights means for moderator levels based on their proportional representation in the data. For example, if "sex" is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal. IN the case if sex, for example, males and females are roughly equally prevalent in a population. As such, you can give the moderator levels equal weight using weights = "equal".
-#' @param subset Default is FALSE, but use TRUE if you wish to subset levels of a moderator for plotting based on 'at' argument
+#' @param weights how to marginalize categorical variables. The default is weights = "prop", which wights means for moderator levels based on their proportional representation in the data. For example, if "sex" is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal. In the case of sex, for example, males and females are roughly equally prevalent in a population. As such, you can give the moderator levels equal weight using weights = "equal".
+#' @param subset Used when one wishes to only plot a subset of levels within the main moderator of interest defined by 'mod'. Default is FALSE, but use TRUE if you wish to subset levels of a moderator plotted (defined by 'mod') for plotting. Levels one wishes to plot are specified as a list with the level names as a character string in the 'at' argument. For subsetting to work, 'at' argument also needs to be specified so that 'mod_results' knows what levels one wishes to plot.
 #' @param ... Additonal arguments passed to emmeans::emmeans()
 #' @return A data frame containing all the model results including mean effect size estimate, confidence and prediction intervals
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
@@ -25,7 +25,7 @@
 #' # fit a MLMR - accouting for some non-independence
 #' eklof_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~ Grazer.type, random=list(~1|ExptID,
 #' ~1|Datapoint), data=eklof)
-#' results <- mod_results(eklof_MR, mod = "Grazer.type", group = "ExptID")
+#' results <- mod_results(eklof_MR, mod = "Grazer.type", group = "ExptID", data=eklof)
 #'
 #' # Fish example demonstrating marginalised means
 #' data(fish)
@@ -50,6 +50,10 @@
 # We will need to make sure people use "1" or"moderator_names"
 
 mod_results <- function(model, mod = "1", group, data, weights = "prop", by = NULL, at = NULL, subset = FALSE, ...){
+
+  if(missing(model)){
+    stop("Please specify the 'model' argument by providing rma.mv or rma model object. See ?mod_results")
+  }
 
   if(all(class(model) %in% c("rma.mv", "rma")) == FALSE) {stop("Sorry, you need to fit a metafor model of class rma.mv or rma")}
 
