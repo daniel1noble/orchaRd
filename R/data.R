@@ -55,12 +55,26 @@ NULL
 #' @description Lim et al. (2014) meta-analysed the strength of correlation between maternal and offspring size within-species, across a very wide range of taxa. They found, that typically, there is a moderate positive correlation between maternal size and offspring size within species (i.e. larger mothers have larger offspring). Below we describe the variables use in our examples and or analyses.
 #' @format A data frame :
 #' \describe{
-#'   \item{Article}{Study or research paper that data were collected}
-#'   \item{Datapoint}{Observation level ID that identified each unique datapoint}
-#' \item{N}{Sample size used to estaimted correlation}
-#' \item{Phylum}{Phylum of the species}
-#' \item{yi}{Effect size correlation coefficient between maternal and offspring size within-species}
+#' \item{Amniotes}{Amniote group}
+#' \item{Article}{Study or research paper that data were collected}
 #' \item{Author}{Authors of article}
+#' \item{Class}{Class of organism}
+#' \item{Common.Name}{Common name of species}
+#' \item{Datapoint}{Observation level ID that identified each unique datapoint}
+#' \item{Environment}{Environment organism is found, wild or captive}
+#' \item{Family}{Family of species}
+#' \item{Genus}{Genus of species}
+#' \item{Maternal}{Mother length, weight or mass}
+#' \item{N}{Sample size used to estaimted correlation}
+#' \item{Offspring}{}
+#' \item{Order}{Order of species}
+#' \item{Phylum}{Phylum of the species}
+#' \item{Propagule}{}
+#' \item{RU}{}
+#' \item{Reproduction}{Reproductive mode of species}
+#' \item{animal}{Species name use for phylogenetic reconstruction}
+#' \item{year}{year of study}
+#' \item{yi}{Effect size correlation coefficient between maternal and offspring size within-species}
 #'   ...
 #' }
 #' @references Lim J.N., Senior A.M., Nakagawa S. 2014. Heterogeneity in individual quality and reproductive trade-offs within species. Evolution. 68(8):2306-18. doi: 10.1111/evo.12446

@@ -7,12 +7,26 @@
 \format{
 A data frame :
 \describe{
-  \item{Article}{Study or research paper that data were collected}
-  \item{Datapoint}{Observation level ID that identified each unique datapoint}
-\item{N}{Sample size used to estaimted correlation}
-\item{Phylum}{Phylum of the species}
-\item{yi}{Effect size correlation coefficient between maternal and offspring size within-species}
+\item{Amniotes}{Amniote group}
+\item{Article}{Study or research paper that data were collected}
 \item{Author}{Authors of article}
+\item{Class}{Class of organism}
+\item{Common.Name}{Common name of species}
+\item{Datapoint}{Observation level ID that identified each unique datapoint}
+\item{Environment}{Environment organism is found, wild or captive}
+\item{Family}{Family of species}
+\item{Genus}{Genus of species}
+\item{Maternal}{Mother length, weight or mass}
+\item{N}{Sample size used to estaimted correlation}
+\item{Offspring}{}
+\item{Order}{Order of species}
+\item{Phylum}{Phylum of the species}
+\item{Propagule}{}
+\item{RU}{}
+\item{Reproduction}{Reproductive mode of species}
+\item{animal}{Species name use for phylogenetic reconstruction}
+\item{year}{year of study}
+\item{yi}{Effect size correlation coefficient between maternal and offspring size within-species}
   ...
 }
 }
