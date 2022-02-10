@@ -19,11 +19,11 @@ i2_ml(model, method = c("ratio", "matrix"), data, boot = NULL)
 A data frame containing all the model results including mean effect size estimate, confidence and prediction intervals with estimates converted back to r
 }
 \description{
-I2 (I-squared) for mulilevel meta-analytic models, based on Nakagawa & Santos (2012). Under multilevel models, we can have a multiple I2 (see also Senior et al. 2016). Alternatively, the method proposed by Wolfgang Viechtbauer (http://www.metafor-project.org/doku.php/tips:i2_multilevel_multivariate?s[]=multilevel) can also be used.
+I2 (I-squared) for mulilevel meta-analytic models, based on Nakagawa & Santos (2012). Under multilevel models, we can have a multiple I2 (see also Senior et al. 2016). Alternatively, the method proposed by Wolfgang Viechtbauer can also be used.
 }
 \examples{
 \dontrun{
-# ** IMPORTANT NOTE ** boot = 10 is set LOW deliberately to make the models run fast. You should always run for at least boot = 1000
+# IMPORTANT NOTE ** boot = 10 is set LOW deliberately to make the models run fast. You should always run for at least boot = 1000
 # English example
 data(english)
 english <- escalc(measure = "SMD", n1i = NStartControl,
