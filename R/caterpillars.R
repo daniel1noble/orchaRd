@@ -27,7 +27,8 @@
 #' eklof_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~ Grazer.type-1, random=list(~1|ExptID,
 #' ~1|Datapoint), data=eklof)
 #' results <- mod_results(eklof_MR, mod = "Grazer.type", data = eklof, group = "First.author")
-#' caterpillars(results, mod = "Grazer.type", data = eklof, group = "First.author", xlab = "log(Response ratio) (lnRR)", g = FALSE)
+#' caterpillars(results, mod = "Grazer.type", data = eklof,
+#' group = "First.author", xlab = "log(Response ratio) (lnRR)", g = FALSE)
 #'
 #' # Example 2
 #' data(lim)
@@ -35,7 +36,8 @@
 #' lim_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~Phylum-1, random=list(~1|Article,
 #' ~1|Datapoint), data=lim)
 #' results_lim <- mod_results(lim_MR, mod = "Phylum", data = lim, group = "Article")
-#' caterpillars(results_lim, mod = "Phylum", data = lim, group = "Article", xlab = "Correlaiton coefficent", transfm = "tanh")
+#' caterpillars(results_lim, mod = "Phylum", data = lim,
+#' group = "Article", xlab = "Correlaiton coefficent", transfm = "tanh")
 #' }
 #' @export
 
