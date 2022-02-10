@@ -7,8 +7,12 @@
 matrix_i2(model)
 }
 \arguments{
-\item{model}{Model object of class 'rma.mv', 'rma'
-#' @examples
+\item{model}{Model object of class 'rma.mv', 'rma'}
+}
+\description{
+Calculated I2 (I-squared) for mulilevel meta-analytic models, based on a matrix method proposed by Wolfgang Viechtbauer (http://www.metafor-project.org/doku.php/tips:i2_multilevel_multivariate?s[]=multilevel).
+}
+\examples{
 \dontrun{
 # English example
 data(english)
@@ -21,10 +25,8 @@ data(lim)
 # Add in the sampling variance
 lim$vi<-(1/sqrt(lim$N - 3))^2
 # Lets fit a meta-regression - I will do Article non-independence. The phylogenetic model found phylogenetic effects, however, instead we could fit Phylum as a fixed effect and explore them with an Orchard Plot
-lim_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~Phylum-1, random=list(~1|Article, ~1|Datapoint), data=lim)
+lim_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~Phylum-1,
+random=list(~1|Article, ~1|Datapoint), data=lim)
 I2_lim <- i2_ml(lim_MR, data=lim, method = "matrix")
-}}
 }
-\description{
-Calculated I2 (I-squared) for mulilevel meta-analytic models, based on a matrix method proposed by Wolfgang Viechtbauer (http://www.metafor-project.org/doku.php/tips:i2_multilevel_multivariate?s[]=multilevel).
 }
