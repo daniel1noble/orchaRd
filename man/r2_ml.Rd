@@ -8,6 +8,10 @@ r2_ml(model, data, boot = NULL)
 }
 \arguments{
 \item{model}{Model object of class 'rma.mv', 'rma'}
+
+\item{data}{Dataframe used to fit the 'rma.mv' or 'rma' model object}
+
+\item{boot}{The number of paramateric bootstrap iterations. Setting to 1000 is desired as minimal number.}
 }
 \value{
 A data frame containing all the model results including mean effect size estimate, confidence and prediction intervals with estimates converted back to r
