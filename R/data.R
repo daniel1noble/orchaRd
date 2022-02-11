@@ -94,7 +94,6 @@ NULL
 #' \item{lnrr_vi}{Sampling variance for lnRR}
 #' \item{mean_control}{Mean for control}
 #' \item{mean_treat}{Mean for treatment}
-#' \item{treat_end_days}{How long temperatures were applied}
 #' \item{n_control}{Sample size for control}
 #' \item{n_treat}{Sample size for treatment}
 #' \item{paper_ID}{Paper ID}
