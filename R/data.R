@@ -84,10 +84,10 @@ NULL
 
 #' @title fish
 #' @description Fish data example.
-#' @format A data frame :
+#' @format A data frame
 #' \describe{
-#'   \item{es_ID}{Effect size ID}
-#'   \item{species_ID}{Species ID}
+#' \item{es_ID}{Effect size ID}
+#' \item{species_ID}{Species ID}
 #' \item{paper_ID}{Paper ID}
 #' \item{group_ID}{Group ID}
 #' \item{experimental_design}{Experimental design type}
