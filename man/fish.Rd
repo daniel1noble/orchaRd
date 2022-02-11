@@ -5,23 +5,25 @@
 \alias{fish}
 \title{fish}
 \format{
-A data frame :
+A data frame
 \describe{
-  \item{es_ID}{Effect size ID}
-  \item{species_ID}{Species ID}
-\item{paper_ID}{Paper ID}
-\item{group_ID}{Group ID}
-\item{experimental_design}{Experimental design type}
 \item{deg_dif}{Temperature difference between treatments}
+\item{es_ID}{Effect size ID}
+\item{experimental_design}{Experimental design type}
+\item{group_ID}{Group ID}
+\item{lnrr}{Log Response ratio effect size}
+\item{lnrr_vi}{Sampling variance for lnRR}
+\item{mean_control}{Mean for control}
+\item{mean_treat}{Mean for treatment}
 \item{treat_end_days}{How long temperatures were applied}
 \item{n_control}{Sample size for control}
 \item{n_treat}{Sample size for treatment}
-\item{mean_control}{Mean for control}
-\item{mean_treat}{Mean for treatment}
+\item{paper_ID}{Paper ID}
 \item{sd_control}{SD for control}
 \item{sd_treat}{SD for treatment}
-\item{lnrr}{Log Response ratio effect size}
-\item{lnrr_vi}{Sampling variance for lnRR}
+\item{species_ID}{Species ID}
+\item{trait.type}{Type of trait effect size was calculated from}
+\item{treat_end_days}{Duration of time developmental treatmemt was applied}
 }
 }
 \description{
