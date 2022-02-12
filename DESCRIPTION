@@ -1,5 +1,5 @@
 Package: orchaRd
-Title: Orchard Plots and Prediction Intervals for Meta-analysis
+Title: Orchard Plots and Prediction Intervals for Meta-analysis and Meta-regression
 Version: 2.0
 Authors@R: 
     person(given = "Shinichi",
@@ -9,7 +9,7 @@ Authors@R:
            family = "Noble",
            role = c("aut", "cre"),
            email = "daniel.noble@edu.au")
-Description: This package takes meta-analytic models from metafor, generates prediction intervals and produced new orchard plots that depict effect sizes, means , confidence and prediction intervals.
+Description: This package takes meta-analytic and meta-regression models from metafor, generates prediction intervals and produced new orchard plots that depict effect sizes, means , confidence and prediction intervals.
 Depends: R (>= 3.4)
 License: GPL (>=2)
 Encoding: UTF-8
