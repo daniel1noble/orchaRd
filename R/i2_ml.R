@@ -4,7 +4,7 @@
 #' @param method Method used to calculate I2. Two options exist, a ratio base calculation proposed by Nakagawa & Santos ('ratio') or Wolfgang Viechtbauer's matrix method ("matrix").
 #' @param data Data set used to fit the model.
 #' @param boot Number of simulations to run to produce 95% CI's for I2. Default is NULL and only point estimate is provided.
-#' @return A data frame containing all the model results including mean effect size estimate, confidence and prediction intervals with estimates converted back to r
+#' @return A data frame containing all the model results including mean effect size estimate, confidence and prediction intervals
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
 #' @examples
@@ -43,8 +43,8 @@
 #' I2_lim_1 <- i2_ml(lim_MR, data=lim, boot = 10)
 #' I2_lim_2 <- i2_ml(lim_MR, data=lim)
 #' }
-#' @references Senior, A. M., Grueber, C. E., Kamiya, T., Lagisz, M., O’Dwyer, K., Santos, E. S. A. & Nakagawa S. 2016. Heterogeneity in ecological and evolutionary meta-analyses: its magnitudes and implications. *Ecology* 97(12): 3293-3299.
-#' @references Nakagawa, S, and Santos, E.S.A. 2012. Methodological issues and advances in biological meta-analysis. *Evolutionary Ecology* 26(5): 1253-1274.
+#' @references {Senior, A. M., Grueber, C. E., Kamiya, T., Lagisz, M., O’Dwyer, K., Santos, E. S. A. & Nakagawa S. 2016. Heterogeneity in ecological and evolutionary meta-analyses: its magnitudes and implications. Ecology 97(12): 3293-3299.
+#'  Nakagawa, S, and Santos, E.S.A. 2012. Methodological issues and advances in biological meta-analysis.Evolutionary Ecology 26(5): 1253-1274.}
 #' @export
 
 i2_ml <- function(model, method = c("ratio", "matrix"), data, boot = NULL) {
@@ -98,7 +98,7 @@ i2_ml <- function(model, method = c("ratio", "matrix"), data, boot = NULL) {
 }
 
 #' @title matrix_i2
-#' @description Calculated I2 (I-squared) for mulilevel meta-analytic models, based on a matrix method proposed by Wolfgang Viechtbauer (http://www.metafor-project.org/doku.php/tips:i2_multilevel_multivariate?s[]=multilevel).
+#' @description Calculated I2 (I-squared) for mulilevel meta-analytic models, based on a matrix method proposed by Wolfgang Viechtbauer.
 #' @param model Model object of class 'rma.mv', 'rma'
 #' @examples
 #' \dontrun{
