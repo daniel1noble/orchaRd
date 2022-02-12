@@ -89,7 +89,7 @@ i2_ml <- function(model, method = c("ratio", "matrix"), data, boot = NULL) {
        })
 
       # Summarise the bootstrapped distribution.
-       I2s_each_95 <- data.frame(t(apply(I2_each, 1, quantile, probs=c(0.5, .025, .975))))
+       I2s_each_95 <- data.frame(t(apply(I2_each, 1, stats::quantile, probs=c(0.5, .025, .975))))
                I2s <-  round(I2s_each_95, digits = 3)
       colnames(I2s) = c("Est.", "2.5%", "97.5%")
   }
