@@ -42,7 +42,7 @@ r2_ml <- function(model, data, boot = NULL) {
     })
 
     # Summarise the bootstrapped distribution.
-    R2 <- data.frame(t(apply(R2, 1, stats::quantilequantile, probs=c(0.5, .025, .975))))
+    R2 <- data.frame(t(apply(R2, 1, stats::quantile, probs=c(0.5, .025, .975))))
     R2 <-  round(R2, digits = 3)
     colnames(R2) = c("Est.", "2.5%", "97.5%")
 }
