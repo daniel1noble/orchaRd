@@ -13,10 +13,10 @@ i2_ml(model, method = c("ratio", "matrix"), data, boot = NULL)
 
 \item{data}{Data set used to fit the model.}
 
-\item{boot}{Number of simulations to run to produce 95% CI's for I2. Default is NULL and only point estimate is provided.}
+\item{boot}{Number of simulations to run to produce 95\% CI's for I2. Default is NULL and only point estimate is provided.}
 }
 \value{
-A data frame containing all the model results including mean effect size estimate, confidence and prediction intervals with estimates converted back to r
+A data frame containing all the model results including mean effect size estimate, confidence and prediction intervals
 }
 \description{
 I2 (I-squared) for mulilevel meta-analytic models, based on Nakagawa & Santos (2012). Under multilevel models, we can have a multiple I2 (see also Senior et al. 2016). Alternatively, the method proposed by Wolfgang Viechtbauer can also be used.
@@ -59,9 +59,8 @@ I2_lim_2 <- i2_ml(lim_MR, data=lim)
 }
 }
 \references{
-Senior, A. M., Grueber, C. E., Kamiya, T., Lagisz, M., O’Dwyer, K., Santos, E. S. A. & Nakagawa S. 2016. Heterogeneity in ecological and evolutionary meta-analyses: its magnitudes and implications. *Ecology* 97(12): 3293-3299.
-
-Nakagawa, S, and Santos, E.S.A. 2012. Methodological issues and advances in biological meta-analysis. *Evolutionary Ecology* 26(5): 1253-1274.
+Senior, A. M., Grueber, C. E., Kamiya, T., Lagisz, M., O’Dwyer, K., Santos, E. S. A. & Nakagawa S. 2016. Heterogeneity in ecological and evolutionary meta-analyses: its magnitudes and implications. Ecology 97(12): 3293-3299.
+ Nakagawa, S, and Santos, E.S.A. 2012. Methodological issues and advances in biological meta-analysis.Evolutionary Ecology 26(5): 1253-1274.
 }
 \author{
 Shinichi Nakagawa - s.nakagawa@unsw.edu.au

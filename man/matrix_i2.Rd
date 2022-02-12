@@ -10,7 +10,7 @@ matrix_i2(model)
 \item{model}{Model object of class 'rma.mv', 'rma'}
 }
 \description{
-Calculated I2 (I-squared) for mulilevel meta-analytic models, based on a matrix method proposed by Wolfgang Viechtbauer (http://www.metafor-project.org/doku.php/tips:i2_multilevel_multivariate?s[]=multilevel).
+Calculated I2 (I-squared) for mulilevel meta-analytic models, based on a matrix method proposed by Wolfgang Viechtbauer.
 }
 \examples{
 \dontrun{
