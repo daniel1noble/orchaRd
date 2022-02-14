@@ -122,7 +122,7 @@ pred_interval_esmeans <- function(model, mm, mod, ...){
         tmp <- summary(mm)
   test.stat <- stats::qt(0.975, tmp$df[[1]])
 
-  if(length(model$tau2) <= 1){
+  if(length(model$tau2) <= 1){ # including gamma2
                  sigmas <- sum(model$sigma2)
                      PI <- test.stat * base::sqrt(tmp$SE^2 + sigmas)
         } else {

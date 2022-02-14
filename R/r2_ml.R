@@ -59,7 +59,7 @@ return(R2)
 #' data(lim)
 #' lim$vi<-(1/sqrt(lim$N - 3))^2
 #' lim_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~Phylum-1, random=list(~1|Article, ~1|Datapoint), data=lim)
-#' R2 <- R2_calc(lim_MR)
+#' R2 <- R2_calc(lim_MR)Hav
 #' }
 #' @export
 
