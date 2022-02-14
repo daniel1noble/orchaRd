@@ -2,13 +2,14 @@
 
 #' @title mod_results
 #' @description Using a metafor model object of class rma or rma.mv it creates a table of model results containing the mean effect size estimates for all levels of a given categorical moderator, their corresponding confidence intervals and prediction intervals. Function can calculate marginal means from meta-regression models with single or multiple moderator variables that are both continuous or categorical.
-#' @param model rma.mv object
+#' @param model rma.mv model object
 #' @param mod Moderator variable of interest that one wants marginal means for. Defaults to intercept "1".
 #' @param group The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes.
-#' @param by The 'condition' variable that one wishes to have the mean for the moderator vary.
-#' @param at The 'condition' that one wishes to calculate the means at, but is not presented in output
+#' @param by Character name(s) of the 'condition' variables to use for grouping into separate tables.
+#' @param at Named list of levels for the corresponding 'condition' variable(s). Used for marginalised predcitions or when one wishes to only present a subset of levels of the moderator (defined by 'mod' argument - see also 'subset' argument).
 #' @param data The data frame used to fit the rma.mv model object
-#' @param weights how to marginalize categorical variables. The default is weights = "prop", which wights means for moderator levels based on their proportional representation in the data. For example, if "sex" is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal. IN the case if sex, for example, males and females are roughly equally prevalent in a population. As such, you can give the moderator levels equal weight using weights = "equal".
+#' @param weights how to marginalize categorical variables. The default is weights = "prop", which wights means for moderator levels based on their proportional representation in the data. For example, if "sex" is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal. In the case of sex, for example, males and females are roughly equally prevalent in a population. As such, you can give the moderator levels equal weight using weights = "equal".
+#' @param subset Used when one wishes to only plot a subset of levels within the main moderator of interest defined by 'mod'. Default is FALSE, but use TRUE if you wish to subset levels of a moderator plotted (defined by 'mod') for plotting. Levels one wishes to plot are specified as a list with the level names as a character string in the 'at' argument. For subsetting to work, 'at' argument also needs to be specified so that 'mod_results' knows what levels one wishes to plot.
 #' @param ... Additonal arguments passed to emmeans::emmeans()
 #' @return A data frame containing all the model results including mean effect size estimate, confidence and prediction intervals
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
@@ -29,14 +30,27 @@
 #' # Fish example demonstrating marginalised means
 #' data(fish)
 #' warm_dat <- fish
-#' model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 | es_ID), mods = ~ experimental_design + trait.type + deg_dif + treat_end_days, method = "REML", test = "t", data = warm_dat, control=list(optimizer="optim", optmethod="Nelder-Mead"))
+#' model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi,
+#' random = list(~1 | group_ID, ~1 | es_ID),
+#' mods = ~ experimental_design + trait.type + deg_dif + treat_end_days,
+#' method = "REML", test = "t", data = warm_dat,
+#' control=list(optimizer="optim", optmethod="Nelder-Mead"))
 #'   overall <- mod_results(model, group = "group_ID", data = warm_dat)
 #' across_trait <- mod_results(model, group = "group_ID", mod = "trait.type", data = warm_dat)
-#' across_trait_by_degree_diff <- mod_results(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif", data = warm_dat)
-#' across_trait_by_degree_diff_at_treat_end_days10 <- mod_results(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = 10), by = "deg_dif",data = warm_dat)
-#' across_trait_by_degree_diff_at_treat_end_days10And50 <- mod_results(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "deg_dif", data = warm_dat)
-#' across_trait_by_treat_end_days10And50 <- mod_results(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "treat_end_days", data = warm_dat)
-#' across_trait_by_treat_end_days10And50_ordinaryMM <- mod_results(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)), by = "treat_end_days", weights = "prop", data = warm_dat)
+#' across_trait_by_degree_diff <- mod_results(model, group = "group_ID",
+#' mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif", data = warm_dat)
+#' across_trait_by_degree_diff_at_treat_end_days10 <- mod_results(model, group = "group_ID",
+#' mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = 10),
+#' by = "deg_dif",data = warm_dat)
+#' across_trait_by_degree_diff_at_treat_end_days10And50 <- mod_results(model, group = "group_ID",
+#' mod = "trait.type", at = list(deg_dif = c(5, 10, 15),
+#'  treat_end_days = c(10, 50)), by = "deg_dif", data = warm_dat)
+#' across_trait_by_treat_end_days10And50 <- mod_results(model, group = "group_ID",
+#' mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)),
+#' by = "treat_end_days", data = warm_dat)
+#' across_trait_by_treat_end_days10And50_ordinaryMM <- mod_results(model, group = "group_ID",
+#' mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)),
+#' by = "treat_end_days", weights = "prop", data = warm_dat)
 #'
 #' # Fish data example with a heteroscedastic error
 #' model_het <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 + trait.type| es_ID), mods = ~ trait.type + deg_dif, method = "REML", test = "t", rho = 0, struc = "HCS", data = warm_dat, control=list(optimizer="optim", optmethod="Nelder-Mead"))
@@ -48,20 +62,37 @@
 #'
 # We will need to make sure people use "1" or"moderator_names"
 
-marginal_means <- function(model, mod = "1", group, data, weights = "prop", by = NULL, at = NULL, ...){
+mod_results <- function(model, mod = "1", group, data, weights = "prop", by = NULL, at = NULL, subset = FALSE, ...){
+
+  if(missing(model)){
+    stop("Please specify the 'model' argument by providing rma.mv or rma model object. See ?mod_results")
+  }
 
   if(all(class(model) %in% c("rma.mv", "rma")) == FALSE) {stop("Sorry, you need to fit a metafor model of class rma.mv or rma")}
 
+  if(missing(group)){
+    stop("Please specify the 'group' argument by providing the name of the grouping variable. See ?mod_results")
+  }
+
+  if(missing(data)){
+    stop("Please specify the 'data' argument by providing the data used to fit the model. See ?mod_results")
+  }
+
   # Extract data
-   data2 <- get_data_raw(model, mod, group, data)
+   data2 <- get_data_raw(model, mod, group, data, at = at, subset)
 
       model$data <- data
+
+      if(is.null(formula(model))){
+        model <- stats::update(model, "~1")
+      }
+
      grid <- emmeans::qdrg(object = model, at = at)
 
     if(model$test == "t"){
       df_mod = as.numeric(model$ddf[[1]])
     } else{
-      df_mod = 100000000 # almost identical to z value
+      df_mod = 1.0e6 # almost identical to z value
     }
 
        mm <- emmeans::emmeans(grid, specs = mod, df = df_mod, by = by, weights = weights, ...)
@@ -154,6 +185,8 @@ return(tmp)
 #' @param mod the moderator variable
 #' @param group The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes.
 #' @param data The data frame used to fit the rma.mv model object
+#' @param  at List of moderators. If `at` is equal to `mod` then levels specified within at will be used to subset levels when 'subset = TRUE'. Otherwise, it will marginalise over the moderators at the specified levels.
+#' @param subset Whether or not to subset levels within the 'mod' argument. Default = FALSE.
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
 #' @return Returns a data frame
@@ -162,23 +195,23 @@ return(tmp)
 #' data(fish)
 #' warm_dat <- fish
 #' model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 | es_ID), mods = ~ experimental_design + trait.type + deg_dif + treat_end_days, method = "REML", test = "t", data = warm_dat, control=list(optimizer="optim", optmethod="Nelder-Mead"))
-#'  test <- get_data_raw(model, mod = "trait.type", group = "group_ID", data = warm_dat)
+#'  test <- get_data_raw(model, mod = "trait.type", group = "group_ID", data = warm_dat, at = list(trait.type = c("physiology", "morphology")))
 #'  test2 <- get_data_raw(model, mod = "1", group = "group_ID", data = warm_dat)
 #'
 #'  data(english)
 #'  # We need to calculate the effect sizes, in this case d
 #'  english <- escalc(measure = "SMD", n1i = NStartControl, sd1i = SD_C, m1i = MeanC, n2i = NStartExpt, sd2i = SD_E, m2i = MeanE, var.names=c("SMD","vSMD"), data = english)
 #'  model <- rma.mv(yi = SMD, V = vSMD, random = list( ~ 1 | StudyNo, ~ 1 | EffectID), data = english)
-#'  test3 <-  get_data_raw(english_MA, mod = "1", group = "StudyNo", data = english)}
+#'  test3 <-  get_data_raw(model, mod = "1", group = "StudyNo", data = english)}
 
-get_data_raw <- function(model, mod, group, data){
+get_data_raw <- function(model, mod, group, data, at = NULL, subset = TRUE){
 
   if(missing(group)){
-    stop("Please specify the 'group' argument by providing the name of the grouping variable. See ?marginal_means.")
+    stop("Please specify the 'group' argument by providing the name of the grouping variable. See ?mod_results")
   }
 
   if(missing(data)){
-    stop("Please specify the 'data' argument by providing the data used to fit the model. See ?marginal_means")
+    stop("Please specify the 'data' argument by providing the data used to fit the model. See ?mod_results")
   }
 
   # Extract data
@@ -187,6 +220,25 @@ get_data_raw <- function(model, mod, group, data){
     # full model delete missing values so need to adjust
      position <- as.numeric(attr(model$X, "dimnames")[[1]])
          data <- data[position, ] }
+
+  if(!is.null(at) & subset){
+    # Find the at slot in list that pertains to the moderator and extract levels
+    at_mod <- at[[mod]]
+
+    position2 <- which(data[,mod] %in% at_mod)
+    # Subset the data to only the levels in the moderator
+    data <- data[position2,]
+
+    yi <- model$yi[position2]
+    vi <- model$vi[position2]
+    type <- attr(model$yi, "measure")
+
+  } else {
+    # Extract effect sizes
+    yi <- model$yi
+    vi <- model$vi
+    type <- attr(model$yi, "measure")
+  }
 
     if(mod == "1"){
       moderator <- "Intrcpt"
@@ -198,11 +250,6 @@ get_data_raw <- function(model, mod, group, data){
 
     # Extract study grouping variable to calculate the
       stdy <- data[,group] # Could default to base instead of tidy
-
-    # Extract effect sizes
-        yi <- model$yi
-        vi <- model$vi
-      type <- attr(model$yi, "measure")
 
   data_reorg <- data.frame(yi, vi, moderator, stdy, type)
   row.names(data_reorg) <- 1:nrow(data_reorg)
@@ -278,6 +325,7 @@ num_studies <- function(data, mod, group){
             dplyr::group_by({{mod}}) %>%
             dplyr::summarise(stdy = length(unique({{group}})))
 
+   table <- table[!is.na(table$moderator),]
   # Rename, and return
     colnames(table) <- c("Parameter", "Num_Studies")
       return(data.frame(table))

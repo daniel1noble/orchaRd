@@ -1,19 +1,22 @@
 #' @title i2_ml
-#' @description I2 (I-squared) for mulilevel meta-analytic models, based on Nakagawa & Santos (2012). Under multilevel models, we can have a multiple I2 (see also Senior et al. 2016). Alternatively, the method proposed by Wolfgang Viechtbauer (http://www.metafor-project.org/doku.php/tips:i2_multilevel_multivariate?s[]=multilevel) can also be used.
+#' @description I2 (I-squared) for mulilevel meta-analytic models, based on Nakagawa & Santos (2012). Under multilevel models, we can have a multiple I2 (see also Senior et al. 2016). Alternatively, the method proposed by Wolfgang Viechtbauer can also be used.
 #' @param model Model object of class 'rma.mv', 'rma'
 #' @param method Method used to calculate I2. Two options exist, a ratio base calculation proposed by Nakagawa & Santos ('ratio') or Wolfgang Viechtbauer's matrix method ("matrix").
 #' @param data Data set used to fit the model.
-#' @param boot Number of simulations to run to produce 95% CI's for I2. Default is NULL and only point estimate is provided.
-#' @return A data frame containing all the model results including mean effect size estimate, confidence and prediction intervals with estimates converted back to r
+#' @param boot Number of simulations to run to produce 95\% CI's for I2. Default is NULL and only point estimate is provided.
+#' @return A data frame containing all the model results including mean effect size estimate, confidence and prediction intervals
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
 #' @examples
 #' \dontrun{
-#' # ** IMPORTANT NOTE ** boot = 10 is set LOW deliberately to make the models run fast. You should always run for at least boot = 1000
+#' # IMPORTANT NOTE ** boot = 10 is set LOW deliberately to make the models run fast. You should always run for at least boot = 1000
 #' # English example
 #' data(english)
-#' english <- escalc(measure = "SMD", n1i = NStartControl, sd1i = SD_C, m1i = MeanC, n2i = NStartExpt, sd2i = SD_E, m2i = MeanE, var.names=c("SMD","vSMD"),data = english)
-#' english_MA <- rma.mv(yi = SMD, V = vSMD, random = list( ~ 1 | StudyNo, ~ 1 | EffectID), data = english)
+#' english <- escalc(measure = "SMD", n1i = NStartControl,
+#' sd1i = SD_C, m1i = MeanC, n2i = NStartExpt, sd2i = SD_E,
+#' m2i = MeanE, var.names=c("SMD","vSMD"),data = english)
+#' english_MA <- rma.mv(yi = SMD, V = vSMD,
+#' random = list( ~ 1 | StudyNo, ~ 1 | EffectID), data = english)
 #' I2_eng_1 <- i2_ml(english_MA, data = english, boot = 10)
 #' I2_eng_2 <- i2_ml(english_MA, data = english, method = "ratio")
 #' I2_eng_3 <- i2_ml(english_MA, data = english, method = "matrix")
@@ -21,7 +24,11 @@
 #' ## Fish example
 #' data(fish)
 #' warm_dat <- fish
-#' model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 | es_ID), mods = ~ experimental_design + trait.type + deg_dif + treat_end_days, method = "REML", test = "t", data = warm_dat, control=list(optimizer="optim", optmethod="Nelder-Mead"))
+#' model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi,
+#' random = list(~1 | group_ID, ~1 | es_ID),
+#' mods = ~ experimental_design + trait.type + deg_dif + treat_end_days,
+#' method = "REML", test = "t", data = warm_dat,
+#' control=list(optimizer="optim", optmethod="Nelder-Mead"))
 #' I2_fish_1 <- i2_ml(model, data = warm_dat, boot = 10)
 #' I2_fish_2 <- i2_ml(model, method = c("matrix"),data = warm_dat)
 #' I2_fish_2 <- i2_ml(model, method = c("ratio"),data = warm_dat)
@@ -30,13 +37,14 @@
 #' data(lim)
 #' # Add in the sampling variance
 #' lim$vi<-(1/sqrt(lim$N - 3))^2
-#' # Lets fit a meta-regression - I will do Article non-independence. The phylogenetic model found phylogenetic effects, however, instead we could fit Phylum as a fixed effect and explore them with an Orchard Plot
+#' # Lets fit a meta-regression - I will do Article non-independence.
+#' The phylogenetic model found phylogenetic effects, however, instead we could fit Phylum as a fixed effect and explore them with an Orchard Plot
 #' lim_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~Phylum-1, random=list(~1|Article, ~1|Datapoint), data=lim)
 #' I2_lim_1 <- i2_ml(lim_MR, data=lim, boot = 10)
 #' I2_lim_2 <- i2_ml(lim_MR, data=lim)
 #' }
-#' @references Senior, A. M., Grueber, C. E., Kamiya, T., Lagisz, M., O’Dwyer, K., Santos, E. S. A. & Nakagawa S. 2016. Heterogeneity in ecological and evolutionary meta-analyses: its magnitudes and implications. *Ecology* 97(12): 3293-3299.
-#' @references Nakagawa, S, and Santos, E.S.A. 2012. Methodological issues and advances in biological meta-analysis. *Evolutionary Ecology* 26(5): 1253-1274.
+#' @references Senior, A. M., Grueber, C. E., Kamiya, T., Lagisz, M., O’Dwyer, K., Santos, E. S. A. & Nakagawa S. 2016. Heterogeneity in ecological and evolutionary meta-analyses: its magnitudes and implications. Ecology 97(12): 3293-3299.
+#'  Nakagawa, S, and Santos, E.S.A. 2012. Methodological issues and advances in biological meta-analysis.Evolutionary Ecology 26(5): 1253-1274.
 #' @export
 
 i2_ml <- function(model, method = c("ratio", "matrix"), data, boot = NULL) {
@@ -56,17 +64,17 @@ i2_ml <- function(model, method = c("ratio", "matrix"), data, boot = NULL) {
 
   if(!is.null(boot)){
     # Simulate the vector of effect sizes
-    sim <- simulate(model, nsim=boot)
+    sim <- metafor::simulate.rma(model, nsim=boot)
 
     # Get formula from model object.
     random_formula <- model$random
-      mods_formula <- formula(model, type = "mods") #in case moderators
+      mods_formula <- metafor::formula.rma(model, type = "mods") #in case moderators
                 vi <- model$vi
 
     # Paramatric bootsrap
      I2_each <- sapply(sim, function(ysim) {
              # The model
-             tmp <- rma.mv( ysim, vi,
+             tmp <- metafor::rma.mv( ysim, vi,
                              mods = mods_formula,
                            random = random_formula,
                              data = data)
@@ -81,7 +89,7 @@ i2_ml <- function(model, method = c("ratio", "matrix"), data, boot = NULL) {
        })
 
       # Summarise the bootstrapped distribution.
-       I2s_each_95 <- data.frame(t(apply(I2_each, 1, quantile, probs=c(0.5, .025, .975))))
+       I2s_each_95 <- data.frame(t(apply(I2_each, 1, stats::quantile, probs=c(0.5, .025, .975))))
                I2s <-  round(I2s_each_95, digits = 3)
       colnames(I2s) = c("Est.", "2.5%", "97.5%")
   }
@@ -90,9 +98,9 @@ i2_ml <- function(model, method = c("ratio", "matrix"), data, boot = NULL) {
 }
 
 #' @title matrix_i2
-#' @description Calculated I2 (I-squared) for mulilevel meta-analytic models, based on a matrix method proposed by Wolfgang Viechtbauer (http://www.metafor-project.org/doku.php/tips:i2_multilevel_multivariate?s[]=multilevel).
+#' @description Calculated I2 (I-squared) for mulilevel meta-analytic models, based on a matrix method proposed by Wolfgang Viechtbauer.
 #' @param model Model object of class 'rma.mv', 'rma'
-#' #' @examples
+#' @examples
 #' \dontrun{
 #' # English example
 #' data(english)
@@ -105,7 +113,8 @@ i2_ml <- function(model, method = c("ratio", "matrix"), data, boot = NULL) {
 #' # Add in the sampling variance
 #' lim$vi<-(1/sqrt(lim$N - 3))^2
 #' # Lets fit a meta-regression - I will do Article non-independence. The phylogenetic model found phylogenetic effects, however, instead we could fit Phylum as a fixed effect and explore them with an Orchard Plot
-#' lim_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~Phylum-1, random=list(~1|Article, ~1|Datapoint), data=lim)
+#' lim_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~Phylum-1,
+#' random=list(~1|Article, ~1|Datapoint), data=lim)
 #' I2_lim <- i2_ml(lim_MR, data=lim, method = "matrix")
 #' }
 #' @export
@@ -132,8 +141,11 @@ matrix_i2 <- function(model){
 #' \dontrun{
 #' # English example
 #' data(english)
-#' english <- escalc(measure = "SMD", n1i = NStartControl, sd1i = SD_C, m1i = MeanC, n2i = NStartExpt, sd2i = SD_E, m2i = MeanE, var.names=c("SMD","vSMD"),data = english)
-#' english_MA <- rma.mv(yi = SMD, V = vSMD, random = list( ~ 1 | StudyNo, ~ 1 | EffectID), data = english)
+#' english <- escalc(measure = "SMD", n1i = NStartControl,
+#' sd1i = SD_C, m1i = MeanC, n2i = NStartExpt,
+#' sd2i = SD_E, m2i = MeanE, var.names=c("SMD","vSMD"),data = english)
+#' english_MA <- rma.mv(yi = SMD, V = vSMD,
+#' random = list( ~ 1 | StudyNo, ~ 1 | EffectID), data = english)
 #' I2_eng_1 <- i2_ml(english_MA, data = english, boot = 1000)
 #' I2_eng_2 <- i2_ml(english_MA, data = english, method = "ratio")
 #' }

@@ -6,9 +6,7 @@
 #' @param data The data frame used to fit the rma.mv model object. Not needed of a orchard_plot is provided with a mod_results object of class 'orchard'.
 #' @param by Used when one wants marginalised means. The 'condition' variable that one wishes to have the mean for the moderator vary.
 #' @param at Used when one wants marginalised means. The 'condition' that one wishes to calculate the means at, but is not presented in output
-#' @param data The data frame used to fit the rma.mv model object
 #' @param weights Used when one wants marginalised means. How to marginalize categorical variables. The default is weights = "prop", which wights means for moderator levels based on their proportional representation in the data. For example, if "sex" is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal. IN the case if sex, for example, males and females are roughly equally prevalent in a population. As such, you can give the moderator levels equal weight using weights = "equal".
-#' @param marginal Used when one wishes to produce marginalised means from a model. Used in conjunction with 'by', 'at' and 'weights' arguments. Defaults to "FALSE".
 #' @param xlab The effect size measure label.
 #' @param N  The vector of sample size which an effect size is based on. If default, we use precision (the inverse of sampling standard error)
 #' @param alpha The level of transparency for pieces of fruit (effect size)
@@ -35,18 +33,22 @@
 #' # Add the unit level predictor
 #' eklof$Datapoint<-as.factor(seq(1, dim(eklof)[1], 1))
 #' # fit a MLMR - accounting for some non-independence
-#' eklof_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~ Grazer.type-1, random=list(~1|ExptID, ~1|Datapoint), data=eklof)
+#' eklof_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~ Grazer.type-1,
+#' random=list(~1|ExptID, ~1|Datapoint), data=eklof)
 #' results <- mod_results(eklof_MR, mod = "Grazer.type", group = "ExptID", data = eklof)
-#' orchard_plot(results, mod = "Grazer.type", group = "ExptID", xlab = "log(Response ratio) (lnRR)")
+#' orchard_plot(results, mod = "Grazer.type",
+#' group = "ExptID", xlab = "log(Response ratio) (lnRR)")
 #' # or
-#' orchard_plot(eklof_MR, mod = "Grazer.type", group = "ExptID", xlab = "log(Response ratio) (lnRR)", data = eklof)
+#' orchard_plot(eklof_MR, mod = "Grazer.type", group = "ExptID",
+#' xlab = "log(Response ratio) (lnRR)", data = eklof)
 #'
 #' # Example 2
 #' data(lim)
 #' lim$vi<- 1/(lim$N - 3)
 #' lim_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~Phylum-1, random=list(~1|Article,
 #' ~1|Datapoint), data=lim)
-#' orchard_plot(lim_MR, mod = "Phylum", group = "Article", xlab = "Correlation coefficient", transfm = "tanh", N = lim$N, data = lim)
+#' orchard_plot(lim_MR, mod = "Phylum", group = "Article",
+#' xlab = "Correlation coefficient", transfm = "tanh", N = lim$N, data = lim)
 #' }
 #' @export
 
@@ -57,34 +59,23 @@ orchard_plot <- function(object, mod = "1", group, data, xlab, N = "none",
                          transfm = c("none", "tanh"), condition.lab = "Condition",
                          legend.pos = c("bottom.right", "bottom.left",  "top.right", "top.left", "top.out", "bottom.out"),
                          k.pos = c("right", "left"),
-                         weights = "prop", by = NULL, at = NULL, marginal = FALSE)
-                         #k.size = 3.5)
+                         weights = "prop", by = NULL, at = NULL)
 {
-  ## evaluate choices
-     transfm <- match.arg(NULL, choices = transfm) # if not specified it takes the first choice
+  ## evaluate choices, if not specified it takes the first choice
+     transfm <- match.arg(NULL, choices = transfm)
   legend.pos <- match.arg(NULL, choices = legend.pos)
        k.pos <- match.arg(NULL, choices = k.pos)
 
 	if(any(class(object) %in% c("rma.mv", "rma"))){
 
-	  if(marginal == FALSE){
-  	    if(mod != "1"){
-  			results <-  orchaRd::mod_results(object, mod, group, data)
-  		} else{
-  			results <-  orchaRd::mod_results(object, mod = "1", group, data)
-  		}
-	  }
-
-	  if(marginal == TRUE){
 	    if(mod != "1"){
-	    results <-  orchaRd::marginal_means(object, mod, group, data,
+	    results <-  orchaRd::mod_results(object, mod, group, data,
 	                                        by = by, at = at, weights = weights)
 	  } else {
-	    results <-  orchaRd::marginal_means(object, mod = "1", group, data,
+	    results <-  orchaRd::mod_results(object, mod = "1", group, data,
 	                                        by = by, at = at, weights = weights)
 	    }
 	  }
-	}
 
 	if(any(class(object) %in% c("orchard"))) {
 			results <- object
@@ -92,31 +83,31 @@ orchard_plot <- function(object, mod = "1", group, data, xlab, N = "none",
 
 	mod_table <- results$mod_table
 
-  data <- results$data
-  data$moderator <- factor(data$moderator, levels = mod_table$name, labels = mod_table$name)
+  data_trim <- results$data
+  data_trim$moderator <- factor(data_trim$moderator, levels = mod_table$name, labels = mod_table$name)
 
-	data$scale <- (1/sqrt(data[,"vi"]))
+  data_trim$scale <- (1/sqrt(data_trim[,"vi"]))
 	legend <- "Precision (1/SE)"
 
 	if(any(N != "none")){
-		  data$scale <- N
-		  legend <- paste0("Sample Size (", "N)",")") # we want to use italic
+	  data_trim$scale <- N
+		  legend <- paste0("Sample Size (", "N",")") # we want to use italic
 	}
 
 	if(transfm == "tanh"){
 		                   cols <- sapply(mod_table, is.numeric)
 		mod_table[,cols] <- Zr_to_r(mod_table[,cols])
-		                data$yi <- Zr_to_r(data$yi)
+		data_trim$yi <- Zr_to_r(data_trim$yi)
 		                  label <- xlab
 	}else{
 		label <- xlab
 	}
 
 	# Add in total effect sizes for each level
-	 mod_table$K <- as.vector(by(data, data[,"moderator"], function(x) length(x[,"yi"])))
+	 mod_table$K <- as.vector(by(data_trim, data_trim[,"moderator"], function(x) length(x[,"yi"])))
 
 	# Add in total levels of a grouping variable (e.g., study ID) within each moderator level.
-	 mod_table$g <- as.vector(num_studies(data, moderator, stdy)[,2])
+	 mod_table$g <- as.vector(num_studies(data_trim, moderator, stdy)[,2])
 
 	 # the number of groups in a moderator & data points
 	 group_no <- length(unique(mod_table[, "name"]))
@@ -135,7 +126,7 @@ orchard_plot <- function(object, mod = "1", group, data, xlab, N = "none",
 
 	   plot <- ggplot2::ggplot() +
 	     # pieces of fruit (bee-swarm and bubbles)
-	     ggbeeswarm::geom_quasirandom(data = data, ggplot2::aes(y = yi, x = moderator, size = scale, colour = moderator), alpha=alpha) +
+	     ggbeeswarm::geom_quasirandom(data = data_trim, ggplot2::aes(y = yi, x = moderator, size = scale, colour = moderator), alpha=alpha) +
 
 	     ggplot2::geom_hline(yintercept = 0, linetype = 2, colour = "black", alpha = alpha) +
 	     # creating CI
@@ -162,7 +153,7 @@ orchard_plot <- function(object, mod = "1", group, data, xlab, N = "none",
 
 	  plot <- ggplot2::ggplot() +
 	    # pieces of fruit (bee-swarm and bubbles)
-	    ggbeeswarm::geom_quasirandom(data = data, ggplot2::aes(y = yi, x = moderator, size = scale, colour = moderator), alpha=alpha) +
+	    ggbeeswarm::geom_quasirandom(data = data_trim, ggplot2::aes(y = yi, x = moderator, size = scale, colour = moderator), alpha=alpha) +
 
 	    ggplot2::geom_hline(yintercept = 0, linetype = 2, colour = "black", alpha = alpha) +
 	    # creating CI
@@ -210,19 +201,19 @@ orchard_plot <- function(object, mod = "1", group, data, xlab, N = "none",
 	  # putting k and g in
 	  if(k == TRUE && g == FALSE && k.pos == "right"){
 	    plot <- plot +
-	      ggplot2::annotate('text', y = (max(data$yi) + (max(data$yi)*0.10)), x = (seq(1, group_no, 1)+0.3),
+	      ggplot2::annotate('text', y = (max(data_trim$yi) + (max(data_trim$yi)*0.10)), x = (seq(1, group_no, 1)+0.3),
 	                        label= paste("italic(k)==", mod_table$K[1:group_no]), parse = TRUE, hjust = "right", size = 3.5)
 	  } else if(k == TRUE && g == FALSE && k.pos == "left") {
-	    plot <- plot +  ggplot2::annotate('text', y = (min(data$yi) + (min(data$yi)*0.10)), x = (seq(1, group_no, 1)+0.3),
+	    plot <- plot +  ggplot2::annotate('text', y = (min(data_trim$yi) + (min(data_trim$yi)*0.10)), x = (seq(1, group_no, 1)+0.3),
 	                                      label= paste("italic(k)==", mod_table$K[1:group_no]), parse = TRUE, hjust = "left", size = 3.5)
 	  } else if (k == TRUE && g == TRUE && k.pos == "right"){
 	    # get group numbers for moderator
-	    plot <- plot + ggplot2::annotate('text', y = (max(data$yi) + (max(data$yi)*0.10)), x = (seq(1, group_no, 1)+0.3),
+	    plot <- plot + ggplot2::annotate('text', y = (max(data_trim$yi) + (max(data_trim$yi)*0.10)), x = (seq(1, group_no, 1)+0.3),
 	                        label= paste("italic(k)==", mod_table$K[1:group_no], " (", mod_table$g[1:group_no], ")"),
 	                        parse = TRUE, hjust = "right", size = 3.5)
 	  } else if (k == TRUE && g == TRUE && k.pos == "left"){
 	    # get group numbers for moderator
-	    plot <- plot + ggplot2::annotate('text',  y = (min(data$yi) + (min(data$yi)*0.10)), x = (seq(1, group_no, 1)+0.3),
+	    plot <- plot + ggplot2::annotate('text',  y = (min(data_trim$yi) + (min(data_trim$yi)*0.10)), x = (seq(1, group_no, 1)+0.3),
 	                        label= paste("italic(k)==", mod_table$K[1:group_no], " (", mod_table$g[1:group_no], ")"),
 	                        parse = TRUE, hjust = "left", size = 3.5)
 	  }

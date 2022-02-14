@@ -26,8 +26,7 @@ orchard_plot(
   k.pos = c("right", "left"),
   weights = "prop",
   by = NULL,
-  at = NULL,
-  marginal = FALSE
+  at = NULL
 )
 }
 \arguments{
@@ -37,7 +36,7 @@ orchard_plot(
 
 \item{group}{The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes. Not needed of a orchard_plot is provided with a mod_results object of class 'orchard'.}
 
-\item{data}{The data frame used to fit the rma.mv model object}
+\item{data}{The data frame used to fit the rma.mv model object. Not needed of a orchard_plot is provided with a mod_results object of class 'orchard'.}
 
 \item{xlab}{The effect size measure label.}
 
@@ -72,8 +71,6 @@ orchard_plot(
 \item{by}{Used when one wants marginalised means. The 'condition' variable that one wishes to have the mean for the moderator vary.}
 
 \item{at}{Used when one wants marginalised means. The 'condition' that one wishes to calculate the means at, but is not presented in output}
-
-\item{marginal}{Used when one wishes to produce marginalised means from a model. Used in conjunction with 'by', 'at' and 'weights' arguments. Defaults to "FALSE".}
 }
 \value{
 Orchard plot
@@ -90,18 +87,22 @@ data=eklof)
 # Add the unit level predictor
 eklof$Datapoint<-as.factor(seq(1, dim(eklof)[1], 1))
 # fit a MLMR - accounting for some non-independence
-eklof_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~ Grazer.type-1, random=list(~1|ExptID, ~1|Datapoint), data=eklof)
+eklof_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~ Grazer.type-1,
+random=list(~1|ExptID, ~1|Datapoint), data=eklof)
 results <- mod_results(eklof_MR, mod = "Grazer.type", group = "ExptID", data = eklof)
-orchard_plot(results, mod = "Grazer.type", group = "ExptID", xlab = "log(Response ratio) (lnRR)")
+orchard_plot(results, mod = "Grazer.type",
+group = "ExptID", xlab = "log(Response ratio) (lnRR)")
 # or
-orchard_plot(eklof_MR, mod = "Grazer.type", group = "ExptID", xlab = "log(Response ratio) (lnRR)", data = eklof)
+orchard_plot(eklof_MR, mod = "Grazer.type", group = "ExptID",
+xlab = "log(Response ratio) (lnRR)", data = eklof)
 
 # Example 2
 data(lim)
 lim$vi<- 1/(lim$N - 3)
 lim_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~Phylum-1, random=list(~1|Article,
 ~1|Datapoint), data=lim)
-orchard_plot(lim_MR, mod = "Phylum", group = "Article", xlab = "Correlation coefficient", transfm = "tanh", N = lim$N, data = lim)
+orchard_plot(lim_MR, mod = "Phylum", group = "Article",
+xlab = "Correlation coefficient", transfm = "tanh", N = lim$N, data = lim)
 }
 }
 \author{

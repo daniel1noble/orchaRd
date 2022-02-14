@@ -1,6 +1,8 @@
 #' @title r2_ml
 #' @description R2 (R-squared) for mixed (mulitlevel) models, based on Nakagawa & Schielzeth (2013)
 #' @param model Model object of class 'rma.mv', 'rma'
+#' @param data Dataframe used to fit the 'rma.mv' or 'rma' model object
+#' @param boot The number of paramateric bootstrap iterations. Setting to 1000 is desired as minimal number.
 #' @return A data frame containing all the model results including mean effect size estimate, confidence and prediction intervals with estimates converted back to r
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
@@ -21,17 +23,17 @@ r2_ml <- function(model, data, boot = NULL) {
 
   if(!is.null(boot)){
     # Simulate the vector of effect sizes
-    sim <- simulate(model, nsim=boot)
+    sim <- metafor::simulate.rma(model, nsim=boot)
 
     # Get formula from model object.
     random_formula <- model$random
-    mods_formula <- formula(model, type = "mods") #in case moderators
+    mods_formula <- metafor::formula.rma(model, type = "mods") #in case moderators
     vi <- model$vi
 
     # Paramatric bootsrap
     R2 <- sapply(sim, function(ysim) {
       # The model
-      tmp <- rma.mv( ysim, vi,
+      tmp <- metafor::rma.mv( ysim, vi,
                      mods = mods_formula,
                      random = random_formula,
                      data = data)
@@ -40,7 +42,7 @@ r2_ml <- function(model, data, boot = NULL) {
     })
 
     # Summarise the bootstrapped distribution.
-    R2 <- data.frame(t(apply(R2, 1, quantile, probs=c(0.5, .025, .975))))
+    R2 <- data.frame(t(apply(R2, 1, stats::quantile, probs=c(0.5, .025, .975))))
     R2 <-  round(R2, digits = 3)
     colnames(R2) = c("Est.", "2.5%", "97.5%")
 }
@@ -58,15 +60,16 @@ return(R2)
 #' \dontrun{
 #' data(lim)
 #' lim$vi<-(1/sqrt(lim$N - 3))^2
-#' lim_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~Phylum-1, random=list(~1|Article, ~1|Datapoint), data=lim)
-#' R2 <- R2_calc(lim_MR)Hav
+#' lim_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~Phylum-1,
+#' random=list(~1|Article, ~1|Datapoint), data=lim)
+#' R2 <- R2_calc(lim_MR)
 #' }
 #' @export
 
 R2_calc <- function(model){
   if(all(class(model) %in% c("rma.mv", "rma")) == FALSE) {stop("Sorry, you need to fit a metafor model of class rma.mv or rma")}
   # fixed effect variance
-  fix <- var(as.numeric(as.vector(model$b) %*% t(as.matrix(model$X))))
+  fix <- stats::var(as.numeric(as.vector(model$b) %*% t(as.matrix(model$X))))
 
   # marginal
   R2m <- fix / (fix + sum(model$sigma2))

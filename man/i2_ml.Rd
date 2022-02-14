@@ -13,21 +13,24 @@ i2_ml(model, method = c("ratio", "matrix"), data, boot = NULL)
 
 \item{data}{Data set used to fit the model.}
 
-\item{boot}{Number of simulations to run to produce 95% CI's for I2. Default is NULL and only point estimate is provided.}
+\item{boot}{Number of simulations to run to produce 95\% CI's for I2. Default is NULL and only point estimate is provided.}
 }
 \value{
-A data frame containing all the model results including mean effect size estimate, confidence and prediction intervals with estimates converted back to r
+A data frame containing all the model results including mean effect size estimate, confidence and prediction intervals
 }
 \description{
-I2 (I-squared) for mulilevel meta-analytic models, based on Nakagawa & Santos (2012). Under multilevel models, we can have a multiple I2 (see also Senior et al. 2016). Alternatively, the method proposed by Wolfgang Viechtbauer (http://www.metafor-project.org/doku.php/tips:i2_multilevel_multivariate?s[]=multilevel) can also be used.
+I2 (I-squared) for mulilevel meta-analytic models, based on Nakagawa & Santos (2012). Under multilevel models, we can have a multiple I2 (see also Senior et al. 2016). Alternatively, the method proposed by Wolfgang Viechtbauer can also be used.
 }
 \examples{
 \dontrun{
-# ** IMPORTANT NOTE ** boot = 10 is set LOW deliberately to make the models run fast. You should always run for at least boot = 1000
+# IMPORTANT NOTE ** boot = 10 is set LOW deliberately to make the models run fast. You should always run for at least boot = 1000
 # English example
 data(english)
-english <- escalc(measure = "SMD", n1i = NStartControl, sd1i = SD_C, m1i = MeanC, n2i = NStartExpt, sd2i = SD_E, m2i = MeanE, var.names=c("SMD","vSMD"),data = english)
-english_MA <- rma.mv(yi = SMD, V = vSMD, random = list( ~ 1 | StudyNo, ~ 1 | EffectID), data = english)
+english <- escalc(measure = "SMD", n1i = NStartControl,
+sd1i = SD_C, m1i = MeanC, n2i = NStartExpt, sd2i = SD_E,
+m2i = MeanE, var.names=c("SMD","vSMD"),data = english)
+english_MA <- rma.mv(yi = SMD, V = vSMD,
+random = list( ~ 1 | StudyNo, ~ 1 | EffectID), data = english)
 I2_eng_1 <- i2_ml(english_MA, data = english, boot = 10)
 I2_eng_2 <- i2_ml(english_MA, data = english, method = "ratio")
 I2_eng_3 <- i2_ml(english_MA, data = english, method = "matrix")
@@ -35,7 +38,11 @@ I2_eng_3 <- i2_ml(english_MA, data = english, method = "matrix")
 ## Fish example
 data(fish)
 warm_dat <- fish
-model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 | es_ID), mods = ~ experimental_design + trait.type + deg_dif + treat_end_days, method = "REML", test = "t", data = warm_dat, control=list(optimizer="optim", optmethod="Nelder-Mead"))
+model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi,
+random = list(~1 | group_ID, ~1 | es_ID),
+mods = ~ experimental_design + trait.type + deg_dif + treat_end_days,
+method = "REML", test = "t", data = warm_dat,
+control=list(optimizer="optim", optmethod="Nelder-Mead"))
 I2_fish_1 <- i2_ml(model, data = warm_dat, boot = 10)
 I2_fish_2 <- i2_ml(model, method = c("matrix"),data = warm_dat)
 I2_fish_2 <- i2_ml(model, method = c("ratio"),data = warm_dat)
@@ -44,16 +51,16 @@ I2_fish_2 <- i2_ml(model, method = c("ratio"),data = warm_dat)
 data(lim)
 # Add in the sampling variance
 lim$vi<-(1/sqrt(lim$N - 3))^2
-# Lets fit a meta-regression - I will do Article non-independence. The phylogenetic model found phylogenetic effects, however, instead we could fit Phylum as a fixed effect and explore them with an Orchard Plot
+# Lets fit a meta-regression - I will do Article non-independence.
+The phylogenetic model found phylogenetic effects, however, instead we could fit Phylum as a fixed effect and explore them with an Orchard Plot
 lim_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~Phylum-1, random=list(~1|Article, ~1|Datapoint), data=lim)
 I2_lim_1 <- i2_ml(lim_MR, data=lim, boot = 10)
 I2_lim_2 <- i2_ml(lim_MR, data=lim)
 }
 }
 \references{
-Senior, A. M., Grueber, C. E., Kamiya, T., Lagisz, M., O’Dwyer, K., Santos, E. S. A. & Nakagawa S. 2016. Heterogeneity in ecological and evolutionary meta-analyses: its magnitudes and implications. *Ecology* 97(12): 3293-3299.
-
-Nakagawa, S, and Santos, E.S.A. 2012. Methodological issues and advances in biological meta-analysis. *Evolutionary Ecology* 26(5): 1253-1274.
+Senior, A. M., Grueber, C. E., Kamiya, T., Lagisz, M., O’Dwyer, K., Santos, E. S. A. & Nakagawa S. 2016. Heterogeneity in ecological and evolutionary meta-analyses: its magnitudes and implications. Ecology 97(12): 3293-3299.
+ Nakagawa, S, and Santos, E.S.A. 2012. Methodological issues and advances in biological meta-analysis.Evolutionary Ecology 26(5): 1253-1274.
 }
 \author{
 Shinichi Nakagawa - s.nakagawa@unsw.edu.au

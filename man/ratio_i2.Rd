@@ -16,8 +16,11 @@ I2 (I-squared) for mulilevel meta-analytic models based on Nakagawa & Santos (20
 \dontrun{
 # English example
 data(english)
-english <- escalc(measure = "SMD", n1i = NStartControl, sd1i = SD_C, m1i = MeanC, n2i = NStartExpt, sd2i = SD_E, m2i = MeanE, var.names=c("SMD","vSMD"),data = english)
-english_MA <- rma.mv(yi = SMD, V = vSMD, random = list( ~ 1 | StudyNo, ~ 1 | EffectID), data = english)
+english <- escalc(measure = "SMD", n1i = NStartControl,
+sd1i = SD_C, m1i = MeanC, n2i = NStartExpt,
+sd2i = SD_E, m2i = MeanE, var.names=c("SMD","vSMD"),data = english)
+english_MA <- rma.mv(yi = SMD, V = vSMD,
+random = list( ~ 1 | StudyNo, ~ 1 | EffectID), data = english)
 I2_eng_1 <- i2_ml(english_MA, data = english, boot = 1000)
 I2_eng_2 <- i2_ml(english_MA, data = english, method = "ratio")
 }

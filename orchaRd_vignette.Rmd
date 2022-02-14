@@ -44,8 +44,9 @@ To install `orchaRd` use the following code in R:
 
 ```{r echo = TRUE, eval = TRUE, results = 'hide', warning=FALSE, message=FALSE,  class.source='klippy'}
 #install.packages("pacman")
+rm(list = ls())
 devtools::install_github("daniel1noble/orchaRd", force = TRUE)
-pacman::p_load(devtools, tidyverse, metafor, patchwork, R.rsp, orchaRd)
+pacman::p_load(devtools, tidyverse, metafor, patchwork, R.rsp, orchaRd, emmeans)
 ```
 
 Installation will make the primary functions accessible to users along with their help files. You will also need the `tidyverse` and `metafor` packages.
@@ -75,7 +76,7 @@ We have fit a meta-analytic model and thus the only estimate we see is the overa
 
 ```{r echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE, class.source='klippy'}
 
-model_results <- orchaRd::mod_results(english_MA, mod = "1", data = english, group = "StudyNo")
+model_results <- orchaRd::mod_results(english_MA, mod = "1", at = NULL, data = english, group = "StudyNo")
 model_results
  
 ```
@@ -96,7 +97,7 @@ In Figure \@ref(fig:Figure1), we simply add in the metafor model and it will cre
 I2 <- orchaRd::i2_ml(english_MA)
 
 orchaRd::orchard_plot(model_results, mod="1", xlab = "Standardised mean difference") + 
-  annotate(geom="text", x= 0.80, y= 1, label= paste0("italic(I)^{2} == ", round(I2[1],4)*100), # I want to use % but cannot do should come back
+  annotate(geom="text", x= 0.80, y= 1, label= paste0("italic(I)^{2} == ", round(I2[1],4)), # I want to use % but cannot do should come back
               color="black", parse = TRUE, size = 5) +
   scale_fill_manual(values="grey") +
   scale_colour_manual(values="grey")
@@ -128,14 +129,8 @@ english_MR0 <- rma.mv(yi = SMD, V = vSMD, mods = ~ ManipType,
                      random = list(~ 1 | StudyNo, ~ 1 | EffectID), data = english)
 summary(english_MR0)
 
-# Now we can fit the meta-regression model without the intercept
-# we need this intercept-less model for the orchard plot
-english_MR <- rma.mv(yi = SMD, V = vSMD, mods = ~ ManipType - 1, 
-                     random = list(~ 1 | StudyNo, ~ 1 | EffectID), data = english)
-summary(english_MR)
-
 # Again, we can create a table of results
-res2 <- orchaRd::mod_results(english_MR, mod = "ManipType", data = english, group = "StudyNo")
+res2 <- orchaRd::mod_results(english_MR0, mod = "ManipType", data = english, group = "StudyNo")
 res2
 
 # we fit a meta-regression (contrast) for the log coefficient of variation
@@ -145,17 +140,10 @@ senior_MR0 <- rma.mv(
 )
 summary(senior_MR0)
 
-# Let's fit a meta-regression without the intercept
-senior_MR <- rma.mv(
-  yi = lnCVR, V = vlnCVR, mods = ~ ManipType - 1, random = list(~ 1 | StudyNo, ~ 1 | EffectID),
-  data = english
-)
-summary(senior_MR)
 
 # creating a table of results
-res3 <- orchaRd::mod_results(senior_MR, mod = "ManipType", data = english, group = "StudyNo")
+res3 <- orchaRd::mod_results(senior_MR0, mod = "ManipType", data = english, group = "StudyNo", at = list(ManipType = "Quality"), subset = TRUE)
 res3
-
 
 # We can now plot SMD and lnCVR beside each other and compare the results
 p1 <- orchaRd::orchard_plot(res2, 
@@ -216,11 +204,6 @@ eklof_MR0 <- rma.mv(
 
 summary(eklof_MR0)
 
-# fit a meta-regression without the intercept and we can use this model for the orchard plot
-eklof_MR <- rma.mv(
-  yi = lnRR, V = vlnRR, mods = ~ Grazer.type - 1, random = list(~ 1 | ExptID, ~ 1 | Datapoint),
-  data = eklof
-)
 
 ```
 
@@ -228,10 +211,10 @@ Above we have fit a meta-regression model using "Grazer Type" as a moderator whi
 
 ```{r Figure6, echo = TRUE, eval = TRUE, class.source='klippy', warning=FALSE, message=FALSE, fig.width = 6, fig.height = 8, fig.cap = "Orchard plots of the effects of predation on benthic invertebrate communities compared using the log response ratio. Top panel is the default plot and bottom panel a plot containing changes in label axes"}
 
-p3 <- orchaRd::orchard_plot(eklof_MR, mod = "Grazer.type", data = eklof, group = "ExptID", xlab = "log(Response ratio) (lnRR)", 
+p3 <- orchaRd::orchard_plot(eklof_MR0, mod = "Grazer.type", data = eklof, group = "ExptID", xlab = "log(Response ratio) (lnRR)", 
   transfm = "none") 
 
-p4 <- orchaRd::orchard_plot(eklof_MR, mod = "Grazer.type", data = eklof, group = "ExptID", xlab = "log(Response ratio) (lnRR)", 
+p4 <- orchaRd::orchard_plot(eklof_MR0, mod = "Grazer.type", data = eklof, group = "ExptID", xlab = "log(Response ratio) (lnRR)", 
   transfm = "none", angle = 45, g = FALSE) 
 
 p3/p4
@@ -242,9 +225,9 @@ The other thing we can change is the type of scaling we wish to use. Let's say w
 
 ```{r Figure7, echo = TRUE, eval = TRUE, class.source='klippy', warning=FALSE, message=FALSE, fig.width = 6, fig.height = 8, fig.cap = "Orchard plots of the effects of predation on benthic invertebrate communities compared using the log response ratio. Top panel is the default plot and bottom panel a plot containing changes in label axes and scaling with sample size instead of precision"}
 
-p5 <- orchaRd::orchard_plot(eklof_MR, mod = "Grazer.type", data = eklof, group = "ExptID", xlab = "log(Response ratio) (lnRR)") 
+p5 <- orchaRd::orchard_plot(eklof_MR0, mod = "Grazer.type", data = eklof, group = "ExptID", xlab = "log(Response ratio) (lnRR)") 
 
-p6 <- orchaRd::orchard_plot(eklof_MR, mod = "Grazer.type", data = eklof, group = "ExptID", xlab = "log(Response ratio) (lnRR)", angle = 45, N = eklof$N, g = FALSE) 
+p6 <- orchaRd::orchard_plot(eklof_MR0, mod = "Grazer.type", data = eklof, group = "ExptID", xlab = "log(Response ratio) (lnRR)", angle = 45, N = eklof$N, g = FALSE) 
 
 p5/p6
 
@@ -256,7 +239,7 @@ Again, we can also draw the caterpillars-plot couterpart for this data set (bott
 
 ```{r Figure8, echo = TRUE, eval = TRUE, class.source='klippy', warning=FALSE, message=FALSE, fig.width = 6, fig.height = 4, fig.cap = "Caterpillars plot of the effects of predation on benthic invertebrate communities compared using the log response ratio"}
 
-eklof_MR_result <- mod_results(eklof_MR, mod = "Grazer.type", data = eklof, group = "ExptID")
+eklof_MR_result <- orchaRd::mod_results(eklof_MR0, mod = "Grazer.type", data = eklof, group = "ExptID")
 orchaRd::caterpillars(eklof_MR_result, mod = "Grazer.type", data = eklof, group = "ExptID", xlab = "log(Response ratio) (lnRR)") 
 
 ```
@@ -316,6 +299,20 @@ Finally, we make a comparable caterpillars plot.
 
 Compared to the orchard plot (Figure \@ref(fig:Figure10), Figure \@ref(fig:Figure11)) does not look as elegant, unlike the previous comparisons. This is because the groups with small sample sizes are packed at the top of the figure. 
 
+From Figure \@ref(fig:Figure10) we can see that many taxonimic groups have very little data. We may want instead to just focus the readers attention to means of groups with sufficient data. The new `mod_results` function allows us to do this using the maginalised means approach. We can do that as follows:
+
+```{r Figure121, echo = TRUE, eval = TRUE, class.source='klippy', warning=FALSE, message=FALSE, fig.width = 6, fig.height = 10, fig.cap = "Caterpillars plot of the the strength of correlation between maternal and offspring size within-species"}
+  
+  #Plot the meta-regression model
+  lim_MR_results <- orchaRd::mod_results(lim_MR, mod = "Phylum", group = "Article", 
+                                         data = lim, 
+                                           at = list(Phylum = c("Chordata", "Arthropoda", "Mollusca")),
+                                           subset = TRUE)
+  orchaRd::orchard_plot(lim_MR_results,  data = lim, xlab = "Correlation coefficient", transfm = "tanh", g = TRUE, angle = 45)
+```
+
+We can now see that Figure \@ref(fig:Figure121) limits what it plots to only the three levels relevant for presentation. 
+
 # Orchard Plots with Meta-regression Models: Marginalised means and heteroscedastic residual variances
 
 In `orchaRd` 2.0 we've made some major updates to the types of models that can be used with the package. Meta-analyses in ecology and evolution often fit a multitude of moderators and random effects within a single model. This is even desirable in many cases to deal with high heterogeneity and disentangle the independent contributions of moderators to changes in mean effect size. The challenge with the previous version of the package was that it was difficult to accommodate these models. However, the `emmeans` package is an excellent solution to the problem. It will produce marginsalised mean estimates for a given level of moderator -- producing mean estimates that average over all other moderators in the model. This includes models with categorical and continuous moderators. 
@@ -353,7 +350,7 @@ model_het <- metafor::rma.mv(    yi = lnrr, V = lnrr_vi,
                                 rho = 0, struc = "HCS", 
                                data = warm_dat, 
                             control = list(optimizer="optim", optmethod="Nelder-Mead"))
-print(model_het)
+model_het
 
 ```
 
@@ -361,15 +358,16 @@ We can see from above that we now have four variances; one estimated for each le
 
 ```{r figure12, fig.cap = "Orchard plot with heteroscedastic error for trait typess", echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE, class.source='klippy'}
 
-het_model <- orchaRd::marginal_means(model_het, 
+het_model <- orchaRd::mod_results(model_het, 
                                      group = "group_ID", 
                                        mod = "trait.type", 
                                       data = warm_dat)
   
-orchaRd::orchard_plot(het_model, xlab = "lnRR")
+orchaRd::orchard_plot(het_model, xlab = "lnRR", data = warm_dat)
 ```
 
 We can now see from Figure \@ref(fig:figure12) that the variance in effects for the morphological and physiological trait categories are smaller than for life-history and behavioural trait categories; likely because of the very small sample sizes in the latter trait categories.
+
 
 #### Example 5: Meta-regression and marginalised mean effect sizes
 
@@ -406,7 +404,7 @@ Our model is complicated. It not only estimates the effects of trait type, but t
 
 ```{r, figure13, fig.cap = "Orchard plot of marginalised mean effect sizes for 5, 10, and 15 degree Celcius temperture differences", echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE, class.source='klippy'}
 
-HetModel <- orchaRd::marginal_means(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif", weights = "prop", data = warm_dat)
+HetModel <- orchaRd::mod_results(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif", weights = "prop", data = warm_dat)
 
 orchaRd::orchard_plot(HetModel, xlab = "lnRR", data = warm_dat, angle = 45, g = FALSE, legend.pos = "top.left") + 
   theme(legend.direction = "vertical")
@@ -419,7 +417,7 @@ We can also specify the specific value of `treat_end_day` if the user would like
 
 ```{r, figure14, fig.cap = "Orchard plot of marginalised mean effect sizes for 5, 10, and 15 degree Celcius temperture differences", echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE, class.source='klippy'}
 
-HetModel2 <- orchaRd::marginal_means(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10)), by = "deg_dif", weights = "prop", data = warm_dat)
+HetModel2 <- orchaRd::mod_results(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10)), by = "deg_dif", weights = "prop", data = warm_dat)
 
 orchaRd::orchard_plot(HetModel2, xlab = "lnRR", data = warm_dat, angle = 45, g = FALSE, legend.pos = "top.left") + 
   theme(legend.direction = "vertical")

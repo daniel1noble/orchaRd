@@ -13,7 +13,10 @@ caterpillars(
   overall = TRUE,
   transfm = c("none", "tanh"),
   k = TRUE,
-  g = TRUE
+  g = TRUE,
+  at = NULL,
+  by = NULL,
+  weights = "prop"
 )
 }
 \arguments{
@@ -34,6 +37,12 @@ caterpillars(
 \item{k}{If TRUE, it displays k (number of effect sizes) on the plot}
 
 \item{g}{If TRUE, it displays g (number of grouping levels for each level of the moderator) on the plot}
+
+\item{at}{Used when one wants marginalised means. The 'condition' that one wishes to calculate the means at, but is not presented in output}
+
+\item{by}{Used when one wants marginalised means. The 'condition' variable that one wishes to have the mean for the moderator vary.}
+
+\item{weights}{Used when one wants marginalised means. How to marginalize categorical variables. The default is weights = "prop", which wights means for moderator levels based on their proportional representation in the data. For example, if "sex" is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal. IN the case if sex, for example, males and females are roughly equally prevalent in a population. As such, you can give the moderator levels equal weight using weights = "equal".}
 }
 \value{
 Caterpillars plot
@@ -53,7 +62,8 @@ eklof$Datapoint<-as.factor(seq(1, dim(eklof)[1], 1))
 eklof_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~ Grazer.type-1, random=list(~1|ExptID,
 ~1|Datapoint), data=eklof)
 results <- mod_results(eklof_MR, mod = "Grazer.type", data = eklof, group = "First.author")
-caterpillars(results, mod = "Grazer.type", data = eklof, group = "First.author", xlab = "log(Response ratio) (lnRR)", g = FALSE)
+caterpillars(results, mod = "Grazer.type", data = eklof,
+group = "First.author", xlab = "log(Response ratio) (lnRR)", g = FALSE)
 
 # Example 2
 data(lim)
@@ -61,7 +71,8 @@ lim$vi<- 1/(lim$N - 3)
 lim_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~Phylum-1, random=list(~1|Article,
 ~1|Datapoint), data=lim)
 results_lim <- mod_results(lim_MR, mod = "Phylum", data = lim, group = "Article")
-caterpillars(results_lim, mod = "Phylum", data = lim, group = "Article", xlab = "Correlaiton coefficent", transfm = "tanh")
+caterpillars(results_lim, mod = "Phylum", data = lim,
+group = "Article", xlab = "Correlaiton coefficent", transfm = "tanh")
 }
 }
 \author{
