@@ -78,24 +78,26 @@ mod_results <- function(model, mod = "1", group, data, weights = "prop", by = NU
     stop("Please specify the 'data' argument by providing the data used to fit the model. See ?mod_results")
   }
 
-  # Extract data
-   data2 <- get_data_raw(model, mod, group, data, at = at, subset)
+  model$data <- data
 
-      model$data <- data
+  # categorical and continuous
+  test <- emmeans::qdrg(object = model)
 
-      if(is.null(formula(model))){
-        model <- stats::update(model, "~1")
-      }
+  if(is.null(formula(model))){
+    model <- stats::update(model, "~1")
+  }
 
-     grid <- emmeans::qdrg(object = model, at = at)
+  if(model$test == "t"){
+    df_mod = as.numeric(model$ddf[[1]])
+  } else{
+    df_mod = 1.0e6 # almost identical to z value
+  }
 
-    if(model$test == "t"){
-      df_mod = as.numeric(model$ddf[[1]])
-    } else{
-      df_mod = 1.0e6 # almost identical to z value
-    }
+  if(any(names(test@model.info$xlev) == mod)) {
+    grid <- emmeans::qdrg(object = model, at = at)
+    mm <- emmeans::emmeans(grid, specs = mod, df = df_mod, by = by, weights = weights, ...)
 
-       mm <- emmeans::emmeans(grid, specs = mod, df = df_mod, by = by, weights = weights, ...)
+    # getting prediction intervals
     mm_pi <- pred_interval_esmeans(model, mm, mod = mod)
 
 
@@ -114,20 +116,56 @@ mod_results <- function(model, mod = "1", group, data, weights = "prop", by = NU
                               upperCL = mm_pi[,"upper.CL"],
                               lowerPR = mm_pi[,"lower.PI"],
                               upperPR = mm_pi[,"upper.PI"])
-
     }
+
+    # Extract data
+    data2 <- get_data_raw(model, mod, group, data, at = at, subset)
 
     mod_table$name <- factor(mod_table$name,
                              levels = mod_table$name,
                              labels = mod_table$name)
 
-    output <- list(mod_table = mod_table,
-                        data = data2)
+  } else{
+    at2 <- list(mod = seq(min(data[,mod], na.rm = TRUE), max(data[,mod], na.rm = TRUE), length.out = 100))
+    names(at2) <- mod
+    grid <- emmeans::qdrg(object = model, at = c(at2, list(at)))  # getting 100 points
+    mm <- emmeans::emmeans(grid, specs = mod, by = c(mod, by), weights = weights, df = df_mod)
 
-    class(output) <- c("orchard", "data.frame")
+    # getting prediction intervals
+    mm_pi <- pred_interval_esmeans(model, mm, mod = mod)
+
+    if(is.null(by)){
+      mod_table <- data.frame(moderator = mm_pi[,1],
+                              estimate = mm_pi[,"emmean"],
+                              lowerCL = mm_pi[,"lower.CL"],
+                              upperCL = mm_pi[,"upper.CL"],
+                              lowerPR = mm_pi[,"lower.PI"],
+                              upperPR = mm_pi[,"upper.PI"])
+    } else{
+      mod_table <- data.frame(moderator = mm_pi[,1],
+                              condition = mm_pi[,2],
+                              estimate = mm_pi[,"emmean"],
+                              lowerCL = mm_pi[,"lower.CL"],
+                              upperCL = mm_pi[,"upper.CL"],
+                              lowerPR = mm_pi[,"lower.PI"],
+                              upperPR = mm_pi[,"upper.PI"])
+    }
+
+    # extract data
+    data2 <- get_data_raw2(model, mod, group, data, by = by)
+
+  }
+
+
+  output <- list(mod_table = mod_table,
+                 data = data2)
+
+  class(output) <- c("orchard", "data.frame")
 
   return(output)
 }
+
+
 
 
 ############# Key Sub-functions #############
@@ -151,6 +189,7 @@ mod_results <- function(model, mod = "1", group, data, weights = "prop", by = NU
 pred_interval_esmeans <- function(model, mm, mod, ...){
 
         tmp <- summary(mm)
+        tmp <- tmp[ , ]
   test.stat <- stats::qt(0.975, tmp$df[[1]])
 
   if(length(model$tau2) <= 1){ # including gamma2
@@ -255,6 +294,42 @@ get_data_raw <- function(model, mod, group, data, at = NULL, subset = TRUE){
   row.names(data_reorg) <- 1:nrow(data_reorg)
   return(data_reorg)
 }
+
+# TODO explain to Dan
+get_data_raw2 <- function(model, mod, group, data, by = by){
+
+  if(missing(group)){
+    stop("Please specify the 'group' argument by providing the name of the grouping variable. See ?mod_results")
+  }
+
+  if(missing(data)){
+    stop("Please specify the 'data' argument by providing the data used to fit the model. See ?mod_results")
+  }
+
+  # Extract data
+  # Check first if missing data exists
+  if(length(attr(model$X, "dimnames")[[1]]) > 0){
+    # full model delete missing values so need to adjust
+    position <- as.numeric(attr(model$X, "dimnames")[[1]])
+    data <- data[position, ] }
+
+  # Extract effect sizes
+  yi <- model$yi
+  vi <- model$vi
+  type <- attr(model$yi, "measure")
+
+  # Get moderator
+  moderator <- data[,mod] # Could default to base instead of tidy
+  condition <- data[, by]
+
+  # Extract study grouping variable to calculate the
+  stdy <- data[,group] # Could default to base instead of tidy
+
+  data_reorg <- data.frame(yi, vi, moderator, condition, stdy, type)
+  row.names(data_reorg) <- 1:nrow(data_reorg)
+  return(data_reorg)
+}
+
 
 ############# Helper-functions #############
 

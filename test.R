@@ -19,8 +19,157 @@ data(fish)
 warm_dat <- fish
 
 # The Model
-model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 | es_ID), mods = ~ experimental_design + trait.type + deg_dif + treat_end_days, method = "REML", test = "t", data = warm_dat,                               control=list(optimizer="optim", optmethod="Nelder-Mead"))
+model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 | es_ID), mods = ~ experimental_design + trait.type+deg_dif + treat_end_days, method = "REML", test = "t", data = warm_dat,                               control=list(optimizer="optim", optmethod="Nelder-Mead"))
 
+######################
+# creating bubble plot
+######################
+
+#model$data
+
+grid <- qdrg(object = model,  at = list("deg_dif" = seq(1,15, length.out = 100)))
+test <-emmeans(grid, specs = "deg_dif", by =  c("deg_dif", "trait.type"))
+
+lim[, "year"] <- as.numeric(lim$year)
+model<-rma.mv(yi=yi, V=vi, mods= ~Environment*year, random=list(~1|Article,~1|Datapoint), data=lim)
+grid <- qdrg(object = model,  at = list("year" = seq(1970, 2015, length.out = 100)))
+test <-emmeans(grid, specs = "year", by =  c("year", "Environment"))
+
+mod_results(model, mod = "year", group = "Article", data = lim, weights = "prop", by = "Environment")
+
+####
+
+mod_results2 <- function(model, mod = "1", group, data, weights = "prop", by = NULL, at = NULL, subset = FALSE, ...){
+
+  if(missing(model)){
+    stop("Please specify the 'model' argument by providing rma.mv or rma model object. See ?mod_results")
+  }
+
+  if(all(class(model) %in% c("rma.mv", "rma")) == FALSE) {stop("Sorry, you need to fit a metafor model of class rma.mv or rma")}
+
+  if(missing(group)){
+    stop("Please specify the 'group' argument by providing the name of the grouping variable. See ?mod_results")
+  }
+
+  if(missing(data)){
+    stop("Please specify the 'data' argument by providing the data used to fit the model. See ?mod_results")
+  }
+
+  model$data <- data
+
+  # categorical and continuous
+  test <- emmeans::qdrg(object = model)
+
+  if(is.null(formula(model))){
+    model <- stats::update(model, "~1")
+  }
+
+  if(model$test == "t"){
+    df_mod = as.numeric(model$ddf[[1]])
+  } else{
+    df_mod = 1.0e6 # almost identical to z value
+  }
+
+  if(any(names(test@model.info$xlev) == mod)) {
+    grid <- emmeans::qdrg(object = model, at = at)
+    mm <- emmeans::emmeans(grid, specs = mod, df = df_mod, by = by, weights = weights, ...)
+
+    # getting prediction intervals
+    mm_pi <- pred_interval_esmeans(model, mm, mod = mod)
+
+
+  if(is.null(by)){
+    mod_table <- data.frame(name = firstup(as.character(mm_pi[,1])),
+                            estimate = mm_pi[,"emmean"],
+                            lowerCL = mm_pi[,"lower.CL"],
+                            upperCL = mm_pi[,"upper.CL"],
+                            lowerPR = mm_pi[,"lower.PI"],
+                            upperPR = mm_pi[,"upper.PI"])
+
+  } else{
+    mod_table <- data.frame(name = firstup(as.character(mm_pi[,1])),
+                            condition = mm_pi[,2], estimate = mm_pi[,"emmean"],
+                            lowerCL = mm_pi[,"lower.CL"],
+                            upperCL = mm_pi[,"upper.CL"],
+                            lowerPR = mm_pi[,"lower.PI"],
+                            upperPR = mm_pi[,"upper.PI"])
+  }
+
+    # Extract data
+    data2 <- get_data_raw(model, mod, group, data, at = at, subset)
+
+    mod_table$name <- factor(mod_table$name,
+                             levels = mod_table$name,
+                             labels = mod_table$name)
+
+  } else{
+    at <- list(mod = seq(min(data[,mod]), max(data[,mod]), length.out = 100))
+    names(at) <- mod
+    grid <- emmeans::qdrg(object = model, at = at)  # getting 100 points
+    mm <- emmeans::emmeans(grid, specs = mod, by = mod, weights = weights, df = df_mod)
+
+    # getting prediction intervals
+    mm_pi <- pred_interval_esmeans(model, mm, mod = mod)
+    mod_table <- data.frame(moderator = mm_pi[,1],
+                            estimate = mm_pi[,"emmean"],
+                            lowerCL = mm_pi[,"lower.CL"],
+                            upperCL = mm_pi[,"upper.CL"],
+                            lowerPR = mm_pi[,"lower.PI"],
+                            upperPR = mm_pi[,"upper.PI"])
+    # extract data
+    data2 <- get_data_raw2(model, mod, group, data)
+
+  }
+
+
+  output <- list(mod_table = mod_table,
+                 data = data2)
+
+  class(output) <- c("orchard", "data.frame")
+
+  return(output)
+}
+
+
+get_data_raw2 <- function(model, mod, group, data){
+
+  if(missing(group)){
+    stop("Please specify the 'group' argument by providing the name of the grouping variable. See ?mod_results")
+  }
+
+  if(missing(data)){
+    stop("Please specify the 'data' argument by providing the data used to fit the model. See ?mod_results")
+  }
+
+  # Extract data
+  # Check first if missing data exists
+  if(length(attr(model$X, "dimnames")[[1]]) > 0){
+    # full model delete missing values so need to adjust
+    position <- as.numeric(attr(model$X, "dimnames")[[1]])
+    data <- data[position, ] }
+
+    # Extract effect sizes
+    yi <- model$yi
+    vi <- model$vi
+    type <- attr(model$yi, "measure")
+
+    # Get moderator
+    moderator <- data[,mod] # Could default to base instead of tidy
+    #moderator <- firstup(moderator)
+
+  # Extract study grouping variable to calculate the
+  stdy <- data[,group] # Could default to base instead of tidy
+
+  data_reorg <- data.frame(yi, vi, moderator, stdy, type)
+  row.names(data_reorg) <- 1:nrow(data_reorg)
+  return(data_reorg)
+}
+
+
+
+
+
+#########
 # Example 1: Overall marginal means for each level of experimental design
   # Two step with marginal means
   overall <- marginal_means(model, mod = "experimental_design", group = "group_ID",
@@ -114,3 +263,5 @@ orchard_plot(model_het, group = "group_ID",
              at = list(deg_dif = c(5, 10, 15)),
              by = "deg_dif", weights = "prop", data = warm_dat,
              xlab = "lnRR", marginal = TRUE)
+
+test

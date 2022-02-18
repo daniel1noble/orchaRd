@@ -52,6 +52,8 @@
 #' }
 #' @export
 
+# TODO - turning fill and off fillings
+# TODO - coloring according to a different categorical moderator
 
 orchard_plot <- function(object, mod = "1", group, data, xlab, N = "none",
                          alpha = 0.5, angle = 90, cb = FALSE, k = TRUE, g = TRUE,
@@ -217,9 +219,6 @@ orchard_plot <- function(object, mod = "1", group, data, xlab, N = "none",
 	                        label= paste("italic(k)==", mod_table$K[1:group_no], " (", mod_table$g[1:group_no], ")"),
 	                        parse = TRUE, hjust = "left", size = 3.5)
 	  }
-
-
-	  # putting groups
 
 
 	  return(plot)
