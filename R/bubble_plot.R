@@ -137,12 +137,12 @@ bubble_plot <- function(object, mod, group, data,
       labs(x = xlab, y = ylab, size = legend, parse = TRUE) +
       guides(fill = "none", colour = "none") +
       # themses
-      theme_bw() +
+      theme_bw() # +
       #theme(legend.position= c(1, 1), legend.justification = c(1, 1)) +
-      theme(legend.direction="horizontal") +
-      #theme(legend.background = element_rect(fill = "white", colour = "black")) +
-      theme(legend.background = element_blank()) +
-      theme(axis.text.y = element_text(size = 10, colour ="black", hjust = 0.5, angle = 90))
+      # theme(legend.direction="horizontal") +
+      # #theme(legend.background = element_rect(fill = "white", colour = "black")) +
+      # theme(legend.background = element_blank()) +
+      # theme(axis.text.y = element_text(size = 10, colour ="black", hjust = 0.5, angle = 90))
   }
 
   # adding legend
