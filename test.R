@@ -30,12 +30,24 @@ model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1
 grid <- qdrg(object = model,  at = list("deg_dif" = seq(1,15, length.out = 100)))
 test <-emmeans(grid, specs = "deg_dif", by =  c("deg_dif", "trait.type"))
 
+data(lim)
 lim[, "year"] <- as.numeric(lim$year)
+lim$vi<- 1/(lim$N - 3)
 model<-rma.mv(yi=yi, V=vi, mods= ~Environment*year, random=list(~1|Article,~1|Datapoint), data=lim)
-grid <- qdrg(object = model,  at = list("year" = seq(1970, 2015, length.out = 100)))
-test <-emmeans(grid, specs = "year", by =  c("year", "Environment"))
+#grid <- qdrg(object = model,  at = list("year" = seq(1970, 2015, length.out = 100)))
+#test <-emmeans(grid, specs = "year", by =  c("year", "Environment"))
 
-mod_results(model, mod = "year", group = "Article", data = lim, weights = "prop", by = "Environment")
+test <- mod_results(model, mod = "year", group = "Article", data = lim, weights = "prop", by = "Environment")
+bubble_plot(test, mod = "year", legend.pos = "top.left")
+
+test2 <- mod_results(model, mod = "year", group = "Article", data = lim, weights = "prop")
+bubble_plot(test2, mod = "year", legend.pos = "top.left")
+
+model2 <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 | es_ID), mods = ~ experimental_design + trait.type+deg_dif*treat_end_days, method = "REML", test = "t", data = warm_dat,                               control=list(optimizer="optim", optmethod="Nelder-Mead"))
+
+
+test3 <- mod_results(model2, mod = "deg_dif", group = "group_ID", data = warm_dat,  by = "treat_end_days", at = list(treat_end_days = c(0,100,200)))
+bubble_plot(test3, mod = "deg_dif", legend.pos = "top.left", condition.nrow = 3)
 
 ####
 

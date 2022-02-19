@@ -14,7 +14,7 @@
 #' @param cb If TRUE, it uses 20 colour blind friendly colors
 #' @param k If TRUE, it displays k (number of effect sizes) on the plot
 #' @param g If TRUE, it displays g (number of grouping levels for each level of the moderator) on the plot
-#' @param condition.lab Label for the condition being marginalized over.
+#' @param facet To write
 #' @return Orchard plot
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
@@ -25,12 +25,19 @@
 #' }
 #' @export
 
+# TODO - need to draw ones without conditions
+# TODO k and g to add
+
 bubble_plot <- function(object, mod, group, data,
                          xlab = "Moderator", ylab = "Effect size", N = "none",
-                         alpha = 0.5, cb = FALSE, k = TRUE, g = TRUE,
-                         condition.lab = "Condition",
+                         alpha = 0.5, cb = TRUE, k = TRUE, g = TRUE,
+                         legend.pos = c("top.right", "top.left", "bottom.right", "bottom.left", "top.out", "bottom.out"),
+                         condition.nrow = 2,
+                         #condition.lab = "Condition",
                          weights = "prop", by = NULL, at = NULL)
-{
+  {
+  legend.pos <- match.arg(NULL, choices = legend.pos)
+  #facet <- match.arg(NULL, choices = facet)
 
   if(any(class(object) %in% c("rma.mv", "rma"))){
 
@@ -73,27 +80,85 @@ bubble_plot <- function(object, mod, group, data,
   # colour blind friendly colours with grey
   cbpl <- c("#88CCEE", "#CC6677", "#DDCC77", "#117733", "#332288", "#AA4499", "#44AA99", "#999933", "#882255", "#661100", "#6699CC", "#888888", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#999999")
 
-
-  plot <-ggplot() +
-    geom_point(data = data, aes(x = moderator, y = yi, size = scale, colour = condition, fill = condition), shape = 21, alpha = alpha) +
+  if(is.null(data$condition)){
+   plot <-ggplot() +
+    geom_point(data = data, aes(x = moderator, y = yi, size = scale), shape = 21, alpha = alpha, fill = "grey90" ) +
     #geom_ribbon(aes(ymin = ymin, ymax = ymax), fill = "#0072B2")  + # not quite sure why this does not work
-    geom_smooth(data = mod_table, aes(x = moderator, y = lowerPR), method =  "loess", se = FALSE, lty =  "dotted", lwd = 0.25, colour = "#0072B2") +
-    geom_smooth(data = mod_table, aes(x = moderator, y = upperPR), method =  "loess", se = FALSE, lty = "dotted", lwd = 0.25, colour = "#0072B2") +
-    geom_smooth(data = mod_table, aes(x = moderator, y = lowerCL), method =  "loess", se = FALSE,lty = "dotted", lwd = 0.25, colour ="#D55E00") +
-    geom_smooth(data = mod_table, aes(x = moderator, y = upperCL), method =  "loess", se = FALSE, lty ="dotted", lwd = 0.25, colour ="#D55E00") +
-    geom_smooth(data = mod_table, aes(x = moderator, y = estimate), method =  "loess", se = FALSE, lty ="dashed", lwd = 0.5, colour ="black") +
-    facet_grid(rows = vars(condition)) +
+    geom_smooth(data = mod_table, aes(x = moderator, y = lowerPR), method =  "loess", formula = y~x, se = FALSE, lty =  "dotted", lwd = 0.25, colour = "#0072B2") +
+    geom_smooth(data = mod_table, aes(x = moderator, y = upperPR), method =  "loess", formula = y~x,se = FALSE, lty = "dotted", lwd = 0.25, colour = "#0072B2") +
+    geom_smooth(data = mod_table, aes(x = moderator, y = lowerCL), method =  "loess", formula = y~x,se = FALSE,lty = "dotted", lwd = 0.25, colour ="#D55E00") +
+    geom_smooth(data = mod_table, aes(x = moderator, y = upperCL), method =  "loess", formula = y~x,se = FALSE, lty ="dotted", lwd = 0.25, colour ="#D55E00") +
+    geom_smooth(data = mod_table, aes(x = moderator, y = estimate), method =  "loess", formula = y~x, se = FALSE, lty ="dashed", lwd = 0.5, colour ="black") +
+    #facet_grid(rows = vars(condition)) +
     labs(x = xlab, y = ylab, size = legend, parse = TRUE) +
     guides(fill = "none", colour = "none") +
     # themses
     theme_bw() +
-    theme(legend.position= c(1, 1), legend.justification = c(1, 1)) +
+    #theme(legend.position= c(1, 1), legend.justification = c(1, 1)) +
     theme(legend.direction="horizontal") +
     #theme(legend.background = element_rect(fill = "white", colour = "black")) +
     theme(legend.background = element_blank()) +
     theme(axis.text.y = element_text(size = 10, colour ="black", hjust = 0.5, angle = 90))
+  } else if(is.character(data$condition)){
+    plot <-ggplot() +
+      geom_point(data = data, aes(x = moderator, y = yi, size = scale, colour = condition, fill = condition), shape = 21, alpha = alpha) +
+      geom_smooth(data = mod_table, aes(x = moderator, y = lowerPR), method =  "loess", formula = y~x, se = FALSE, lty =  "dotted", lwd = 0.25, colour = "#0072B2") +
+      geom_smooth(data = mod_table, aes(x = moderator, y = upperPR), method =  "loess", formula = y~x, se = FALSE, lty = "dotted", lwd = 0.25, colour = "#0072B2") +
+      geom_smooth(data = mod_table, aes(x = moderator, y = lowerCL), method =  "loess", formula = y~x, se = FALSE,lty = "dotted", lwd = 0.25, colour ="#D55E00") +
+      geom_smooth(data = mod_table, aes(x = moderator, y = upperCL), method =  "loess", formula = y~x, se = FALSE, lty = "dotted", lwd = 0.25, colour ="#D55E00") +
+      geom_smooth(data = mod_table, aes(x = moderator, y = estimate), method =  "loess", formula = y~x, se = FALSE, lty = "dashed", lwd = 0.5, colour ="black") +
+      facet_wrap(vars(condition), nrow = condition.nrow) +
+      labs(x = xlab, y = ylab, size = legend, parse = TRUE) +
+      guides(fill = "none", colour = "none") +
+      # themses
+      theme_bw() +
+      #theme(legend.position= c(1, 1), legend.justification = c(1, 1)) +
+      theme(legend.direction="horizontal") +
+      #theme(legend.background = element_rect(fill = "white", colour = "black")) +
+      theme(legend.background = element_blank()) +
+      theme(axis.text.y = element_text(size = 10, colour ="black", hjust = 0.5, angle = 90))
+
+    # if(facet == "rows"){
+    #   plot <- plot + facet_grid(rows = vars(condition))
+    # } else{
+    #   plot <- plot + facet_grid(cols = vars(condition))
+    # }
 
 
+  } else{
+    plot <-ggplot() +
+      #geom_point(data = data, aes(x = moderator, y = yi, size = scale, colour = condition, fill = condition), shape = 21, alpha = alpha) +
+      geom_smooth(data = mod_table, aes(x = moderator, y = lowerPR), method =  "loess", formula = y~x, se = FALSE, lty =  "dotted", lwd = 0.25, colour = "#0072B2") +
+      geom_smooth(data = mod_table, aes(x = moderator, y = upperPR), method =  "loess", formula = y~x, se = FALSE, lty = "dotted", lwd = 0.25, colour = "#0072B2") +
+      geom_smooth(data = mod_table, aes(x = moderator, y = lowerCL), method =  "loess", formula = y~x, se = FALSE,lty = "dotted", lwd = 0.25, colour ="#D55E00") +
+      geom_smooth(data = mod_table, aes(x = moderator, y = upperCL), method =  "loess", formula = y~x, se = FALSE, lty = "dotted", lwd = 0.25, colour ="#D55E00") +
+      geom_smooth(data = mod_table, aes(x = moderator, y = estimate), method =  "loess", formula = y~x, se = FALSE, lty = "dashed", lwd = 0.5, colour ="black") +
+      facet_wrap(vars(condition), nrow = condition.nrow) +
+      labs(x = xlab, y = ylab, size = legend, parse = TRUE) +
+      guides(fill = "none", colour = "none") +
+      # themses
+      theme_bw() +
+      #theme(legend.position= c(1, 1), legend.justification = c(1, 1)) +
+      theme(legend.direction="horizontal") +
+      #theme(legend.background = element_rect(fill = "white", colour = "black")) +
+      theme(legend.background = element_blank()) +
+      theme(axis.text.y = element_text(size = 10, colour ="black", hjust = 0.5, angle = 90))
+  }
+
+  # adding legend
+  if(legend.pos == "bottom.right"){
+    plot <- plot + ggplot2::theme(legend.position= c(1, 0), legend.justification = c(1, 0))
+  } else if ( legend.pos == "bottom.left") {
+    plot <- plot + ggplot2::theme(legend.position= c(0, 0), legend.justification = c(0, 0))
+  } else if ( legend.pos == "top.right") {
+    plot <- plot + ggplot2::theme(legend.position= c(1, 1), legend.justification = c(1, 1))
+  } else if (legend.pos == "top.left") {
+    plot <- plot + ggplot2::theme(legend.position= c(0, 1), legend.justification = c(0, 1))
+  } else if (legend.pos == "top.out") {
+    plot <- plot + ggplot2::theme(legend.position="top")
+  } else if (legend.pos == "bottom.out") {
+    plot <- plot + ggplot2::theme(legend.position="bottom")
+  }
 
   # putting colors in
   if(cb == TRUE){
@@ -101,8 +166,6 @@ bubble_plot <- function(object, mod, group, data,
       ggplot2::scale_fill_manual(values=cbpl) +
       ggplot2::scale_colour_manual(values=cbpl)
   }
-
-
 
   return(plot)
 }

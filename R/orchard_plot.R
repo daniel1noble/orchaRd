@@ -56,7 +56,7 @@
 # TODO - coloring according to a different categorical moderator
 
 orchard_plot <- function(object, mod = "1", group, data, xlab, N = "none",
-                         alpha = 0.5, angle = 90, cb = FALSE, k = TRUE, g = TRUE,
+                         alpha = 0.5, angle = 90, cb = TRUE, k = TRUE, g = TRUE,
                          trunk.size = 3, branch.size = 1.2, twig.size = 0.5,
                          transfm = c("none", "tanh"), condition.lab = "Condition",
                          legend.pos = c("bottom.right", "bottom.left",  "top.right", "top.left", "top.out", "bottom.out"),
