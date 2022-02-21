@@ -13,7 +13,7 @@ orchard_plot(
   N = "none",
   alpha = 0.5,
   angle = 90,
-  cb = FALSE,
+  cb = TRUE,
   k = TRUE,
   g = TRUE,
   trunk.size = 3,
