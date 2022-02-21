@@ -243,7 +243,7 @@ return(tmp)
 #'  model <- rma.mv(yi = SMD, V = vSMD, random = list( ~ 1 | StudyNo, ~ 1 | EffectID), data = english)
 #'  test3 <-  get_data_raw(model, mod = "1", group = "StudyNo", data = english)}
 
-get_data_raw <- function(model, mod, group, data, at = NULL, by = NULL, subset = TRUE){
+get_data_raw <- function(model, mod, group, data, at = NULL, by = NULL, subset = FALSE){
 
   if(missing(group)){
     stop("Please specify the 'group' argument by providing the name of the grouping variable. See ?mod_results")
@@ -295,7 +295,7 @@ get_data_raw <- function(model, mod, group, data, at = NULL, by = NULL, subset =
         moderator <- "Intrcpt"
       }else{
         # Get moderator
-         moderator <- as.character(data[,mod]) # Could default to base instead of tidy
+         moderator <- as.character(data[,mod])
          moderator <- firstup(moderator)
       }
 
