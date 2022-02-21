@@ -90,7 +90,7 @@ mod_results <- function(model, mod = "1", group, data, weights = "prop", by = NU
     df_mod = 1.0e6 # almost identical to z value
   }
 
-  if(is.character(mod)) {
+  if(is.character(data[[mod]])) {
     grid <- emmeans::qdrg(object = model, at = at)
     mm <- emmeans::emmeans(grid, specs = mod, df = df_mod, by = by, weights = weights, ...)
 
