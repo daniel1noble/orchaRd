@@ -80,12 +80,12 @@ mod_results <- function(model, mod = "1", group, data, weights = "prop", by = NU
 
   model$data <- data
 
-  # categorical and continuous
-  test <- emmeans::qdrg(object = model)
-
   if(is.null(formula(model))){
     model <- stats::update(model, "~1")
   }
+
+  # categorical and continuous
+  test <- emmeans::qdrg(object = model)
 
   if(model$test == "t"){
     df_mod = as.numeric(model$ddf[[1]])
