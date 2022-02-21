@@ -84,16 +84,13 @@ mod_results <- function(model, mod = "1", group, data, weights = "prop", by = NU
     model <- stats::update(model, "~1")
   }
 
-  # categorical and continuous
-  test <- emmeans::qdrg(object = model)
-
   if(model$test == "t"){
     df_mod = as.numeric(model$ddf[[1]])
   } else{
     df_mod = 1.0e6 # almost identical to z value
   }
 
-  if(any(names(test@model.info$xlev) == mod)) {
+  if(is.character(mod)) {
     grid <- emmeans::qdrg(object = model, at = at)
     mm <- emmeans::emmeans(grid, specs = mod, df = df_mod, by = by, weights = weights, ...)
 
