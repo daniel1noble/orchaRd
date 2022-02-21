@@ -78,10 +78,12 @@ mod_results <- function(model, mod = "1", group, data, weights = "prop", by = NU
     stop("Please specify the 'data' argument by providing the data used to fit the model. See ?mod_results")
   }
 
-  model$data <- data
-
   if(is.null(formula(model))){
     model <- stats::update(model, "~1")
+    dat_tmp <- data$`1` <- "int"
+    model$data <- dat_tmp
+  } else {
+    model$data <- data
   }
 
   if(model$test == "t"){
@@ -90,7 +92,7 @@ mod_results <- function(model, mod = "1", group, data, weights = "prop", by = NU
     df_mod = 1.0e6 # almost identical to z value
   }
 
-  if(is.character(data[[mod]])) {
+  if(is.character(data[[mod]]) | is.factor(data[[mod]])) {
     grid <- emmeans::qdrg(object = model, at = at)
     mm <- emmeans::emmeans(grid, specs = mod, df = df_mod, by = by, weights = weights, ...)
 
