@@ -181,7 +181,7 @@ Here again, we can create orchard plots of the model results, but we'll show how
 ```{r echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE, class.source='klippy'}
 
 data(eklof)
-eklof$Grazer.type <- as.character(eklof$Grazer.type)
+
 # Calculate the effect size
 eklof <- escalc(
   measure = "ROM", n1i = N_control, sd1i = SD_control, m1i = mean_control,
@@ -211,7 +211,7 @@ Above we have fit a meta-regression model using "Grazer Type" as a moderator whi
 
 ```{r Figure6, echo = TRUE, eval = TRUE, class.source='klippy', warning=FALSE, message=FALSE, fig.width = 6, fig.height = 8, fig.cap = "Orchard plots of the effects of predation on benthic invertebrate communities compared using the log response ratio. Top panel is the default plot and bottom panel a plot containing changes in label axes"}
 
-orchaRd::mod_results(eklof_MR0, mod = "Grazer.type", data = eklof, group = "ExptID") 
+f <- orchaRd::mod_results(eklof_MR0, mod = "Grazer.type", data = eklof, group = "ExptID") 
 
 p3 <- orchaRd::orchard_plot(eklof_MR0, mod = "Grazer.type", data = eklof, group = "ExptID", xlab = "log(Response ratio) (lnRR)", 
   transfm = "none") 
