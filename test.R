@@ -25,6 +25,11 @@ model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1
 # creating bubble plot
 ######################
 
+# Issues
+# TODO - if interaction combinations are missing - qdrg
+# TODO - qdrg does not work with poly
+
+
 #model$data
 
 grid <- qdrg(object = model,  at = list("deg_dif" = seq(1,15, length.out = 100)))
@@ -48,6 +53,29 @@ model2 <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~
 
 test3 <- mod_results(model2, mod = "deg_dif", group = "group_ID", data = warm_dat,  by = "treat_end_days", at = list(treat_end_days = c(0,100,200)))
 bubble_plot(test3, mod = "deg_dif", legend.pos = "top.left", condition.nrow = 3)
+
+### poly
+
+# read - this https://github.com/rvlenth/emmeans/issues/43
+# TODO
+
+data(lim)
+lim[, "year"] <- as.numeric(lim$year)
+lim$vi<- 1/(lim$N - 3)
+
+lim <- lim[complete.cases(lim), ]
+
+model<-rma.mv(yi=yi, V=vi, mods= ~poly(year, degree = 2) , random=list(~1|Article,~1|Datapoint), data=lim)
+summary(model)
+
+model <- lm(yi ~ poly(year, degree = 2) + Environment, data = lim)
+
+# model<-rma.mv(yi=yi, V=vi, mods= ~ 1 + year, random=list(~1|Article,~1|Datapoint), data=lim)
+# summary(model)
+
+grid <- qdrg(object = model, data = lim)
+test <-emmeans(model, specs = "year", at = list("year" = seq(min(lim$year) , max(lim$year), length.out = 100)))
+plot(test)
 
 ####
 
