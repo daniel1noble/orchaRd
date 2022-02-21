@@ -151,7 +151,7 @@ mod_results <- function(model, mod = "1", group, data, weights = "prop", by = NU
     }
 
     # extract data
-    data2 <- get_data_raw(model, mod, group, data, by = by)
+    data2 <- get_data_raw_cont(model, mod, group, data, by = by)
 
   }
 
@@ -243,69 +243,84 @@ return(tmp)
 #'  model <- rma.mv(yi = SMD, V = vSMD, random = list( ~ 1 | StudyNo, ~ 1 | EffectID), data = english)
 #'  test3 <-  get_data_raw(model, mod = "1", group = "StudyNo", data = english)}
 
-get_data_raw <- function(model, mod, group, data, at = NULL, by = NULL, subset = FALSE){
-
+get_data_raw <- function(model, mod, group, data, at = NULL, subset = TRUE){
   if(missing(group)){
     stop("Please specify the 'group' argument by providing the name of the grouping variable. See ?mod_results")
   }
-
   if(missing(data)){
     stop("Please specify the 'data' argument by providing the data used to fit the model. See ?mod_results")
   }
-
   # Extract data
   # Check first if missing data exists
   if(length(attr(model$X, "dimnames")[[1]]) > 0){
     # full model delete missing values so need to adjust
-     position <- as.numeric(attr(model$X, "dimnames")[[1]])
-         data <- data[position, ] }
-
+    position <- as.numeric(attr(model$X, "dimnames")[[1]])
+    data <- data[position, ] }
   if(!is.null(at) & subset){
     # Find the at slot in list that pertains to the moderator and extract levels
     at_mod <- at[[mod]]
-
     position2 <- which(data[,mod] %in% at_mod)
     # Subset the data to only the levels in the moderator
     data <- data[position2,]
-
-      yi <- model$yi[position2]
-      vi <- model$vi[position2]
+    yi <- model$yi[position2]
+    vi <- model$vi[position2]
     type <- attr(model$yi, "measure")
-
   } else {
     # Extract effect sizes
-      yi <- model$yi
-      vi <- model$vi
+    yi <- model$yi
+    vi <- model$vi
     type <- attr(model$yi, "measure")
   }
-
-  if(!is.null(by)){
+  if(mod == "1"){
+    moderator <- "Intrcpt"
+  }else{
     # Get moderator
-    moderator <- data[,mod] # Could default to base instead of tidy
-    condition <- data[, by]
-
-    # Extract study grouping variable to calculate the
-    stdy <- data[,group] # Could default to base instead of tidy
-
-    data_reorg <- data.frame(yi, vi, moderator, condition, stdy, type)
-    row.names(data_reorg) <- 1:nrow(data_reorg)
-
-  } else {
-      if(mod == "1"){
-        moderator <- "Intrcpt"
-      }else{
-        # Get moderator
-         moderator <- as.character(data[,mod])
-         moderator <- firstup(moderator)
-      }
-
-      # Extract study grouping variable to calculate the
-        stdy <- data[,group] # Could default to base instead of tidy
-
-    data_reorg <- data.frame(yi, vi, moderator, stdy, type)
-    row.names(data_reorg) <- 1:nrow(data_reorg)
+    moderator <- as.character(data[,mod]) # Could default to base instead of tidy
+    moderator <- firstup(moderator)
   }
+  # Extract study grouping variable to calculate the
+  stdy <- data[,group] # Could default to base instead of tidy
+  data_reorg <- data.frame(yi, vi, moderator, stdy, type)
+  row.names(data_reorg) <- 1:nrow(data_reorg)
+  return(data_reorg)
+}
 
+#' @title get_data_raw_cont
+#' @description Collects and builds the data used to fit the rma.mv or rma model in metafor when a continuous variable fit within a model object
+#' @param model rma.mv object
+#' @param mod the moderator variable
+#' @param group The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes.
+#' @param data The data frame used to fit the rma.mv model object
+#' @param by Character name(s) of the 'condition' variables to use for grouping into separate tables.
+#' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
+#' @author Daniel Noble - daniel.noble@anu.edu.au
+#' @return Returns a data frame
+#' @export
+
+get_data_raw_cont <- function(model, mod, group, data, by = by){
+  if(missing(group)){
+    stop("Please specify the 'group' argument by providing the name of the grouping variable. See ?mod_results")
+  }
+  if(missing(data)){
+    stop("Please specify the 'data' argument by providing the data used to fit the model. See ?mod_results")
+  }
+  # Extract data
+  # Check first if missing data exists
+  if(length(attr(model$X, "dimnames")[[1]]) > 0){
+    # full model delete missing values so need to adjust
+    position <- as.numeric(attr(model$X, "dimnames")[[1]])
+    data <- data[position, ] }
+  # Extract effect sizes
+  yi <- model$yi
+  vi <- model$vi
+  type <- attr(model$yi, "measure")
+  # Get moderator
+  moderator <- data[,mod] # Could default to base instead of tidy
+  condition <- data[, by]
+  # Extract study grouping variable to calculate the
+  stdy <- data[,group] # Could default to base instead of tidy
+  data_reorg <- data.frame(yi, vi, moderator, condition, stdy, type)
+  row.names(data_reorg) <- 1:nrow(data_reorg)
   return(data_reorg)
 }
 
