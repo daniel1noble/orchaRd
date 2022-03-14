@@ -30,6 +30,9 @@ r2_ml <- function(model, data, boot = NULL) {
     mods_formula <- metafor::formula.rma(model, type = "mods") #in case moderators
     vi <- model$vi
 
+    pb <- progress::progress_bar$new(total = boot,
+                                     format = "Bootstrapping [:bar] :percent ETA: :eta",
+                                     show_after = 0)
     # Paramatric bootsrap
     R2 <- sapply(sim, function(ysim) {
       # The model
@@ -38,6 +41,8 @@ r2_ml <- function(model, data, boot = NULL) {
                      random = random_formula,
                      data = data)
       R2s <- R2_calc(tmp)
+      pb$tick()
+      Sys.sleep(1 / boot)
       return(R2s)
     })
 
