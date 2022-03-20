@@ -28,13 +28,13 @@
 #' data(eklof)
 #'
 #' }
-#' @export
+#' @exportb
 
 # TODO - need to draw ones without conditions (Done)
 # TODO - make poly works for
 # TODO - write to https://github.com/rvlenth/emmeans/issues
 # TODO k and g to add
-
+# TODO adding examples
 
 bubble_plot <- function(object, mod, group, data,
                         xlab = "Moderator", ylab = "Effect size", N = "none",
