@@ -28,7 +28,8 @@ Imports:
     ggbeeswarm,
     emmeans,
     magrittr,
-    dplyr
+    dplyr,
+    progress
 Suggests: R.rsp, 
   testthat,
     knitr,
