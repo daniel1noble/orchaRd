@@ -1,13 +1,15 @@
 # test
 rm(list=ls())
+
+
 install.packages("devtools")
 install.packages("tidyverse")
 install.packages("metafor")
 install.packages("patchwork")
 install.packages("R.rsp")
 
-devtools::install_github("daniel1noble/orchaRd", force = TRUE, build_vignettes = TRUE)
-#remotes::install_github("rvlenth/emmeans", dependencies = TRUE, build_opts = "")
+remotes::install_github("daniel1noble/orchaRd", force = TRUE)
+remotes::install_github("rvlenth/emmeans", dependencies = TRUE, build_opts = "")
 
 library(orchaRd)
 library(metafor)
@@ -20,6 +22,14 @@ warm_dat <- fish
 
 # The Model
 model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 | es_ID), mods = ~ experimental_design + trait.type+deg_dif + treat_end_days, method = "REML", test = "t", data = warm_dat,                               control=list(optimizer="optim", optmethod="Nelder-Mead"))
+
+model0 <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 | es_ID), method = "REML", test = "t", data = warm_dat,                               control=list(optimizer="optim", optmethod="Nelder-Mead"))
+
+orchard_plot(model, xlab = "lnRR", trunk.size = 1, branch.size = 2, twig.size = 0.5,
+             angle = 45, group = "group_ID", data = warm_dat) +
+  scale_fill_manual(values="grey") +
+  scale_colour_manual(values="grey") +
+  scale_x_discrete(labels = c('Intercept'))
 
 ######################
 # creating bubble plot

@@ -19,7 +19,7 @@
 #' @param trunk.size Size of the mean, or central point.
 #' @param branch.size Size of the confidence intervals
 #' @param twig.size Size of the prediction intervals
-#' @param legend.pos Where to place the legend
+#' @param legend.pos Where to place the legend or not to put it ("none")
 #' @param k.pos Where to put k (number of effect sizes) on the plot
 #' @return Orchard plot
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
@@ -59,7 +59,10 @@ orchard_plot <- function(object, mod = "1", group, data, xlab, N = "none",
                          alpha = 0.5, angle = 90, cb = TRUE, k = TRUE, g = TRUE,
                          trunk.size = 3, branch.size = 1.2, twig.size = 0.5,
                          transfm = c("none", "tanh"), condition.lab = "Condition",
-                         legend.pos = c("bottom.right", "bottom.left",  "top.right", "top.left", "top.out", "bottom.out"),
+                         legend.pos = c("bottom.right", "bottom.left",
+                                        "top.right", "top.left",
+                                        "top.out", "bottom.out",
+                                        "none"), # "none" - no legends
                          k.pos = c("right", "left"),
                          weights = "prop", by = NULL, at = NULL)
 {
