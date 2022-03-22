@@ -62,6 +62,8 @@
 #'
 # We will need to make sure people use "1" or"moderator_names"
 
+#TODO we should adding missing(mod) as welll
+
 mod_results <- function(model, mod = "1", group, data, weights = "prop", by = NULL, at = NULL, subset = FALSE, ...){
 
   if(missing(model)){
