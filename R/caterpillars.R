@@ -163,7 +163,7 @@ caterpillars <- function(object, mod = "1", data, group, xlab, overall = TRUE, t
     # get group numbers for moderator
     plot <- plot +
       ggplot2::annotate('text', x = max(data$upper)*0.975, y = mod_table$Y-1.7,
-                        label= paste("italic(k)==", mod_table$K[1:group_no], " (", mod_table$g[1:group_no], ")"), parse = TRUE, hjust = "right", size = 3.5)
+                        label= paste("italic(k)==", mod_table$K[1:group_no], "~~","(", mod_table$g[1:group_no], ")"), parse = TRUE, hjust = "right", size = 3.5)
   }
 
 

@@ -63,7 +63,7 @@ orchard_plot <- function(object, mod = "1", group, data, xlab, N = "none",
                                         "top.right", "top.left",
                                         "top.out", "bottom.out",
                                         "none"), # "none" - no legends
-                         k.pos = c("right", "left"),
+                         k.pos = c("right", "left", "none"),
                          weights = "prop", by = NULL, at = NULL)
 {
   ## evaluate choices, if not specified it takes the first choice
@@ -193,6 +193,8 @@ orchard_plot <- function(object, mod = "1", group, data, xlab, N = "none",
 	   plot <- plot + ggplot2::theme(legend.position="top")
 	 } else if (legend.pos == "bottom.out") {
 	   plot <- plot + ggplot2::theme(legend.position="bottom")
+	 } else if (legend.pos == "none") {
+	   plot <- plot + ggplot2::theme(legend.position="none")
 	 }
 
 	  # putting colors in
@@ -214,12 +216,12 @@ orchard_plot <- function(object, mod = "1", group, data, xlab, N = "none",
 	  } else if (k == TRUE && g == TRUE && k.pos == "right"){
 	    # get group numbers for moderator
 	    plot <- plot + ggplot2::annotate('text', y = (max(data_trim$yi) + (max(data_trim$yi)*0.10)), x = (seq(1, group_no, 1)+0.3),
-	                        label= paste("italic(k)==", mod_table$K[1:group_no], " (", mod_table$g[1:group_no], ")"),
+	                        label= paste("italic(k)==", mod_table$K[1:group_no], "~~","(", mod_table$g[1:group_no], ")"),
 	                        parse = TRUE, hjust = "right", size = 3.5)
 	  } else if (k == TRUE && g == TRUE && k.pos == "left"){
 	    # get group numbers for moderator
 	    plot <- plot + ggplot2::annotate('text',  y = (min(data_trim$yi) + (min(data_trim$yi)*0.10)), x = (seq(1, group_no, 1)+0.3),
-	                        label= paste("italic(k)==", mod_table$K[1:group_no], " (", mod_table$g[1:group_no], ")"),
+	                        label= paste("italic(k)==", mod_table$K[1:group_no], "~~","(", mod_table$g[1:group_no], ")"),
 	                        parse = TRUE, hjust = "left", size = 3.5)
 	  }
 

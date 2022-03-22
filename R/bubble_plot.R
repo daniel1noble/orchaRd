@@ -20,6 +20,8 @@
 #' @param est.col
 #' @param est.col
 #' @param est.col
+#' @param legend.pos Where to place the legend or not to put it ("none")
+#' @param k.pos Where to put k (number of effect sizes) along with (the number of studies, i.e. g) on the plot or not to put it ("none")
 #' @return Orchard plot
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
@@ -35,13 +37,17 @@
 # TODO - write to https://github.com/rvlenth/emmeans/issues
 # TODO k and g to add
 # TODO adding examples
+# TODO - what to do when transformaed - it does not work if mod = scale() or log() etc
 
 bubble_plot <- function(object, mod, group, data,
                         xlab = "Moderator", ylab = "Effect size", N = "none",
                         alpha = 0.5, cb = TRUE, k = TRUE, g = TRUE,
                         est.lwd = 1, ci.lwd = 0.5, pi.lwd = 0.5,
                         est.col = "black", ci.col = "black", pi.col = "black",
-                        legend.pos = c("top.right", "top.left", "bottom.right", "bottom.left", "top.out", "bottom.out"),
+                        legend.pos = c("top.right", "top.left",
+                                       "bottom.right", "bottom.left",
+                                       "top.out", "bottom.out",
+                                       "none"),
                         condition.nrow = 2,
                          #condition.lab = "Condition",
                         weights = "prop", by = NULL, at = NULL)
@@ -179,6 +185,8 @@ bubble_plot <- function(object, mod, group, data,
     plot <- plot + ggplot2::theme(legend.position="top")
   } else if (legend.pos == "bottom.out") {
     plot <- plot + ggplot2::theme(legend.position="bottom")
+  } else if (legend.pos == "none") {
+    plot <- plot + ggplot2::theme(legend.position="none")
   }
 
   # putting colors in
