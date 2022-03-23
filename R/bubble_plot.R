@@ -8,7 +8,7 @@
 #' @param at Used when one wants marginalised means. The 'condition' that one wishes to calculate the means at, but is not presented in output
 #' @param weights Used when one wants marginalised means. How to marginalize categorical variables. The default is weights = "prop", which wights means for moderator levels based on their proportional representation in the data. For example, if "sex" is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal. IN the case if sex, for example, males and females are roughly equally prevalent in a population. As such, you can give the moderator levels equal weight using weights = "equal".
 #' @param xlab Moderator label.
-#' @param xlab Effect size measure label.
+#' @param ylab Effect size measure label.
 #' @param N  The vector of sample size which an effect size is based on. If default, we use precision (the inverse of sampling standard error)
 #' @param alpha The level of transparency for pieces of fruit (effect size)
 #' @param cb If TRUE, it uses 20 colour blind friendly colors
@@ -20,8 +20,8 @@
 #' @param est.col Colour of the point estimate
 #' @param ci.col Colour of the confidence interval
 #' @param pi.col Colour of the prediction interval
+#' @param condition.nrow Number of rows to plot condition variable.
 #' @param legend.pos Where to place the legend or not to put it ("none")
-#' @param k.pos Where to put k (number of effect sizes) along with (the number of studies, i.e. g) on the plot or not to put it ("none")
 #' @return Orchard plot
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
