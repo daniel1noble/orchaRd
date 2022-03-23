@@ -86,7 +86,7 @@ mod_results <- function(model, mod = "1", group, data, weights = "prop", by = NU
     model$formula.mods <- ~1
     dat_tmp <- data$`1` <- "Intrcpt"
     model$data <- dat_tmp
-  } else {
+  } else{
     model$data <- data
   }
 
@@ -96,7 +96,7 @@ mod_results <- function(model, mod = "1", group, data, weights = "prop", by = NU
     df_mod = 1.0e6 # almost identical to z value
   }
 
-  if(is.character(data[[mod]]) | is.factor(data[[mod]])) {
+  if(is.character(data[[mod]]) | is.factor(data[[mod]]) | is.null(data[[mod]])) {
     grid <- emmeans::qdrg(object = model, at = at)
     mm <- emmeans::emmeans(grid, specs = mod, df = df_mod, by = by, weights = weights, ...)
 
@@ -258,7 +258,7 @@ get_data_raw <- function(model, mod, group, data, at = NULL, subset = TRUE){
   # Check first if missing data exists
   if(length(attr(model$X, "dimnames")[[1]]) > 0){
     # full model delete missing values so need to adjust
-    position <- as.character(attr(model$X, "dimnames")[[1]])
+    position <- attr(model$X, "dimnames")[[1]]
     data <- data[position, ] }
   if(!is.null(at) & subset){
     # Find the at slot in list that pertains to the moderator and extract levels
@@ -283,7 +283,7 @@ get_data_raw <- function(model, mod, group, data, at = NULL, subset = TRUE){
     moderator <- firstup(moderator)
   }
   # Extract study grouping variable to calculate the
-  stdy <- data[,group] # Could default to base instead of tidy
+  stdy <- data[ ,group] # Could default to base instead of tidy
   data_reorg <- data.frame(yi, vi, moderator, stdy, type)
   row.names(data_reorg) <- 1:nrow(data_reorg)
   return(data_reorg)
@@ -312,7 +312,7 @@ get_data_raw_cont <- function(model, mod, group, data, by = by){
   # Check first if missing data exists
   if(length(attr(model$X, "dimnames")[[1]]) > 0){
     # full model delete missing values so need to adjust
-    position <- as.character(attr(model$X, "dimnames")[[1]])
+    position <- attr(model$X, "dimnames")[[1]]
     data <- data[position, ] }
   # Extract effect sizes
   yi <- model$yi

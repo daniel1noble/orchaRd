@@ -25,19 +25,29 @@ model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1
 
 model0 <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 | es_ID), method = "REML", test = "t", data = warm_dat,                               control=list(optimizer="optim", optmethod="Nelder-Mead"))
 
-# this does not owrk
-orchard_plot(model, xlab = "lnRR", trunk.size = 1, branch.size = 2, twig.size = 0.5,
-             angle = 45, group = "group_ID", data = warm_dat) +
-  scale_fill_manual(values="grey") +
-  scale_colour_manual(values="grey") +
-  scale_x_discrete(labels = c('Intercept'))
+# this does not wok
+orchard_plot(model, mod = "1", group = "group_ID", data = warm_dat, xlab = "lnRR")
+orchard_plot(model, mod = "experimental_design", group = "group_ID", data = warm_dat, xlab = "lnRR")
+test <- get_data_raw(model, mod = "1", group = "group_ID", data = warm_dat)
+test <- mod_results(model, mod = "1", group = "group_ID", data = warm_dat)
+
+get_data_raw(model, mod = "experimental_design", group = "group_ID", data = warm_dat)
+
+orchard_plot(test, mod = "1", group = "group_ID", data = warm_dat, xlab = "lnRR")
+
+# +
+#   scale_fill_manual(values="grey") +
+#   scale_colour_manual(values="grey") +
+#   scale_x_discrete(labels = c('Intercept'))
 
 # this does work
 orchard_plot(model0, xlab = "lnRR", trunk.size = 1, branch.size = 2, twig.size = 0.5,
-             angle = 45, group = "group_ID", data = warm_dat, legend.pos = "none") +
-  scale_fill_manual(values="grey") +
-  scale_colour_manual(values="grey") +
-  scale_x_discrete(labels = c('Intercept'))
+             angle = 45, group = "group_ID", data = warm_dat, legend.pos = "none")
+
+# +
+#   scale_fill_manual(values="grey") +
+#   scale_colour_manual(values="grey") +
+#   scale_x_discrete(labels = c('Intercept'))
 
 
 ######################

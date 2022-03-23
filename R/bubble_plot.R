@@ -39,6 +39,7 @@
 # TODO adding examples
 # TODO - what to do when transformed - it does not work if mod = scale() or log() etc
 # TODO - robust.rma added
+# TODO - we need some explanation for weights
 
 bubble_plot <- function(object, mod, group, data,
                         xlab = "Moderator", ylab = "Effect size", N = "none",
