@@ -99,14 +99,14 @@ caterpillars <- function(object, mod = "1", data, group, xlab, overall = TRUE, t
   # Dan can you make this basic R code - maybe I got it
   # data <- data[order(data$moderator, -data$yi),]
   data <- data %>% group_by(moderator) %>% arrange(moderator, desc(yi)) %>%
-    ungroup() %>%
-    mutate(Y = 1:data_no +
+    dplyr::ungroup() %>%
+    dplyr::mutate(Y = 1:data_no +
              unlist(mapply(function(x, y) rep(x*6 , y) , x = 1:group_no, y = mod_table$K))
     ) %>%
     data.frame()
 
   # mod ID
-  mod_table$Y <- data %>% group_by(moderator) %>%
+  mod_table$Y <- data %>% dplyr::group_by(moderator) %>%
     summarise(Y = first(Y)) %>%
     select(Y) %>% t() %>% as.vector() -2
 
