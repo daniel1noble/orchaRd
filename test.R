@@ -25,14 +25,14 @@ model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1
 
 model0 <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 | es_ID), method = "REML", test = "t", data = warm_dat,                               control=list(optimizer="optim", optmethod="Nelder-Mead"))
 
-# this does not owrk
-orchard_plot(model, xlab = "lnRR", trunk.size = 1, branch.size = 2, twig.size = 0.5,
+# Need to add mod to the meta-regression model. Works fine now.
+orchard_plot(model, mod = "trait.type", xlab = "lnRR", trunk.size = 1, branch.size = 2, twig.size = 0.5,
              angle = 45, group = "group_ID", data = warm_dat) +
   scale_fill_manual(values="grey") +
   scale_colour_manual(values="grey") +
   scale_x_discrete(labels = c('Intercept'))
 
-# this does work
+# This works fine for me,DN
 orchard_plot(model0, xlab = "lnRR", trunk.size = 1, branch.size = 2, twig.size = 0.5,
              angle = 45, group = "group_ID", data = warm_dat, legend.pos = "none") +
   scale_fill_manual(values="grey") +
