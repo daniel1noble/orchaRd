@@ -22,8 +22,8 @@ orchard_plot(
   transfm = c("none", "tanh"),
   condition.lab = "Condition",
   legend.pos = c("bottom.right", "bottom.left", "top.right", "top.left", "top.out",
-    "bottom.out"),
-  k.pos = c("right", "left"),
+    "bottom.out", "none"),
+  k.pos = c("right", "left", "none"),
   weights = "prop",
   by = NULL,
   at = NULL
@@ -62,7 +62,7 @@ orchard_plot(
 
 \item{condition.lab}{Label for the condition being marginalized over.}
 
-\item{legend.pos}{Where to place the legend}
+\item{legend.pos}{Where to place the legend or not to put it ("none")}
 
 \item{k.pos}{Where to put k (number of effect sizes) on the plot}
 
