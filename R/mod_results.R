@@ -62,7 +62,7 @@
 #'
 # We will need to make sure people use "1" or"moderator_names"
 
-#TODO we should adding missing(mod) as welll
+#TODO we should adding missing(mod) as well
 
 mod_results <- function(model, mod = "1", group, data, weights = "prop", by = NULL, at = NULL, subset = FALSE, ...){
 
@@ -256,7 +256,7 @@ get_data_raw <- function(model, mod, group, data, at = NULL, subset = TRUE){
   # Check first if missing data exists
   if(length(attr(model$X, "dimnames")[[1]]) > 0){
     # full model delete missing values so need to adjust
-    position <- as.numeric(attr(model$X, "dimnames")[[1]])
+    position <- as.character(attr(model$X, "dimnames")[[1]])
     data <- data[position, ] }
   if(!is.null(at) & subset){
     # Find the at slot in list that pertains to the moderator and extract levels
@@ -310,7 +310,7 @@ get_data_raw_cont <- function(model, mod, group, data, by = by){
   # Check first if missing data exists
   if(length(attr(model$X, "dimnames")[[1]]) > 0){
     # full model delete missing values so need to adjust
-    position <- as.numeric(attr(model$X, "dimnames")[[1]])
+    position <- as.character(attr(model$X, "dimnames")[[1]])
     data <- data[position, ] }
   # Extract effect sizes
   yi <- model$yi
