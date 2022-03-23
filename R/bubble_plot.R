@@ -14,12 +14,12 @@
 #' @param cb If TRUE, it uses 20 colour blind friendly colors
 #' @param k If TRUE, it displays k (number of effect sizes) on the plot
 #' @param g If TRUE, it displays g (number of grouping levels for each level of the moderator) on the plot
-#' @param est.lwd
-#' @param ci.lwd
-#' @param pi.lwd
-#' @param est.col
-#' @param est.col
-#' @param est.col
+#' @param est.lwd Size of the point estimate
+#' @param ci.lwd Size of the confidence interval
+#' @param pi.lwd Size of the prediction interval
+#' @param est.col Colour of the point estimate
+#' @param ci.col Colour of the confidence interval
+#' @param pi.col Colour of the prediction interval
 #' @param legend.pos Where to place the legend or not to put it ("none")
 #' @param k.pos Where to put k (number of effect sizes) along with (the number of studies, i.e. g) on the plot or not to put it ("none")
 #' @return Orchard plot
@@ -30,7 +30,7 @@
 #' data(eklof)
 #'
 #' }
-#' @exportb
+#' @export
 
 # TODO - need to draw ones without conditions (Done)
 # TODO - make poly works for
