@@ -18,8 +18,6 @@ get_data_raw(model, mod, group, data, at = NULL, subset = TRUE)
 \item{at}{List of moderators. If `at` is equal to `mod` then levels specified within at will be used to subset levels when 'subset = TRUE'. Otherwise, it will marginalise over the moderators at the specified levels.}
 
 \item{subset}{Whether or not to subset levels within the 'mod' argument. Default = FALSE.}
-
-\item{by}{Character name(s) of the 'condition' variables to use for grouping into separate tables.}
 }
 \value{
 Returns a data frame
