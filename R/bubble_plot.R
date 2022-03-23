@@ -37,7 +37,8 @@
 # TODO - write to https://github.com/rvlenth/emmeans/issues
 # TODO k and g to add
 # TODO adding examples
-# TODO - what to do when transformaed - it does not work if mod = scale() or log() etc
+# TODO - what to do when transformed - it does not work if mod = scale() or log() etc
+# TODO - robust.rma added
 
 bubble_plot <- function(object, mod, group, data,
                         xlab = "Moderator", ylab = "Effect size", N = "none",
@@ -55,7 +56,7 @@ bubble_plot <- function(object, mod, group, data,
   legend.pos <- match.arg(NULL, choices = legend.pos)
   #facet <- match.arg(NULL, choices = facet)
 
-  if(any(class(object) %in% c("rma.mv", "rma"))){
+  if(any(class(object) %in% c("robust.rma", "rma.mv", "rma"))){
 
     if(mod != "1"){
       results <-  orchaRd::mod_results(object, mod, group, data,

@@ -63,6 +63,7 @@
 # We will need to make sure people use "1" or"moderator_names"
 
 #TODO we should adding missing(mod) as well
+# TODO - robust.rma added
 
 mod_results <- function(model, mod = "1", group, data, weights = "prop", by = NULL, at = NULL, subset = FALSE, ...){
 
@@ -70,7 +71,7 @@ mod_results <- function(model, mod = "1", group, data, weights = "prop", by = NU
     stop("Please specify the 'model' argument by providing rma.mv or rma model object. See ?mod_results")
   }
 
-  if(all(class(model) %in% c("rma.mv", "rma")) == FALSE) {stop("Sorry, you need to fit a metafor model of class rma.mv or rma")}
+  if(all(class(model) %in% c("robust.rma", "rma.mv", "rma")) == FALSE) {stop("Sorry, you need to fit a metafor model of class rma.mv, rma, or robust.rma")}
 
   if(missing(group)){
     stop("Please specify the 'group' argument by providing the name of the grouping variable. See ?mod_results")

@@ -54,6 +54,8 @@
 
 # TODO - turning fill and off fillings
 # TODO - coloring according to a different categorical moderator
+# TODO - making N italic somehow
+# TODO - robust.rma added
 
 orchard_plot <- function(object, mod = "1", group, data, xlab, N = "none",
                          alpha = 0.5, angle = 90, cb = TRUE, k = TRUE, g = TRUE,
@@ -71,7 +73,7 @@ orchard_plot <- function(object, mod = "1", group, data, xlab, N = "none",
   legend.pos <- match.arg(NULL, choices = legend.pos)
        k.pos <- match.arg(NULL, choices = k.pos)
 
-	if(any(class(object) %in% c("rma.mv", "rma"))){
+	if(any(class(object) %in% c("robust.rma", "rma.mv", "rma"))){
 
 	    if(mod != "1"){
 	    results <-  orchaRd::mod_results(object, mod, group, data,
