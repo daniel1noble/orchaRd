@@ -228,7 +228,6 @@ return(tmp)
 #' @param group The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes.
 #' @param data The data frame used to fit the rma.mv model object
 #' @param  at List of moderators. If `at` is equal to `mod` then levels specified within at will be used to subset levels when 'subset = TRUE'. Otherwise, it will marginalise over the moderators at the specified levels.
-#' @param by Character name(s) of the 'condition' variables to use for grouping into separate tables.
 #' @param subset Whether or not to subset levels within the 'mod' argument. Default = FALSE.
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au

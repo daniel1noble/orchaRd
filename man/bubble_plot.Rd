@@ -39,7 +39,9 @@ bubble_plot(
 
 \item{data}{The data frame used to fit the rma.mv model object. Not needed of a orchard_plot is provided with a mod_results object of class 'orchard'.}
 
-\item{xlab}{Effect size measure label.}
+\item{xlab}{Moderator label.}
+
+\item{ylab}{Effect size measure label.}
 
 \item{N}{The vector of sample size which an effect size is based on. If default, we use precision (the inverse of sampling standard error)}
 
@@ -65,13 +67,13 @@ bubble_plot(
 
 \item{legend.pos}{Where to place the legend or not to put it ("none")}
 
+\item{condition.nrow}{Number of rows to plot condition variable.}
+
 \item{weights}{Used when one wants marginalised means. How to marginalize categorical variables. The default is weights = "prop", which wights means for moderator levels based on their proportional representation in the data. For example, if "sex" is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal. IN the case if sex, for example, males and females are roughly equally prevalent in a population. As such, you can give the moderator levels equal weight using weights = "equal".}
 
 \item{by}{Used when one wants marginalised (mearginal) means. The 'condition' variable that one wishes to have the mean for the moderator vary.}
 
 \item{at}{Used when one wants marginalised means. The 'condition' that one wishes to calculate the means at, but is not presented in output}
-
-\item{k.pos}{Where to put k (number of effect sizes) along with (the number of studies, i.e. g) on the plot or not to put it ("none")}
 }
 \value{
 Orchard plot

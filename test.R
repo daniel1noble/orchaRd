@@ -25,7 +25,7 @@ model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1
 
 model0 <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 | es_ID), method = "REML", test = "t", data = warm_dat,                               control=list(optimizer="optim", optmethod="Nelder-Mead"))
 
-# this does not wok
+
 orchard_plot(model, mod = "1", group = "group_ID", data = warm_dat, xlab = "lnRR")
 orchard_plot(model, mod = "experimental_design", group = "group_ID", data = warm_dat, xlab = "lnRR")
 test <- get_data_raw(model, mod = "1", group = "group_ID", data = warm_dat)
@@ -40,7 +40,7 @@ orchard_plot(test, mod = "1", group = "group_ID", data = warm_dat, xlab = "lnRR"
 #   scale_colour_manual(values="grey") +
 #   scale_x_discrete(labels = c('Intercept'))
 
-# this does work
+# This works fine for me,DN
 orchard_plot(model0, xlab = "lnRR", trunk.size = 1, branch.size = 2, twig.size = 0.5,
              angle = 45, group = "group_ID", data = warm_dat, legend.pos = "none")
 
@@ -77,12 +77,15 @@ bubble_plot(test, mod = "year", legend.pos = "top.left")
 test2 <- mod_results(model, mod = "year", group = "Article", data = lim, weights = "prop")
 bubble_plot(test2, mod = "year", legend.pos = "top.left")
 
-model2 <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 | es_ID), mods = ~ experimental_design + trait.type+deg_dif*treat_end_days, method = "REML", test = "t", data = warm_dat,                               control=list(optimizer="optim", optmethod="Nelder-Mead"))
+model2 <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 | es_ID), mods = ~ experimental_design + trait.type+deg_dif*treat_end_days, method = "REML", test = "t", data = warm_dat, control=list(optimizer="optim", optmethod="Nelder-Mead"))
 
 
-test3 <- mod_results(model2, mod = "deg_dif", group = "group_ID", data = warm_dat,  by = "treat_end_days", at = list(treat_end_days = c(0,100,200)))
-bubble_plot(test3, mod = "deg_dif", legend.pos = "top.left", condition.nrow = 3)
+mod2_results <- mod_results(model2, mod = "deg_dif", group = "group_ID", data = warm_dat)
+bubble_plot(mod2_results, mod = "deg_dif",condition.nrow = 3, legend.pos = "bottom.left") +
+  ylim(-1.5,1.8)
 
+legend.pos = c("top.right", "top.left", "bottom.right", "bottom.left", "top.out",
+              "bottom.out", "none"),
 ### poly
 
 # read - this https://github.com/rvlenth/emmeans/issues/43
