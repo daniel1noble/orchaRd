@@ -1,4 +1,8 @@
 ## Introducing the Orchard Plot for Meta-analysis
+[![Build Status](https://travis-ci.org/daniel1noble/orchaRd.svg?branch=master)](https://travis-ci.org/daniel1noble/orchaRd.svg?branch=master) 
+[![Ask Us Anything\ !](https://img.shields.io/badge/Ask%20me-anything-1abc9c.svg)](https://github.com/daniel1noble/orchaRd/issues/new)
+[![codecov](https://codecov.io/gh/daniel1noble/orchaRd/branch/master/graph/badge.svg)](https://codecov.io/gh/daniel1noble/orchaRd)
+![Open Source Love](https://badges.frapsoft.com/os/v2/open-source.svg?v=103)
 
 # Citing orchaRd
 
