@@ -85,7 +85,7 @@ bubble_plot(mod2_results, mod = "deg_dif",condition.nrow = 3, legend.pos = "bott
   ylim(-1.5,1.8)
 
 legend.pos = c("top.right", "top.left", "bottom.right", "bottom.left", "top.out",
-              "bottom.out", "none"),
+              "bottom.out", "none")
 ### poly
 
 # read - this https://github.com/rvlenth/emmeans/issues/43
