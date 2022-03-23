@@ -36,21 +36,18 @@ mods = ~ experimental_design + trait.type + deg_dif + treat_end_days, method = "
  overall <- mod_results(model, group = "group_ID", data = warm_dat)
 
 # Moderators
+ #Trait type
 across_trait <- mod_results(model, group = "group_ID", mod = "trait.type", data = warm_dat)
+
+# Trait by degrees
 across_trait_by_degree_diff <- mod_results(model, group = "group_ID",
 mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif", data = warm_dat)
-across_trait_by_degree_diff_at_treat_end_days10 <- mod_results(model, group = "group_ID",
-mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = 10),
-by = "deg_dif",data = warm_dat)
-across_trait_by_degree_diff_at_treat_end_days10And50 <- mod_results(model, group = "group_ID",
-mod = "trait.type", at = list(deg_dif = c(5, 10, 15),
- treat_end_days = c(10, 50)), by = "deg_dif", data = warm_dat)
+
+# trait by condition
 across_trait_by_treat_end_days10And50 <- mod_results(model, group = "group_ID",
 mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)),
 by = "treat_end_days", data = warm_dat)
-across_trait_by_treat_end_days10And50_ordinaryMM <- mod_results(model, group = "group_ID",
-mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)),
-by = "treat_end_days", weights = "prop", data = warm_dat)
+
 
 # Fish data example with a heteroscedastic error
   model_het <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 + trait.type| es_ID), mods = ~ trait.type + deg_dif, method = "REML", test = "t", rho = 0, struc = "HCS", data = warm_dat, control=list(optimizer="optim", optmethod="Nelder-Mead"))
@@ -65,8 +62,19 @@ testthat::test_that("Checking mod_results output for fish dataset ..", {
     info = "mod_results output for fish 'overall' estimates has correct dimensions")
 
   testthat::expect_equal(
-    dim(overall)[[2]], 2,
-    info = "mod_results output for fish overall has correct dimensions")
+    dim(across_trait)[[2]], 4,
+    info = "mod_results output for fish 'across_trait' estimates has correct dimensions")
+
+  testthat::expect_equal(
+    dim(across_trait_by_degree_diff)[[2]], 12,
+    info = "mod_results output for fish 'across_trait_by_degree_diff' estimates has correct dimensions")
+
+
+  testthat::expect_equal(
+    dim(across_trait_by_treat_end_days10And50)[[2]], 8,
+    info = "mod_results output for fish 'across_trait_by_treat_end_days10And50' estimates has correct dimensions")
+
+
 
 
   testthat::expect_equal(round(results$mod_table[1,2],2), round(-0.8095289, 2), info = "checking mod_results output for eklof calculates correct mean for Amphipod group...")
