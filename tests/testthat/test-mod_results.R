@@ -33,18 +33,18 @@ model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi,random = list(~1 | group_ID, ~1 
 mods = ~ experimental_design + trait.type + deg_dif + treat_end_days, method = "REML", test = "t", data = warm_dat, control=list(optimizer="optim", optmethod="Nelder-Mead"))
 
 # Intercept only
- overall <- mod_results(model, group = "group_ID", data = warm_dat)
+ overall <- orchaRd::mod_results(model, group = "group_ID", data = warm_dat)
 
 # Moderators
  #Trait type
-across_trait <- mod_results(model, group = "group_ID", mod = "trait.type", data = warm_dat)
+across_trait <- orchaRd::mod_results(model, group = "group_ID", mod = "trait.type", data = warm_dat)
 
 # Trait by degrees
-across_trait_by_degree_diff <- mod_results(model, group = "group_ID",
+across_trait_by_degree_diff <- orchaRd::mod_results(model, group = "group_ID",
 mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif", data = warm_dat)
 
 # trait by condition
-across_trait_by_treat_end_days10And50 <- mod_results(model, group = "group_ID",
+across_trait_by_treat_end_days10And50 <- orchaRd::mod_results(model, group = "group_ID",
 mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)),
 by = "treat_end_days", data = warm_dat)
 
@@ -52,32 +52,70 @@ by = "treat_end_days", data = warm_dat)
 # Fish data example with a heteroscedastic error
   model_het <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 + trait.type| es_ID), mods = ~ trait.type + deg_dif, method = "REML", test = "t", rho = 0, struc = "HCS", data = warm_dat, control=list(optimizer="optim", optmethod="Nelder-Mead"))
 
-  HetModel <- mod_results(model_het, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif", weights = "prop", data = warm_dat)
+  HetModel <- orchaRd::mod_results(model_het, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif", weights = "prop", data = warm_dat)
   orchard_plot(HetModel, xlab = "lnRR", data = warm_dat)
+
+
+  ## English example
+  data(english)
+
+  # We need to calculate the effect sizes, in this case d
+  english <- metafor::escalc(measure = "SMD", n1i = NStartControl, sd1i = SD_C, m1i = MeanC,
+                    n2i = NStartExpt, sd2i = SD_E, m2i = MeanE,
+                    var.names=c("SMD","vSMD"),
+                    data = english)
+
+  english_MA <- metafor::rma.mv(yi = SMD, V = vSMD, random = list( ~ 1 | StudyNo, ~ 1 | EffectID), data = english)
+  eng_mod_results <- orchaRd::mod_results(english_MA, group = "StudyNo", data = english)
+
+
+  english_MR0 <- metafor::rma.mv(yi = SMD, V = vSMD, mods = ~ ManipType,
+                        random = list(~ 1 | StudyNo, ~ 1 | EffectID), data = english)
+
+  # Again, we can create a table of results
+  res2 <- orchaRd::mod_results(english_MR0, mod = "ManipType", data = english, group = "StudyNo")
+
+  # Check supressing level works
+  res3 <- orchaRd::mod_results(english_MR0, mod = "ManipType", data = english, group = "StudyNo",
+                               at = list(ManipType = "Quality"), subset = TRUE)
 
 # tests for fish
 testthat::test_that("Checking mod_results output for fish dataset ..", {
 
   testthat::expect_equal(
     dim(overall$mod_table)[[1]], 1,
-    info = "mod_results output for fish 'overall' estimates has correct dimensions")
+    info = "mod_results output for fish 'overall' object has correct dimensions")
 
   testthat::expect_equal(
     dim(across_trait$mod_table)[[1]], 4,
-    info = "mod_results output for fish 'across_trait' estimates has correct dimensions")
+    info = "mod_results output for fish 'across_trait' object has correct dimensions")
 
   testthat::expect_equal(
     dim(across_trait_by_degree_diff$mod_table)[[1]], 12,
-    info = "mod_results output for fish 'across_trait_by_degree_diff' estimates has correct dimensions")
+    info = "mod_results output for fish 'across_trait_by_degree_diff' object has correct dimensions")
 
 
   testthat::expect_equal(
     dim(across_trait_by_treat_end_days10And50$mod_table)[[1]], 8,
-    info = "mod_results output for fish 'across_trait_by_treat_end_days10And50' estimates has correct dimensions")
+    info = "mod_results output for fish 'across_trait_by_treat_end_days10And50' object has correct dimensions")
 
   testthat::expect_equal(
     dim(HetModel$mod_table)[[1]], 12,
-    info = "mod_results output for fish 'HetModel' estimates has correct dimensions")
+    info = "mod_results output for fish 'HetModel' object has correct dimensions")
+
+  testthat::expect_equal(
+    dim(eng_mod_results$mod_table)[[1]], 1,
+    info = "mod_results output for english 'eng_mod_results' object has correct dimensions")
+
+  testthat::expect_equal(
+    dim(res2$mod_table)[[1]], 2,
+    info = "mod_results output for english 'res2' object has correct dimensions")
+
+  testthat::expect_equal(
+    dim(res3$mod_table)[[1]], 1,
+    info = "mod_results output for english 'res3' to check subsetting is working and object has correct dimensions")
+
+  testthat::expect_equal(round(res2$mod_table[1,2],2), round(res3$mod_table[1,2], 2), info = "checking mod_results output for english res2 object that has two levels matches the subsetted 'res3' object that only has a single level, Quality...")
 
   testthat::expect_equal(round(HetModel$mod_table[2,3],2), round(0.736814215, 2), info = "checking mod_results output for HetModel calculates correct mean for Life-history group...")
 
