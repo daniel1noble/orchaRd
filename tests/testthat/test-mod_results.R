@@ -51,6 +51,7 @@ by = "treat_end_days", data = warm_dat)
 
 # Fish data example with a heteroscedastic error
   model_het <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 + trait.type| es_ID), mods = ~ trait.type + deg_dif, method = "REML", test = "t", rho = 0, struc = "HCS", data = warm_dat, control=list(optimizer="optim", optmethod="Nelder-Mead"))
+
   HetModel <- mod_results(model_het, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif", weights = "prop", data = warm_dat)
   orchard_plot(HetModel, xlab = "lnRR", data = warm_dat)
 
@@ -58,29 +59,30 @@ by = "treat_end_days", data = warm_dat)
 testthat::test_that("Checking mod_results output for fish dataset ..", {
 
   testthat::expect_equal(
-    dim(overall)[[2]], 2,
+    dim(overall$mod_table)[[1]], 1,
     info = "mod_results output for fish 'overall' estimates has correct dimensions")
 
   testthat::expect_equal(
-    dim(across_trait)[[2]], 4,
+    dim(across_trait$mod_table)[[1]], 4,
     info = "mod_results output for fish 'across_trait' estimates has correct dimensions")
 
   testthat::expect_equal(
-    dim(across_trait_by_degree_diff)[[2]], 12,
+    dim(across_trait_by_degree_diff$mod_table)[[1]], 12,
     info = "mod_results output for fish 'across_trait_by_degree_diff' estimates has correct dimensions")
 
 
   testthat::expect_equal(
-    dim(across_trait_by_treat_end_days10And50)[[2]], 8,
+    dim(across_trait_by_treat_end_days10And50$mod_table)[[1]], 8,
     info = "mod_results output for fish 'across_trait_by_treat_end_days10And50' estimates has correct dimensions")
 
+  testthat::expect_equal(
+    dim(HetModel$mod_table)[[1]], 12,
+    info = "mod_results output for fish 'HetModel' estimates has correct dimensions")
 
+  testthat::expect_equal(round(HetModel$mod_table[2,3],2), round(0.736814215, 2), info = "checking mod_results output for HetModel calculates correct mean for Life-history group...")
 
+  testthat::expect_equal(round(overall$mod_table[1,4],2), round(0.04375941, 2), info = "checking mod_results output for overall calculates correct upper confidence interval for Amphipod group...")
 
-  testthat::expect_equal(round(results$mod_table[1,2],2), round(-0.8095289, 2), info = "checking mod_results output for eklof calculates correct mean for Amphipod group...")
-
-  testthat::expect_equal(round(results$mod_table[1,4],2), round(-0.20206548, 2), info = "checking mod_results output for eklof calculates correct upper confidence interval for Amphipod group...")
-
-  testthat::expect_equal(round(results$mod_table[1,5],2), round(-3.021706, 2), info = "checking mod_results output for eklof calculates correct lower predcition interval for Amphipod group...")
+  testthat::expect_equal(round(across_trait_by_treat_end_days10And50$mod_table[1,6],2), round(-0.4187192, 2), info = "checking mod_results output for across_trait_by_treat_end_days10And50 calculates correct lower predcition interval for Behaviour group...")
 })
 
