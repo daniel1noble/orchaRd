@@ -8,3 +8,4 @@ _bookdown.yml
 orchaRd_vignette.html
 MS/
 .travis.yml
+figures/
