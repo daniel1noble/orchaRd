@@ -98,7 +98,7 @@ caterpillars <- function(object, mod = "1", data, group, xlab, overall = TRUE, t
   # use dplyr here - need to change....
   # Dan can you make this basic R code - maybe I got it
   # data <- data[order(data$moderator, -data$yi),]
-  data <- data %>% group_by(moderator) %>% arrange(moderator, desc(yi)) %>%
+  data <- data %>% dplyr::group_by(moderator) %>% dplyr::arrange(moderator, dplyr::desc(yi)) %>%
     dplyr::ungroup() %>%
     dplyr::mutate(Y = 1:data_no +
              unlist(mapply(function(x, y) rep(x*6 , y) , x = 1:group_no, y = mod_table$K))
@@ -107,8 +107,8 @@ caterpillars <- function(object, mod = "1", data, group, xlab, overall = TRUE, t
 
   # mod ID
   mod_table$Y <- data %>% dplyr::group_by(moderator) %>%
-    summarise(Y = first(Y)) %>%
-    select(Y) %>% t() %>% as.vector() -2
+    dplyr::summarise(Y = dplyr::first(Y)) %>%
+    dplyr::select(Y) %>% t() %>% as.vector() -2
 
   # preparing for diamons for summary
   # modified from internal_viz_classicforest() from the R package, metaviz
@@ -124,25 +124,25 @@ caterpillars <- function(object, mod = "1", data, group, xlab, overall = TRUE, t
   )
 
   # make caterpillars plot
-  plot <- ggplot2::ggplot(data = data, aes(x = yi, y = Y)) +
+  plot <- ggplot2::ggplot(data = data, ggplot2::aes(x = yi, y = Y)) +
     # 95 % CI
-    ggplot2::geom_errorbarh(aes(xmin = lower, xmax = upper),
+    ggplot2::geom_errorbarh(ggplot2::aes(xmin = lower, xmax = upper),
                             colour = "#00CD00", height = 0, show.legend = FALSE, size = 0.5, alpha = 0.6) +
     ggplot2::geom_vline(xintercept = 0, linetype = 2, colour = "black", alpha = 0.5) +
     # creating dots for point estimates
     ggplot2::geom_point(colour = "#FFD700", size = 1) +
     # creating 95% prediction intervals
-    ggplot2::geom_segment(data = mod_table, aes(x = lowerPR, y = Y, xend = upperPR, yend = Y, group = name)) +
+    ggplot2::geom_segment(data = mod_table, ggplot2::aes(x = lowerPR, y = Y, xend = upperPR, yend = Y, group = name)) +
     # creating diamonsts (95% CI)
-    ggplot2::geom_polygon(data = sum_data, aes(x = x.diamond, y = y.diamond, group = moderator), fill = "red") +
+    ggplot2::geom_polygon(data = sum_data, ggplot2::aes(x = x.diamond, y = y.diamond, group = moderator), fill = "red") +
     #ggplot2::facet_wrap(~moderator, scales = "free_y", nrow = GN,  strip.position = "left") + # using facet_wrap - does not really work well
     ggplot2::theme_bw() +
-    ggplot2::theme(strip.text.y = element_text(angle = 0, size = 8),# margin = margin(t=15, r=15, b=15, l=15)),
-                   strip.background = element_rect(colour = NULL,
+    ggplot2::theme(strip.text.y = ggplot2::element_text(angle = 0, size = 8),# margin = margin(t=15, r=15, b=15, l=15)),
+                   strip.background = ggplot2::element_rect(colour = NULL,
                                                    linetype = "blank",
                                                    fill = "gray90"),
-                   axis.text.y = element_blank(),
-                   axis.ticks.y = element_blank()) +
+                   axis.text.y = ggplot2::element_blank(),
+                   axis.ticks.y = ggplot2::element_blank()) +
     ggplot2::labs(x = label, y = "", parse = TRUE) +
 
     ggplot2::annotate('text', x = min(data$lower)*0.975, y = mod_table$Y,
