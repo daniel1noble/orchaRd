@@ -71,7 +71,7 @@ bubble_plot(
 
 \item{weights}{Used when one wants marginalised means. How to marginalize categorical variables. The default is weights = "prop", which wights means for moderator levels based on their proportional representation in the data. For example, if "sex" is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal. IN the case if sex, for example, males and females are roughly equally prevalent in a population. As such, you can give the moderator levels equal weight using weights = "equal".}
 
-\item{by}{Used when one wants marginalised (mearginal) means. The 'condition' variable that one wishes to have the mean for the moderator vary.}
+\item{by}{Used when one wants marginalised (marginal) means. The 'condition' variable that one wishes to have the mean for the moderator vary.}
 
 \item{at}{Used when one wants marginalised means. The 'condition' that one wishes to calculate the means at, but is not presented in output}
 }
@@ -79,7 +79,7 @@ bubble_plot(
 Orchard plot
 }
 \description{
-Using a metafor model object of class rma or rma.mv or a results table of class orchard, it creates a an bubble plot from slope estimates or panels of bubble plot in cases when a model includes interaction terms.
+Using a metafor model object of class rma or rma.mv or a results table of class orchard, it creates a bubble plot from slope estimates or panels of bubble plots in cases when a model includes interaction terms.
 }
 \examples{
 \dontrun{

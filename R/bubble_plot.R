@@ -1,10 +1,10 @@
 #' @title bubble_plot
-#' @description Using a metafor model object of class rma or rma.mv or a results table of class orchard, it creates a an bubble plot from slope estimates or panels of bubble plot in cases when a model includes interaction terms.
+#' @description Using a metafor model object of class rma or rma.mv or a results table of class orchard, it creates a bubble plot from slope estimates or panels of bubble plots in cases when a model includes interaction terms.
 #' @param object model object of class 'rma.mv', 'rma' or 'orchard' table of model results
 #' @param mod the name of a continious moderator.
 #' @param group The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes. Not needed of a orchard_plot is provided with a mod_results object of class 'orchard'.
 #' @param data The data frame used to fit the rma.mv model object. Not needed of a orchard_plot is provided with a mod_results object of class 'orchard'.
-#' @param by Used when one wants marginalised (mearginal) means. The 'condition' variable that one wishes to have the mean for the moderator vary.
+#' @param by Used when one wants marginalised (marginal) means. The 'condition' variable that one wishes to have the mean for the moderator vary.
 #' @param at Used when one wants marginalised means. The 'condition' that one wishes to calculate the means at, but is not presented in output
 #' @param weights Used when one wants marginalised means. How to marginalize categorical variables. The default is weights = "prop", which wights means for moderator levels based on their proportional representation in the data. For example, if "sex" is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal. IN the case if sex, for example, males and females are roughly equally prevalent in a population. As such, you can give the moderator levels equal weight using weights = "equal".
 #' @param xlab Moderator label.
@@ -101,15 +101,15 @@ bubble_plot <- function(object, mod, group, data,
   if(is.null(data$condition)){
    plot <-ggplot2::ggplot() +
     # putting bubbles
-     ggplot2::geom_point(data = data, aes(x = moderator, y = yi, size = scale), shape = 21, alpha = alpha, fill = "grey90" ) +
+     ggplot2::geom_point(data = data, ggplot2::aes(x = moderator, y = yi, size = scale), shape = 21, alpha = alpha, fill = "grey90" ) +
     # prediction interval
-     ggplot2::geom_smooth(data = mod_table, aes(x = moderator, y = lowerPR), method =  "loess", formula = y~x, se = FALSE, lty =  "dotted", lwd = pi.lwd, colour = pi.col) +
-     ggplot2::geom_smooth(data = mod_table, aes(x = moderator, y = upperPR), method =  "loess", formula = y~x, se = FALSE, lty = "dotted", lwd = pi.lwd, colour = pi.col) +
+     ggplot2::geom_smooth(data = mod_table, ggplot2::aes(x = moderator, y = lowerPR), method =  "loess", formula = y~x, se = FALSE, lty =  "dotted", lwd = pi.lwd, colour = pi.col) +
+     ggplot2::geom_smooth(data = mod_table, ggplot2::aes(x = moderator, y = upperPR), method =  "loess", formula = y~x, se = FALSE, lty = "dotted", lwd = pi.lwd, colour = pi.col) +
      # confidence interval
-     ggplot2::geom_smooth(data = mod_table, aes(x = moderator, y = lowerCL), method =  "loess", formula = y~x, se = FALSE,lty = "dashed", lwd = ci.lwd, colour = ci.col) +
-     ggplot2::geom_smooth(data = mod_table, aes(x = moderator, y = upperCL), method =  "loess", formula = y~x, se = FALSE, lty ="dashed", lwd = ci.lwd, colour = ci.col) +
+     ggplot2::geom_smooth(data = mod_table, ggplot2::aes(x = moderator, y = lowerCL), method =  "loess", formula = y~x, se = FALSE,lty = "dashed", lwd = ci.lwd, colour = ci.col) +
+     ggplot2::geom_smooth(data = mod_table, ggplot2::aes(x = moderator, y = upperCL), method =  "loess", formula = y~x, se = FALSE, lty ="dashed", lwd = ci.lwd, colour = ci.col) +
      # main line
-     ggplot2::geom_smooth(data = mod_table, aes(x = moderator, y = estimate), method =  "loess", formula = y~x, se = FALSE, lwd = est.lwd, colour = est.col) +
+     ggplot2::geom_smooth(data = mod_table, ggplot2::aes(x = moderator, y = estimate), method =  "loess", formula = y~x, se = FALSE, lwd = est.lwd, colour = est.col) +
     #facet_grid(rows = vars(condition)) +
      ggplot2::labs(x = xlab, y = ylab, size = legend, parse = TRUE) +
      ggplot2::guides(fill = "none", colour = "none") +
@@ -118,21 +118,21 @@ bubble_plot <- function(object, mod, group, data,
     #theme(legend.position= c(1, 1), legend.justification = c(1, 1)) +
      ggplot2::theme(legend.direction="horizontal") +
     #theme(legend.background = element_rect(fill = "white", colour = "black")) +
-     ggplot2::theme(legend.background = element_blank()) +
-     ggplot2::theme(axis.text.y = element_text(size = 10, colour ="black", hjust = 0.5, angle = 90))
+     ggplot2::theme(legend.background = ggplot2::element_blank()) +
+     ggplot2::theme(axis.text.y = ggplot2::element_text(size = 10, colour ="black", hjust = 0.5, angle = 90))
   } else if(is.character(data$condition)){
     plot <-ggplot2::ggplot() +
       # putting bubbles
-      ggplot2::geom_point(data = data, aes(x = moderator, y = yi, size = scale, fill = condition), shape = 21, alpha = alpha) +
+      ggplot2::geom_point(data = data, ggplot2::aes(x = moderator, y = yi, size = scale, fill = condition), shape = 21, alpha = alpha) +
       # prediction interval
-      ggplot2::geom_smooth(data = mod_table, aes(x = moderator, y = lowerPR), method =  "loess", formula = y~x, se = FALSE, lty =  "dotted", lwd = pi.lwd, colour = pi.col) +
-      ggplot2::geom_smooth(data = mod_table, aes(x = moderator, y = upperPR), method =  "loess", formula = y~x,se = FALSE, lty = "dotted", lwd = pi.lwd, colour = pi.col) +
+      ggplot2::geom_smooth(data = mod_table, ggplot2::aes(x = moderator, y = lowerPR), method =  "loess", formula = y~x, se = FALSE, lty =  "dotted", lwd = pi.lwd, colour = pi.col) +
+      ggplot2::geom_smooth(data = mod_table, ggplot2::aes(x = moderator, y = upperPR), method =  "loess", formula = y~x,se = FALSE, lty = "dotted", lwd = pi.lwd, colour = pi.col) +
       # confidence interval
-      ggplot2::geom_smooth(data = mod_table, aes(x = moderator, y = lowerCL), method =  "loess", formula = y~x,se = FALSE,lty = "dashed", lwd = ci.lwd, colour = ci.col) +
-      ggplot2::geom_smooth(data = mod_table, aes(x = moderator, y = upperCL), method =  "loess", formula = y~x,se = FALSE, lty ="dashed", lwd = ci.lwd, colour = ci.col) +
+      ggplot2::geom_smooth(data = mod_table, ggplot2::aes(x = moderator, y = lowerCL), method =  "loess", formula = y~x,se = FALSE,lty = "dashed", lwd = ci.lwd, colour = ci.col) +
+      ggplot2::geom_smooth(data = mod_table, ggplot2::aes(x = moderator, y = upperCL), method =  "loess", formula = y~x,se = FALSE, lty ="dashed", lwd = ci.lwd, colour = ci.col) +
       # main line
-      ggplot2::geom_smooth(data = mod_table, aes(x = moderator, y = estimate), method =  "loess", formula = y~x, se = FALSE, lwd = est.lwd, colour = est.col) +
-      ggplot2::facet_wrap(vars(condition), nrow = condition.nrow) +
+      ggplot2::geom_smooth(data = mod_table, ggplot2::aes(x = moderator, y = estimate), method =  "loess", formula = y~x, se = FALSE, lwd = est.lwd, colour = est.col) +
+      ggplot2::facet_wrap(ggplot2::vars(condition), nrow = condition.nrow) +
       ggplot2::labs(x = xlab, y = ylab, size = legend, parse = TRUE) +
       ggplot2::guides(fill = "none", colour = "none") +
       # themses
@@ -140,8 +140,8 @@ bubble_plot <- function(object, mod, group, data,
       #theme(legend.position= c(1, 1), legend.justification = c(1, 1)) +
       ggplot2::theme(legend.direction="horizontal") +
       #theme(legend.background = element_rect(fill = "white", colour = "black")) +
-      ggplot2::theme(legend.background = element_blank()) +
-      ggplot2::theme(axis.text.y = element_text(size = 10, colour ="black", hjust = 0.5, angle = 90))
+      ggplot2::theme(legend.background = ggplot2::element_blank()) +
+      ggplot2::theme(axis.text.y = ggplot2::element_text(size = 10, colour ="black", hjust = 0.5, angle = 90))
 
     # if(facet == "rows"){
     #   plot <- plot + facet_grid(rows = vars(condition))
@@ -155,14 +155,14 @@ bubble_plot <- function(object, mod, group, data,
       # putting bubbles
       #geom_point(data = data, aes(x = moderator, y = yi, size = scale), shape = 21, alpha = alpha, fill = "grey90" ) +
       # prediction interval
-      ggplot2::geom_smooth(data = mod_table, aes(x = moderator, y = lowerPR), method =  "loess", formula = y~x, se = FALSE, lty =  "dotted", lwd = pi.lwd, colour = pi.col) +
-      ggplot2::geom_smooth(data = mod_table, aes(x = moderator, y = upperPR), method =  "loess", formula = y~x,se = FALSE, lty = "dotted", lwd = pi.lwd, colour = pi.col) +
+      ggplot2::geom_smooth(data = mod_table, ggplot2::aes(x = moderator, y = lowerPR), method =  "loess", formula = y~x, se = FALSE, lty =  "dotted", lwd = pi.lwd, colour = pi.col) +
+      ggplot2::geom_smooth(data = mod_table, ggplot2::aes(x = moderator, y = upperPR), method =  "loess", formula = y~x,se = FALSE, lty = "dotted", lwd = pi.lwd, colour = pi.col) +
       # confidence interval
-      ggplot2::geom_smooth(data = mod_table, aes(x = moderator, y = lowerCL), method =  "loess", formula = y~x,se = FALSE,lty = "dashed", lwd = ci.lwd, colour = ci.col) +
-      ggplot2::geom_smooth(data = mod_table, aes(x = moderator, y = upperCL), method =  "loess", formula = y~x,se = FALSE, lty ="dashed", lwd = ci.lwd, colour = ci.col) +
+      ggplot2::geom_smooth(data = mod_table, ggplot2::aes(x = moderator, y = lowerCL), method =  "loess", formula = y~x,se = FALSE,lty = "dashed", lwd = ci.lwd, colour = ci.col) +
+      ggplot2::geom_smooth(data = mod_table, ggplot2::aes(x = moderator, y = upperCL), method =  "loess", formula = y~x,se = FALSE, lty ="dashed", lwd = ci.lwd, colour = ci.col) +
       # main line
-      ggplot2::geom_smooth(data = mod_table, aes(x = moderator, y = estimate), method =  "loess", formula = y~x, se = FALSE, lwd = est.lwd, colour = est.col) +
-      ggplot2::facet_wrap(vars(condition), nrow = condition.nrow) +
+      ggplot2::geom_smooth(data = mod_table, ggplot2::aes(x = moderator, y = estimate), method =  "loess", formula = y~x, se = FALSE, lwd = est.lwd, colour = est.col) +
+      ggplot2::facet_wrap(ggplot2::vars(condition), nrow = condition.nrow) +
       ggplot2::labs(x = xlab, y = ylab, size = legend, parse = TRUE) +
       ggplot2::guides(fill = "none", colour = "none") +
       # themses
