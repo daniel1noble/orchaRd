@@ -1,0 +1,30 @@
+context("Checking bubble_plot function...")
+
+data(lim)
+lim[, "year"] <- as.numeric(lim$year)
+lim$vi<- 1/(lim$N - 3)
+model<-rma.mv(yi=yi, V=vi, mods= ~Environment*year, random=list(~1|Article,~1|Datapoint), data=lim)
+
+test <- mod_results(model, mod = "year", group = "Article",
+                    data = lim, weights = "prop", by = "Environment")
+plot1 <- bubble_plot(test, mod = "year", legend.pos = "top.left")
+plot2 <- bubble_plot(test, mod = "year", xlab = "Year", legend.pos = "top.left")
+
+
+testthat::test_that("Checking orchard_plot output ...", {
+
+  testthat::expect_equal(
+    is.null(plot1$facet), FALSE,
+    info = "bubble_plot correctly facetting...")
+
+  testthat::expect_equal(
+    plot2$labels$x, "Year",
+    info = "Check label of x-axis is correctly renamed...")
+
+  testthat::expect_equal(
+    plot1$labels$fill, "condition",
+    info = "Check that condition variable is present in fill...")
+
+
+})
+
