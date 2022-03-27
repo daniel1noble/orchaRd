@@ -1,4 +1,4 @@
-## Introducing the Orchard Plot for Meta-analysis
+# Introducing the Orchard Plot for Meta-analysis
 [![Build Status](https://app.travis-ci.com/daniel1noble/orchaRd.svg?branch=main)](https://app.travis-ci.com/daniel1noble/orchaRd.svg?branch=main) 
 [![codecov](https://codecov.io/gh/daniel1noble/orchaRd/branch/main/graph/badge.svg?token=KqQLvcGfLv)](https://codecov.io/gh/daniel1noble/orchaRd)
 [![Ask Us Anything\ !](https://img.shields.io/badge/Ask%20me-anything-1abc9c.svg)](https://github.com/daniel1noble/orchaRd/issues/new)
@@ -15,18 +15,17 @@ Nakagawa, S., Lagisz, M., O'Dea, R. E., Rutkowska, J., Yang, Y., Noble, D. W., &
 To install `orchaRd` use the following code in R:
 
 ```
-install.packages("devtools")
-install.packages("tidyverse")
-install.packages("metafor")
-install.packages("patchwork")
-install.packages("R.rsp")
+install.packages("pacman")
+pacman::p_load(devtools, tidyverse, metafor, patchwork, R.rsp, emmeans)
 
 devtools::install_github("daniel1noble/orchaRd", force = TRUE, build_vignettes = TRUE)
-remotes::install_github("rvlenth/emmeans", dependencies = TRUE, build_opts = "") 
-
 library(orchaRd)
-library(patchwork)
-library(tidyverse)
-library(metafor)
-library(emmeans)
+
+```
+
+# How to use?
+We detail how to use `orchaRd` function in the vignette. You can open the vignette using the following code:
+
+```
+vignette(package = "orchaRd") # Currently doesn't work as vignette still needs setting up.
 ```
