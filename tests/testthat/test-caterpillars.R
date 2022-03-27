@@ -23,11 +23,11 @@ testthat::test_that("Checking caterpillars output ...", {
     plot1$labels$size, NULL,
     info = "Check precision label doesn't exist in caterpillars plot...")
 
-  testthat::capture_error(caterpillars(eklof_MR, xlab = "Grazing", group = "Grazer.type", data=eklof, angle = 45))
+  testthat::expect_error(caterpillars(eklof_MR, xlab = "Grazing", group = "Grazer.type", data=eklof, angle = 45))
 
-  testthat::capture_error(caterpillars(eklof_MR, xlab = "Grazing", group = "Grazer.type"))
+  testthat::expect_error(caterpillars(eklof_MR, xlab = "Grazing", group = "Grazer.type"))
 
-  testthat::capture_error(caterpillars(eklof_MR, xlab = "Grazing", data=eklof))
+  testthat::expect_error(caterpillars(eklof_MR, xlab = "Grazing", data=eklof))
 
 })
 

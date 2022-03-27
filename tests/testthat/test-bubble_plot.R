@@ -26,6 +26,7 @@ testthat::test_that("Checking orchard_plot output ...", {
     plot1$labels$fill, "condition",
     info = "Check that condition variable is present in fill...")
 
+  testthat::expect_error(orchaRd::bubble_plot(test, mod = "year", legend.pos = "top.left", angle = 45))
 
 })
 
