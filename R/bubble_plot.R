@@ -37,7 +37,7 @@
 # TODO - write to https://github.com/rvlenth/emmeans/issues
 # TODO k and g to add
 # TODO adding examples
-# TODO - what to do when transformed - it does not work if mod = scale() or log() etc
+# TODO - what to do when transformed - it does not work if mod = scale() or log() etc (if not in the data, it won't run)
 # TODO - robust.rma added
 # TODO - we need some explanation for weights
 
