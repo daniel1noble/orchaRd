@@ -22,10 +22,6 @@ testthat::test_that("Checking orchard_plot output ...", {
     info = "xlab for eklof is correct...")
 
   testthat::expect_equal(
-    plot1$labels$size, "Precision (1/SE)",
-    info = "Check precision label for eklof is correct...")
-
-  testthat::expect_equal(
     plot1$labels$ymin, "lowerCL",
     info = "Check that ymin is 'lowerCL' for eklof...")
 
