@@ -66,7 +66,7 @@
 #TODO we should adding missing(mod) as well
 # TODO - robust.rma added
 
-mod_results <- function(model, mod = "1", group, data,N = NULL,  weights = "prop", by = NULL, at = NULL, subset = FALSE, ...){
+mod_results <- function(model, mod = "1", group, data, N = NULL,  weights = "prop", by = NULL, at = NULL, subset = FALSE, ...){
 
   if(missing(model)){
     stop("Please specify the 'model' argument by providing rma.mv or rma model object. See ?mod_results")
@@ -289,8 +289,7 @@ get_data_raw <- function(model, mod, group, N = NULL, data, at = NULL, subset = 
   row.names(data_reorg) <- 1:nrow(data_reorg)
 
   if(is.null(N) == FALSE){
-    N <- data[ ,N]
-    data_reorg$N <- N
+    data_reorg$N <- data[ ,N]
   }
 
   return(data_reorg)
@@ -335,8 +334,7 @@ get_data_raw_cont <- function(model, mod, group, N = NULL, data, by = by){
   row.names(data_reorg) <- 1:nrow(data_reorg)
 
   if(is.null(N) == FALSE){
-    N <- data[ ,N]
-    data_reorg$N <- N
+    data_reorg$N <- data[ ,N]
   }
 
   return(data_reorg)

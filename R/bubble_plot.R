@@ -9,6 +9,7 @@
 #' @param weights Used when one wants marginalised means. How to marginalize categorical variables. The default is weights = "prop", which wights means for moderator levels based on their proportional representation in the data. For example, if "sex" is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal. IN the case if sex, for example, males and females are roughly equally prevalent in a population. As such, you can give the moderator levels equal weight using weights = "equal".
 #' @param xlab Moderator label.
 #' @param ylab Effect size measure label.
+#' @param k.pos The position of effect size number, k.
 #' @param N  The vector of sample size which an effect size is based on. If default, we use precision (the inverse of sampling standard error)
 #' @param alpha The level of transparency for pieces of fruit (effect size)
 #' @param cb If TRUE, it uses 20 colour blind friendly colors (do not make this TRUE, when colour = TRUE)
