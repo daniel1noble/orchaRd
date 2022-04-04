@@ -29,7 +29,8 @@ Imports:
     emmeans,
     magrittr,
     dplyr,
-    progress
+    progress,
+    latex2exp
 Suggests: R.rsp, 
   testthat,
     knitr,
