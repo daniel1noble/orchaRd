@@ -41,9 +41,9 @@
 # TODO - what to do when transformed - it does not work if mod = scale() or log() etc (if not in the data, it won't run)
 # TODO - we need some explanation for weights
 
-bubble_plot <- function(object, mod, group, data,
+bubble_plot <- function(object, mod, group = NULL, data,
                         xlab = "Moderator", ylab = "Effect size", N = "none",
-                        alpha = 0.5, cb = TRUE, k = TRUE, g = TRUE,
+                        alpha = 0.5, cb = TRUE, k = TRUE, g = FALSE,
                         est.lwd = 1, ci.lwd = 0.5, pi.lwd = 0.5,
                         est.col = "black", ci.col = "black", pi.col = "black",
                         legend.pos = c("top.right", "top.left",
@@ -77,34 +77,45 @@ bubble_plot <- function(object, mod, group, data,
 
   mod_table <- results$mod_table
 
-  data <- results$data
+  data_trim <- results$data
   #data_trim$moderator <- factor(data_trim$moderator, levels = mod_table$name, labels = mod_table$name)
 
-  data$scale <- (1/sqrt(data[,"vi"]))
+  data_trim$scale <- (1/sqrt(data_trim[,"vi"]))
   legend <- "Precision (1/SE)"
-  #legend <- "Precision (1/SE)"
 
   if(any(N != "none")){
-    data$scale <- N
-    legend <- paste0("Sample Size (", "N",")") # we want to use italic
+    data_trim$scale <- data_trim$N
+    legend <- paste0("Sample Size ($\\textit{N}$)") # we want to use italic
   }
 
+  label <- xlab
+  # if(transfm == "tanh"){
+  #   cols <- sapply(mod_table, is.numeric)
+  #   mod_table[,cols] <- Zr_to_r(mod_table[,cols])
+  #   data_trim$yi <- Zr_to_r(data_trim$yi)
+  #   label <- xlab
+  # }else{
+  #   label <- xlab
+  # }
 
-  # Add in total effect sizes for each level
-  mod_table$K <- length(data[,"moderator"])
+  # the number of effect sizes
+  mod_table$K <- nrow(data_trim)
 
   # Add in total levels of a grouping variable (e.g., study ID) within each moderator level.
-  mod_table$g <-length(unique(data[,"stdy"]))
+  mod_table$g <- length(unique(data_trim$stdy))
+
+  # the number of groups in a moderator & data points
+  #group_no <- length(unique(mod_table[, "name"]))
 
   #data_no <- nrow(data)
 
-  # colour blind friendly colours with grey
-  cbpl <- c("#88CCEE", "#CC6677", "#DDCC77", "#117733", "#332288", "#AA4499", "#44AA99", "#999933", "#882255", "#661100", "#6699CC", "#888888", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#999999")
+  # # colour blind friendly colours with grey
+  # cbpl <- c("#88CCEE", "#CC6677", "#DDCC77", "#117733", "#332288", "#AA4499", "#44AA99", "#999933", "#882255", "#661100", "#6699CC", "#888888", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#999999")
 
-  if(is.null(data$condition)){
+  if(is.null(data_trim$condition)){
    plot <-ggplot2::ggplot() +
     # putting bubbles
-     ggplot2::geom_point(data = data, ggplot2::aes(x = moderator, y = yi, size = scale), shape = 21, alpha = alpha, fill = "grey90" ) +
+     ggplot2::geom_point(data = data_trim, ggplot2::aes(x = moderator, y = yi, size = scale), shape = 21, alpha = alpha, fill = "grey90" ) +
     # prediction interval
      ggplot2::geom_smooth(data = mod_table, ggplot2::aes(x = moderator, y = lowerPR), method =  "loess", formula = y~x, se = FALSE, lty =  "dotted", lwd = pi.lwd, colour = pi.col) +
      ggplot2::geom_smooth(data = mod_table, ggplot2::aes(x = moderator, y = upperPR), method =  "loess", formula = y~x, se = FALSE, lty = "dotted", lwd = pi.lwd, colour = pi.col) +
@@ -123,10 +134,10 @@ bubble_plot <- function(object, mod, group, data,
     #theme(legend.background = element_rect(fill = "white", colour = "black")) +
      ggplot2::theme(legend.background = ggplot2::element_blank()) +
      ggplot2::theme(axis.text.y = ggplot2::element_text(size = 10, colour ="black", hjust = 0.5, angle = 90))
-  } else if(is.character(data$condition)){
+  } else if(is.character(data_trim$condition)){
     plot <-ggplot2::ggplot() +
       # putting bubbles
-      ggplot2::geom_point(data = data, ggplot2::aes(x = moderator, y = yi, size = scale, fill = condition), shape = 21, alpha = alpha) +
+      ggplot2::geom_point(data = data_trim, ggplot2::aes(x = moderator, y = yi, size = scale, fill = condition), shape = 21, alpha = alpha) +
       # prediction interval
       ggplot2::geom_smooth(data = mod_table, ggplot2::aes(x = moderator, y = lowerPR), method =  "loess", formula = y~x, se = FALSE, lty =  "dotted", lwd = pi.lwd, colour = pi.col) +
       ggplot2::geom_smooth(data = mod_table, ggplot2::aes(x = moderator, y = upperPR), method =  "loess", formula = y~x,se = FALSE, lty = "dotted", lwd = pi.lwd, colour = pi.col) +
@@ -195,32 +206,77 @@ bubble_plot <- function(object, mod, group, data,
   }
 
   # putting k and g in
-  if(k == TRUE && g == FALSE && k.pos == "right"){
+  # c("top.right", "top.left", "bottom.right", "bottom.left","none")
+  if(k == TRUE && g == FALSE && k.pos == "top.right"){
     plot <- plot +
-      ggplot2::annotate('text', y = (max(data_trim$yi) + (max(data_trim$yi)*0.10)), x = (seq(1, group_no, 1)+0.3),
-                        label= paste("italic(k)==", mod_table$K[1:group_no]), parse = TRUE, hjust = "right", size = 3.5)
-  } else if(k == TRUE && g == FALSE && k.pos == "left") {
-    plot <- plot +  ggplot2::annotate('text', y = (min(data_trim$yi) + (min(data_trim$yi)*0.10)), x = (seq(1, group_no, 1)+0.3),
-                                      label= paste("italic(k)==", mod_table$K[1:group_no]), parse = TRUE, hjust = "left", size = 3.5)
-  } else if (k == TRUE && g == TRUE && k.pos == "right"){
+      ggplot2::annotate('text', y = max(data_trim$yi),
+                        x =  max(data_trim$moderator),
+                        label= paste("italic(k)==", mod_table$K[1]),
+                        parse = TRUE, hjust = "right", size = 3.5)
+  } else if(k == TRUE && g == FALSE && k.pos == "top.left") {
+    plot <- plot +
+      ggplot2::annotate('text', y = max(data_trim$yi),
+                        x = min(data_trim$moderator),
+                        label= paste("italic(k)==", mod_table$K[1]),
+                        parse = TRUE, hjust = "left", size = 3.5)
+  } else if(k == TRUE && g == FALSE && k.pos == "bottom.right") {
+    plot <- plot +
+      ggplot2::annotate('text', y = (min(data_trim$yi) + (min(data_trim$yi)*0.10)),
+                        x =  (max(data_trim$moderator) + (max(data_trim$moderator)*0.10)),
+                        label= paste("italic(k)==", mod_table$K[1]),
+                        parse = TRUE, hjust = "right", size = 3.5)
+  } else if (k == TRUE && g == FALSE && k.pos == "bottom.left"){
+    plot <- plot +
+      ggplot2::annotate('text', y = (min(data_trim$yi) + (min(data_trim$yi)*0.10)),
+                        x =  (max(data_trim$moderator) + (max(data_trim$moderator)*0.10)),
+                        label= paste("italic(k)==", mod_table$K[1]),
+                        parse = TRUE, hjust = "left", size = 3.5)
+    # below get g ----
+
+  } else if (k == TRUE && g == TRUE && k.pos == "top.right"){
     # get group numbers for moderator
-    plot <- plot + ggplot2::annotate('text', y = (max(data_trim$yi) + (max(data_trim$yi)*0.10)), x = (seq(1, group_no, 1)+0.3),
-                                     label= paste("italic(k)==", mod_table$K[1:group_no], "~","(", mod_table$g[1:group_no], ")"),
+    plot <- plot +
+      ggplot2::annotate('text', y = (max(data_trim$yi) + (max(data_trim$yi)*0.10)),
+                        x =  (max(data_trim$moderator) + (max(data_trim$moderator)*0.10)),
+                                     label= paste("italic(k)==",
+                                                  mod_table$K[1],
+                                                  "~","(", mod_table$g[1], ")"),
                                      parse = TRUE, hjust = "right", size = 3.5)
-  } else if (k == TRUE && g == TRUE && k.pos == "left"){
+  } else if (k == TRUE && g == TRUE && k.pos == "top.left"){
     # get group numbers for moderator
-    plot <- plot + ggplot2::annotate('text',  y = (min(data_trim$yi) + (min(data_trim$yi)*0.10)), x = (seq(1, group_no, 1)+0.3),
-                                     label= paste("italic(k)==", mod_table$K[1:group_no], "~","(", mod_table$g[1:group_no], ")"),
-                                     parse = TRUE, hjust = "left", size = 3.5)
-  }
-
-
-  # putting colors in
-  if(cb == TRUE){
     plot <- plot +
-      ggplot2::scale_fill_manual(values=cbpl) +
-      ggplot2::scale_colour_manual(values=cbpl)
+      ggplot2::annotate('text', y = (max(data_trim$yi) + (max(data_trim$yi)*0.10)),
+                        x =  (min(data_trim$moderator) + (min(data_trim$moderator)*0.10)),
+                        label= paste("italic(k)==",
+                                     mod_table$K[1],
+                                     "~","(", mod_table$g[1], ")"),
+                        parse = TRUE, hjust = "left", size = 3.5)
+  } else if (k == TRUE && g == TRUE && k.pos == "bottom.right"){
+    # get group numbers for moderator
+    plot <- plot +
+      ggplot2::annotate('text', y = (min(data_trim$yi) + (min(data_trim$yi)*0.10)),
+                        x =  (min(data_trim$moderator) + (min(data_trim$moderator)*0.10)),
+                        label= paste("italic(k)==",
+                                     mod_table$K[1],
+                                     "~","(", mod_table$g[1], ")"),
+                        parse = TRUE, hjust = "right", size = 3.5)
+  } else if (k == TRUE && g == TRUE && k.pos == "bottom.left"){
+    # get group numbers for moderator
+    plot <- plot +
+      ggplot2::annotate('text', y = (min(data_trim$yi) + (min(data_trim$yi)*0.10)),
+                        x =  (max(data_trim$moderator) + (max(data_trim$moderator)*0.10)),
+                        label= paste("italic(k)==",
+                                     mod_table$K[1],
+                                     "~","(", mod_table$g[1], ")"),
+                        parse = TRUE, hjust = "left", size = 3.5)
   }
+
+  # # putting colors in
+  # if(cb == TRUE){
+  #   plot <- plot +
+  #     ggplot2::scale_fill_manual(values=cbpl) +
+  #     ggplot2::scale_colour_manual(values=cbpl)
+  # }
 
   return(plot)
 }
