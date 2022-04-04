@@ -9,6 +9,7 @@ mod_results(
   mod = "1",
   group,
   data,
+  N = NULL,
   weights = "prop",
   by = NULL,
   at = NULL,
@@ -24,6 +25,8 @@ mod_results(
 \item{group}{The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes.}
 
 \item{data}{The data frame used to fit the rma.mv model object}
+
+\item{N}{The name of the column in the data specifying the sample size, N. Defaults to NULL and precision is plotted instead of sample size.}
 
 \item{weights}{how to marginalize categorical variables. The default is weights = "prop", which wights means for moderator levels based on their proportional representation in the data. For example, if "sex" is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal. In the case of sex, for example, males and females are roughly equally prevalent in a population. As such, you can give the moderator levels equal weight using weights = "equal".}
 

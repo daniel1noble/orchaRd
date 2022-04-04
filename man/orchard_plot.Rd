@@ -10,7 +10,7 @@ orchard_plot(
   group,
   data,
   xlab,
-  N = "none",
+  N = NULL,
   alpha = 0.5,
   angle = 90,
   cb = TRUE,
@@ -40,7 +40,7 @@ orchard_plot(
 
 \item{xlab}{The effect size measure label.}
 
-\item{N}{The vector of sample size which an effect size is based on. If default, we use precision (the inverse of sampling standard error)}
+\item{N}{The name of the column in the data specifying the sample size, N. Defaults to NULL and precision is plotted instead of sample size.}
 
 \item{alpha}{The level of transparency for pieces of fruit (effect size)}
 
