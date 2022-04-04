@@ -8,7 +8,7 @@
 #' @param at Used when one wants marginalised means. The 'condition' that one wishes to calculate the means at, but is not presented in output
 #' @param weights Used when one wants marginalised means. How to marginalize categorical variables. The default is weights = "prop", which wights means for moderator levels based on their proportional representation in the data. For example, if "sex" is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal. IN the case if sex, for example, males and females are roughly equally prevalent in a population. As such, you can give the moderator levels equal weight using weights = "equal".
 #' @param xlab The effect size measure label.
-#' @param N  The vector of sample size which an effect size is based on. If default, we use precision (the inverse of sampling standard error)
+#' @param N  The name of the column in the data specifying the sample size, N. Defaults to NULL and precision is plotted instead of sample size.
 #' @param alpha The level of transparency for pieces of fruit (effect size)
 #' @param angle The angle of y labels. The default is 90 degrees
 #' @param cb If TRUE, it uses 20 colour blind friendly colors
@@ -57,7 +57,7 @@
 # TODO - making N italic somehow
 # TODO - robust.rma added
 
-orchard_plot <- function(object, mod = "1", group, data, xlab, N = "none",
+orchard_plot <- function(object, mod = "1", group, data, xlab, N = NULL,
                          alpha = 0.5, angle = 90, cb = TRUE, k = TRUE, g = TRUE,
                          trunk.size = 3, branch.size = 1.2, twig.size = 0.5,
                          transfm = c("none", "tanh"), condition.lab = "Condition",
@@ -76,10 +76,10 @@ orchard_plot <- function(object, mod = "1", group, data, xlab, N = "none",
 	if(any(class(object) %in% c("robust.rma", "rma.mv", "rma"))){
 
 	    if(mod != "1"){
-	    results <-  orchaRd::mod_results(object, mod, group, data,
+	    results <-  orchaRd::mod_results(object, mod, group, data, N,
 	                                        by = by, at = at, weights = weights)
 	  } else {
-	    results <-  orchaRd::mod_results(object, mod = "1", group, data,
+	    results <-  orchaRd::mod_results(object, mod = "1", group, data, N,
 	                                        by = by, at = at, weights = weights)
 	    }
 	  }
@@ -97,8 +97,8 @@ orchard_plot <- function(object, mod = "1", group, data, xlab, N = "none",
 	legend <- "Precision (1/SE)"
 
 	if(any(N != "none")){
-	  data_trim$scale <- N
-		  legend <- paste0("Sample Size (", "N",")") # we want to use italic
+	  data_trim$scale <- data_trim$N
+		  legend <- paste0("Sample Size ($\\textit{N}$)") # we want to use italic
 	}
 
 	if(transfm == "tanh"){
@@ -150,7 +150,7 @@ orchard_plot <- function(object, mod = "1", group, data, xlab, N = "none",
 	     ggplot2::theme(legend.title = ggplot2::element_text(size = 9)) +
 	     ggplot2::theme(legend.direction="horizontal") +
 	     ggplot2::theme(legend.background = ggplot2::element_blank()) +
-	     ggplot2::labs(y = label, x = "", size = legend, parse = TRUE) +
+	     ggplot2::labs(y = label, x = "", size = latex2exp::TeX(legend)) +
 	     ggplot2::labs(shape = condition.lab) +
 	     ggplot2::theme(axis.text.y = ggplot2::element_text(size = 10, colour ="black",
 	                                               hjust = 0.5,
@@ -174,7 +174,7 @@ orchard_plot <- function(object, mod = "1", group, data, xlab, N = "none",
 	    ggplot2::theme(legend.title = ggplot2::element_text(size = 9)) +
 	    ggplot2::theme(legend.direction="horizontal") +
 	    ggplot2::theme(legend.background = ggplot2::element_blank()) +
-	    ggplot2::labs(y = label, x = "", size = legend) +
+	    ggplot2::labs(y = label, x = "", size = latex2exp::TeX(legend)) +
 	    ggplot2::theme(axis.text.y = ggplot2::element_text(size = 10, colour ="black",
 	                                                       hjust = 0.5,
 	                                                       angle = angle)) #+

@@ -10,6 +10,7 @@
 #' @param data The data frame used to fit the rma.mv model object
 #' @param weights how to marginalize categorical variables. The default is weights = "prop", which wights means for moderator levels based on their proportional representation in the data. For example, if "sex" is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal. In the case of sex, for example, males and females are roughly equally prevalent in a population. As such, you can give the moderator levels equal weight using weights = "equal".
 #' @param subset Used when one wishes to only plot a subset of levels within the main moderator of interest defined by 'mod'. Default is FALSE, but use TRUE if you wish to subset levels of a moderator plotted (defined by 'mod') for plotting. Levels one wishes to plot are specified as a list with the level names as a character string in the 'at' argument. For subsetting to work, 'at' argument also needs to be specified so that 'mod_results' knows what levels one wishes to plot.
+#' @param N  The name of the column in the data specifying the sample size, N. Defaults to NULL and precision is plotted instead of sample size.
 #' @param ... Additonal arguments passed to emmeans::emmeans()
 #' @return A data frame containing all the model results including mean effect size estimate, confidence and prediction intervals
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
@@ -65,7 +66,7 @@
 #TODO we should adding missing(mod) as well
 # TODO - robust.rma added
 
-mod_results <- function(model, mod = "1", group, data, weights = "prop", by = NULL, at = NULL, subset = FALSE, ...){
+mod_results <- function(model, mod = "1", group, data,N = NULL,  weights = "prop", by = NULL, at = NULL, subset = FALSE, ...){
 
   if(missing(model)){
     stop("Please specify the 'model' argument by providing rma.mv or rma model object. See ?mod_results")
@@ -122,7 +123,7 @@ mod_results <- function(model, mod = "1", group, data, weights = "prop", by = NU
     }
 
     # Extract data
-    data2 <- get_data_raw(model, mod, group, data, at = at, subset)
+    data2 <- get_data_raw(model, mod, group, N, data, at = at, subset)
 
     mod_table$name <- factor(mod_table$name,
                              levels = mod_table$name,
@@ -155,7 +156,7 @@ mod_results <- function(model, mod = "1", group, data, weights = "prop", by = NU
     }
 
     # extract data
-    data2 <- get_data_raw_cont(model, mod, group, data, by = by)
+    data2 <- get_data_raw_cont(model, mod, group, N, data, by = by)
 
   }
 
@@ -227,6 +228,7 @@ return(tmp)
 #' @param mod the moderator variable
 #' @param group The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes.
 #' @param data The data frame used to fit the rma.mv model object
+#' @param N  The name of the column in the data specifying the sample size, N. Defaults to NULL and precision is plotted instead of sample size.
 #' @param  at List of moderators. If `at` is equal to `mod` then levels specified within at will be used to subset levels when 'subset = TRUE'. Otherwise, it will marginalise over the moderators at the specified levels.
 #' @param subset Whether or not to subset levels within the 'mod' argument. Default = FALSE.
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
@@ -246,7 +248,7 @@ return(tmp)
 #'  model <- rma.mv(yi = SMD, V = vSMD, random = list( ~ 1 | StudyNo, ~ 1 | EffectID), data = english)
 #'  test3 <-  get_data_raw(model, mod = "1", group = "StudyNo", data = english)}
 
-get_data_raw <- function(model, mod, group, data, at = NULL, subset = TRUE){
+get_data_raw <- function(model, mod, group, N = NULL, data, at = NULL, subset = TRUE){
   if(missing(group)){
     stop("Please specify the 'group' argument by providing the name of the grouping variable. See ?mod_results")
   }
@@ -285,6 +287,12 @@ get_data_raw <- function(model, mod, group, data, at = NULL, subset = TRUE){
   stdy <- data[ ,group] # Could default to base instead of tidy
   data_reorg <- data.frame(yi, vi, moderator, stdy, type)
   row.names(data_reorg) <- 1:nrow(data_reorg)
+
+  if(is.null(N) == FALSE){
+    N <- data[ ,N]
+    data_reorg$N <- N
+  }
+
   return(data_reorg)
 }
 
@@ -293,6 +301,7 @@ get_data_raw <- function(model, mod, group, data, at = NULL, subset = TRUE){
 #' @param model rma.mv object
 #' @param mod the moderator variable
 #' @param group The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes.
+#' @param N  The name of the column in the data specifying the sample size, N. Defaults to NULL and precision is plotted instead of sample size.
 #' @param data The data frame used to fit the rma.mv model object
 #' @param by Character name(s) of the 'condition' variables to use for grouping into separate tables.
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
@@ -300,7 +309,7 @@ get_data_raw <- function(model, mod, group, data, at = NULL, subset = TRUE){
 #' @return Returns a data frame
 #' @export
 
-get_data_raw_cont <- function(model, mod, group, data, by = by){
+get_data_raw_cont <- function(model, mod, group, N = NULL, data, by = by){
   if(missing(group)){
     stop("Please specify the 'group' argument by providing the name of the grouping variable. See ?mod_results")
   }
@@ -324,6 +333,12 @@ get_data_raw_cont <- function(model, mod, group, data, by = by){
   stdy <- data[,group] # Could default to base instead of tidy
   data_reorg <- data.frame(yi, vi, moderator, condition, stdy, type)
   row.names(data_reorg) <- 1:nrow(data_reorg)
+
+  if(is.null(N) == FALSE){
+    N <- data[ ,N]
+    data_reorg$N <- N
+  }
+
   return(data_reorg)
 }
 
