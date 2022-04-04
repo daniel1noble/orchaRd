@@ -124,3 +124,23 @@ testthat::test_that("Checking mod_results output for fish dataset ..", {
   testthat::expect_equal(round(across_trait_by_treat_end_days10And50$mod_table[1,6],2), round(-0.4187192, 2), info = "checking mod_results output for across_trait_by_treat_end_days10And50 calculates correct lower predcition interval for Behaviour group...")
 })
 
+
+### calculate log risk ratios and corresponding sampling variances
+dat <- escalc(measure="RR", ai=tpos, bi=tneg, ci=cpos, di=cneg, data=dat.bcg)
+
+### random-effects model, using log risk ratios and variances as input
+### note: method="REML" is the default, so one could leave this out
+mod_uni <- rma(yi, vi, data=dat, method="REML")
+
+mod_rs_uni <- orchaRd::mod_results(mod_uni, group = "author", data=dat)
+
+plot_uni <- orchaRd::orchard_plot(mod_uni, group = "author", data=dat, xlab = "Effect Size")
+
+testthat::test_that("Checking mod_results output for rma and rma.uni dataset ..", {
+
+  testthat::expect_equal(
+    as.numeric(mod_uni$b), mod_rs_uni$mod_table$estimate,
+    info = "mod_results output for rma and rma.uni works fine and matches mod_results...")
+
+})
+

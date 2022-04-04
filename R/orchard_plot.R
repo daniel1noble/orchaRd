@@ -73,7 +73,7 @@ orchard_plot <- function(object, mod = "1", group, data, xlab, N = NULL,
   legend.pos <- match.arg(NULL, choices = legend.pos)
        k.pos <- match.arg(NULL, choices = k.pos)
 
-	if(any(class(object) %in% c("robust.rma", "rma.mv", "rma"))){
+	if(any(class(object) %in% c("robust.rma", "rma.mv", "rma", "rma.uni"))){
 
 	    if(mod != "1"){
 	    results <-  orchaRd::mod_results(object, mod, group, data, N,

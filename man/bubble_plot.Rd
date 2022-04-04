@@ -7,7 +7,7 @@
 bubble_plot(
   object,
   mod,
-  group,
+  group = NULL,
   data,
   xlab = "Moderator",
   ylab = "Effect size",
@@ -15,7 +15,7 @@ bubble_plot(
   alpha = 0.5,
   cb = TRUE,
   k = TRUE,
-  g = TRUE,
+  g = FALSE,
   est.lwd = 1,
   ci.lwd = 0.5,
   pi.lwd = 0.5,
@@ -24,6 +24,7 @@ bubble_plot(
   pi.col = "black",
   legend.pos = c("top.right", "top.left", "bottom.right", "bottom.left", "top.out",
     "bottom.out", "none"),
+  k.pos = c("top.right", "top.left", "bottom.right", "bottom.left", "none"),
   condition.nrow = 2,
   weights = "prop",
   by = NULL,
@@ -47,7 +48,7 @@ bubble_plot(
 
 \item{alpha}{The level of transparency for pieces of fruit (effect size)}
 
-\item{cb}{If TRUE, it uses 20 colour blind friendly colors}
+\item{cb}{If TRUE, it uses 20 colour blind friendly colors (do not make this TRUE, when colour = TRUE)}
 
 \item{k}{If TRUE, it displays k (number of effect sizes) on the plot}
 
@@ -66,6 +67,8 @@ bubble_plot(
 \item{pi.col}{Colour of the prediction interval}
 
 \item{legend.pos}{Where to place the legend or not to put it ("none")}
+
+\item{k.pos}{The position of effect size number, k.}
 
 \item{condition.nrow}{Number of rows to plot condition variable.}
 
