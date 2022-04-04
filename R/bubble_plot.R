@@ -11,7 +11,7 @@
 #' @param ylab Effect size measure label.
 #' @param N  The vector of sample size which an effect size is based on. If default, we use precision (the inverse of sampling standard error)
 #' @param alpha The level of transparency for pieces of fruit (effect size)
-#' @param cb If TRUE, it uses 20 colour blind friendly colors
+#' @param cb If TRUE, it uses 20 colour blind friendly colors (do not make this TRUE, when colour = TRUE)
 #' @param k If TRUE, it displays k (number of effect sizes) on the plot
 #' @param g If TRUE, it displays g (number of grouping levels for each level of the moderator) on the plot
 #' @param est.lwd Size of the point estimate
@@ -22,6 +22,7 @@
 #' @param pi.col Colour of the prediction interval
 #' @param condition.nrow Number of rows to plot condition variable.
 #' @param legend.pos Where to place the legend or not to put it ("none")
+#'
 #' @return Orchard plot
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
@@ -38,7 +39,6 @@
 # TODO k and g to add
 # TODO adding examples
 # TODO - what to do when transformed - it does not work if mod = scale() or log() etc (if not in the data, it won't run)
-# TODO - robust.rma added
 # TODO - we need some explanation for weights
 
 bubble_plot <- function(object, mod, group, data,
@@ -50,6 +50,9 @@ bubble_plot <- function(object, mod, group, data,
                                        "bottom.right", "bottom.left",
                                        "top.out", "bottom.out",
                                        "none"),
+                        k.pos = c("top.right", "top.left",
+                                  "bottom.right", "bottom.left",
+                                  "none"),
                         condition.nrow = 2,
                          #condition.lab = "Condition",
                         weights = "prop", by = NULL, at = NULL)
@@ -190,6 +193,27 @@ bubble_plot <- function(object, mod, group, data,
   } else if (legend.pos == "none") {
     plot <- plot + ggplot2::theme(legend.position="none")
   }
+
+  # putting k and g in
+  if(k == TRUE && g == FALSE && k.pos == "right"){
+    plot <- plot +
+      ggplot2::annotate('text', y = (max(data_trim$yi) + (max(data_trim$yi)*0.10)), x = (seq(1, group_no, 1)+0.3),
+                        label= paste("italic(k)==", mod_table$K[1:group_no]), parse = TRUE, hjust = "right", size = 3.5)
+  } else if(k == TRUE && g == FALSE && k.pos == "left") {
+    plot <- plot +  ggplot2::annotate('text', y = (min(data_trim$yi) + (min(data_trim$yi)*0.10)), x = (seq(1, group_no, 1)+0.3),
+                                      label= paste("italic(k)==", mod_table$K[1:group_no]), parse = TRUE, hjust = "left", size = 3.5)
+  } else if (k == TRUE && g == TRUE && k.pos == "right"){
+    # get group numbers for moderator
+    plot <- plot + ggplot2::annotate('text', y = (max(data_trim$yi) + (max(data_trim$yi)*0.10)), x = (seq(1, group_no, 1)+0.3),
+                                     label= paste("italic(k)==", mod_table$K[1:group_no], "~","(", mod_table$g[1:group_no], ")"),
+                                     parse = TRUE, hjust = "right", size = 3.5)
+  } else if (k == TRUE && g == TRUE && k.pos == "left"){
+    # get group numbers for moderator
+    plot <- plot + ggplot2::annotate('text',  y = (min(data_trim$yi) + (min(data_trim$yi)*0.10)), x = (seq(1, group_no, 1)+0.3),
+                                     label= paste("italic(k)==", mod_table$K[1:group_no], "~","(", mod_table$g[1:group_no], ")"),
+                                     parse = TRUE, hjust = "left", size = 3.5)
+  }
+
 
   # putting colors in
   if(cb == TRUE){

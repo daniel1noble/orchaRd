@@ -224,7 +224,6 @@ orchard_plot <- function(object, mod = "1", group, data, xlab, N = "none",
 	      ggplot2::scale_colour_manual(values = cbpl)
 	  }
 
-
 	  # putting k and g in
 	  if(k == TRUE && g == FALSE && k.pos == "right"){
 	    plot <- plot +
