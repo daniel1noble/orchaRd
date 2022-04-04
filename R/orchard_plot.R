@@ -55,8 +55,6 @@
 #' }
 #' @export
 
-# TODO - making N italic somehow
-
 orchard_plot <- function(object, mod = "1", group, data, xlab, N = NULL,
                          alpha = 0.5, angle = 90, cb = TRUE, k = TRUE, g = TRUE,
                          trunk.size = 3, branch.size = 1.2, twig.size = 0.5,
