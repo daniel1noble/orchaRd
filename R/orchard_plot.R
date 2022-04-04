@@ -21,7 +21,8 @@
 #' @param twig.size Size of the prediction intervals
 #' @param legend.pos Where to place the legend or not to put it ("none")
 #' @param k.pos Where to put k (number of effect sizes) on the plot
-#' @param colour Colour of fruit. By default, fruit is colored according to the mod argument. If TRUE, it is coloured according to the grouping varaible
+#' @param colour Colour of fruit. By default, fruit is colored according to the mod argument. If TRUE, it is colored according to the grouping variable
+#' @param fill If TRUE, fruit will be filled with colours. If FALSE, fruit will not be filled with colours.
 #' @return Orchard plot
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
