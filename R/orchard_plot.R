@@ -23,6 +23,7 @@
 #' @param k.pos Where to put k (number of effect sizes) on the plot
 #' @param colour Colour of fruit. By default, fruit is colored according to the mod argument. If TRUE, it is colored according to the grouping variable
 #' @param fill If TRUE, fruit will be filled with colours. If FALSE, fruit will not be filled with colours.
+#' @param weights Used when one wants marginalised means. How to marginalize categorical variables. The default is weights = "prop", which wights means for moderator levels based on their proportional representation in the data. For example, if "sex" is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal. IN the case if sex, for example, males and females are roughly equally prevalent in a population. As such, you can give the moderator levels equal weight using weights = "equal".
 #' @return Orchard plot
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
