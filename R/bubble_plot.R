@@ -59,6 +59,7 @@ bubble_plot <- function(object, mod, group = NULL, data,
                         weights = "prop", by = NULL, at = NULL)
   {
   legend.pos <- match.arg(NULL, choices = legend.pos)
+       k.pos <- match.arg(NULL, choices = k.pos)
   #facet <- match.arg(NULL, choices = facet)
 
   if(any(class(object) %in% c("robust.rma", "rma.mv", "rma", "rma.uni"))){
