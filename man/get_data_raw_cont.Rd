@@ -4,7 +4,7 @@
 \alias{get_data_raw_cont}
 \title{get_data_raw_cont}
 \usage{
-get_data_raw_cont(model, mod, group, data, by = by)
+get_data_raw_cont(model, mod, group, N = NULL, data, by = by)
 }
 \arguments{
 \item{model}{rma.mv object}
@@ -12,6 +12,8 @@ get_data_raw_cont(model, mod, group, data, by = by)
 \item{mod}{the moderator variable}
 
 \item{group}{The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes.}
+
+\item{N}{The name of the column in the data specifying the sample size, N. Defaults to NULL and precision is plotted instead of sample size.}
 
 \item{data}{The data frame used to fit the rma.mv model object}
 
