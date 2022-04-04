@@ -61,7 +61,7 @@ bubble_plot <- function(object, mod, group = NULL, data,
   legend.pos <- match.arg(NULL, choices = legend.pos)
   #facet <- match.arg(NULL, choices = facet)
 
-  if(any(class(object) %in% c("robust.rma", "rma.mv", "rma"))){
+  if(any(class(object) %in% c("robust.rma", "rma.mv", "rma", "rma.uni"))){
 
     if(mod != "1"){
       results <-  orchaRd::mod_results(object, mod, group, data,

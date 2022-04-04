@@ -72,7 +72,7 @@ mod_results <- function(model, mod = "1", group, data, N = NULL,  weights = "pro
     stop("Please specify the 'model' argument by providing rma.mv or rma model object. See ?mod_results")
   }
 
-  if(all(class(model) %in% c("robust.rma", "rma.mv", "rma")) == FALSE) {stop("Sorry, you need to fit a metafor model of class rma.mv, rma, or robust.rma")}
+  if(all(class(model) %in% c("robust.rma", "rma.mv", "rma", "rma.uni")) == FALSE) {stop("Sorry, you need to fit a metafor model of class rma.mv, rma, or robust.rma")}
 
   if(missing(group)){
     stop("Please specify the 'group' argument by providing the name of the grouping variable. See ?mod_results")
