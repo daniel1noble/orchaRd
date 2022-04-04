@@ -24,6 +24,8 @@ orchard_plot(
   legend.pos = c("bottom.right", "bottom.left", "top.right", "top.left", "top.out",
     "bottom.out", "none"),
   k.pos = c("right", "left", "none"),
+  colour = FALSE,
+  fill = TRUE,
   weights = "prop",
   by = NULL,
   at = NULL
@@ -65,6 +67,10 @@ orchard_plot(
 \item{legend.pos}{Where to place the legend or not to put it ("none")}
 
 \item{k.pos}{Where to put k (number of effect sizes) on the plot}
+
+\item{colour}{Colour of fruit. By default, fruit is colored according to the mod argument. If TRUE, it is colored according to the grouping variable}
+
+\item{fill}{If TRUE, fruit will be filled with colours. If FALSE, fruit will not be filled with colours.}
 
 \item{weights}{Used when one wants marginalised means. How to marginalize categorical variables. The default is weights = "prop", which wights means for moderator levels based on their proportional representation in the data. For example, if "sex" is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal. IN the case if sex, for example, males and females are roughly equally prevalent in a population. As such, you can give the moderator levels equal weight using weights = "equal".}
 

@@ -32,7 +32,7 @@ mod_results(
 
 \item{by}{Character name(s) of the 'condition' variables to use for grouping into separate tables.}
 
-\item{at}{Named list of levels for the corresponding 'condition' variable(s). Used for marginalised predcitions or when one wishes to only present a subset of levels of the moderator (defined by 'mod' argument - see also 'subset' argument).}
+\item{at}{Named list of levels for the corresponding 'condition' variable(s). Used for marginalized predictions or when one wishes to only present a subset of levels of the moderator (defined by 'mod' argument - see also 'subset' argument).}
 
 \item{subset}{Used when one wishes to only plot a subset of levels within the main moderator of interest defined by 'mod'. Default is FALSE, but use TRUE if you wish to subset levels of a moderator plotted (defined by 'mod') for plotting. Levels one wishes to plot are specified as a list with the level names as a character string in the 'at' argument. For subsetting to work, 'at' argument also needs to be specified so that 'mod_results' knows what levels one wishes to plot.}
 
