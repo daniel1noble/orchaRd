@@ -21,6 +21,9 @@
 #' @param twig.size Size of the prediction intervals
 #' @param legend.pos Where to place the legend or not to put it ("none")
 #' @param k.pos Where to put k (number of effect sizes) on the plot
+#' @param colour Colour of fruit. By default, fruit is colored according to the mod argument. If TRUE, it is colored according to the grouping variable
+#' @param fill If TRUE, fruit will be filled with colours. If FALSE, fruit will not be filled with colours.
+#' @param weights Used when one wants marginalised means. How to marginalize categorical variables. The default is weights = "prop", which wights means for moderator levels based on their proportional representation in the data. For example, if "sex" is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal. IN the case if sex, for example, males and females are roughly equally prevalent in a population. As such, you can give the moderator levels equal weight using weights = "equal".
 #' @return Orchard plot
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
@@ -52,10 +55,7 @@
 #' }
 #' @export
 
-# TODO - turning fill and off fillings
-# TODO - coloring according to a different categorical moderator
 # TODO - making N italic somehow
-# TODO - robust.rma added
 
 orchard_plot <- function(object, mod = "1", group, data, xlab, N = NULL,
                          alpha = 0.5, angle = 90, cb = TRUE, k = TRUE, g = TRUE,
@@ -66,6 +66,8 @@ orchard_plot <- function(object, mod = "1", group, data, xlab, N = NULL,
                                         "top.out", "bottom.out",
                                         "none"), # "none" - no legends
                          k.pos = c("right", "left", "none"),
+                         colour = FALSE,
+                         fill = TRUE,
                          weights = "prop", by = NULL, at = NULL)
 {
   ## evaluate choices, if not specified it takes the first choice
@@ -124,6 +126,23 @@ orchard_plot <- function(object, mod = "1", group, data, xlab, N = NULL,
 	# colour blind friendly colours with grey
 	 cbpl <- c("#88CCEE", "#CC6677", "#DDCC77", "#117733", "#332288", "#AA4499", "#44AA99", "#999933", "#882255", "#661100", "#6699CC", "#888888", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#999999")
 
+	 # setting fruit colour
+	 if(colour == TRUE){
+	   color <- data_trim$stdy
+	   color2 <- NULL
+	 }else{
+	   color <- data_trim$mod
+	   color2 <- mod_table$name
+	 }
+
+	 # whether we fill fruit or not
+	 if(fill == TRUE){
+	   fill <- color
+	 }else{
+	     fill <- NULL
+	   }
+
+
 
 	 # whether marginal
 	 if(names(mod_table)[2] == "condition"){
@@ -133,14 +152,14 @@ orchard_plot <- function(object, mod = "1", group, data, xlab, N = NULL,
 
 	   plot <- ggplot2::ggplot() +
 	     # pieces of fruit (bee-swarm and bubbles)
-	     ggbeeswarm::geom_quasirandom(data = data_trim, ggplot2::aes(y = yi, x = moderator, size = scale, colour = moderator), alpha=alpha) +
+	     ggbeeswarm::geom_quasirandom(data = data_trim, ggplot2::aes(y = yi, x = moderator, size = scale, colour = color, fill = fill), alpha=alpha, shape = 21) +
 
 	     ggplot2::geom_hline(yintercept = 0, linetype = 2, colour = "black", alpha = alpha) +
 	     # creating CI
 	     ggplot2::geom_linerange(data = mod_table, ggplot2::aes(x = name, ymin = lowerCL, ymax = upperCL),
 	                             size = branch.size, position = ggplot2::position_dodge2(width = 0.3)) +
 	     # drowning point estimate and PI
-	     ggplot2::geom_pointrange(data = mod_table, ggplot2::aes(y = estimate, x = name, ymin = lowerPR, ymax = upperPR,  shape = as.factor(condition), fill = name), size = twig.size, position = ggplot2::position_dodge2(width = 0.3), fatten = trunk.size) +
+	     ggplot2::geom_pointrange(data = mod_table, ggplot2::aes(y = estimate, x = name, ymin = lowerPR, ymax = upperPR,  shape = as.factor(condition), fill = color2), size = twig.size, position = ggplot2::position_dodge2(width = 0.3), fatten = trunk.size) +
 	     # this will only work for up to 5 different conditions
 	     # flipping things around (I guess we could do use the same geoms but the below is the original so we should not change)
 	     ggplot2::scale_shape_manual(values =  20 + (1:condition_no)) + ggplot2::coord_flip() +
@@ -153,21 +172,20 @@ orchard_plot <- function(object, mod = "1", group, data, xlab, N = NULL,
 	     ggplot2::labs(y = label, x = "", size = latex2exp::TeX(legend)) +
 	     ggplot2::labs(shape = condition.lab) +
 	     ggplot2::theme(axis.text.y = ggplot2::element_text(size = 10, colour ="black",
-	                                               hjust = 0.5,
-	                                                       angle = angle))
+	                                                        hjust = 0.5,
+	                                                        angle = angle))
 
 	 } else {
 
 	  plot <- ggplot2::ggplot() +
 	    # pieces of fruit (bee-swarm and bubbles)
-	    ggbeeswarm::geom_quasirandom(data = data_trim, ggplot2::aes(y = yi, x = moderator, size = scale, colour = moderator), alpha=alpha) +
+	    ggbeeswarm::geom_quasirandom(data = data_trim, ggplot2::aes(y = yi, x = moderator, size = scale, colour = color, fill = fill), alpha=alpha, shape = 21) +
 
 	    ggplot2::geom_hline(yintercept = 0, linetype = 2, colour = "black", alpha = alpha) +
 	    # creating CI
-	    ggplot2::geom_linerange(data = mod_table, ggplot2::aes(x = name, ymin = lowerCL, ymax = upperCL),
-	                            size = branch.size) +
+	    ggplot2::geom_linerange(data = mod_table, ggplot2::aes(x = name, ymin = lowerCL, ymax = upperCL), size = branch.size) +
 	    # drowning point estimate and PI
-	    ggplot2::geom_pointrange(data = mod_table, ggplot2::aes(y = estimate, x = name,  ymin = lowerPR, ymax = upperPR, fill = name), size = twig.size, fatten = trunk.size, shape = 21) +
+	    ggplot2::geom_pointrange(data = mod_table, ggplot2::aes(y = estimate, x = name,  ymin = lowerPR, ymax = upperPR, fill = color2), size = twig.size, fatten = trunk.size, shape = 21) +
 	    ggplot2::coord_flip() +
 	    ggplot2::theme_bw() +
 	    ggplot2::guides(fill = "none", colour = "none") +
@@ -202,8 +220,8 @@ orchard_plot <- function(object, mod = "1", group, data, xlab, N = NULL,
 	  # putting colors in
 	  if(cb == TRUE){
 	    plot <- plot +
-	      ggplot2::scale_fill_manual(values=cbpl) +
-	      ggplot2::scale_colour_manual(values=cbpl)
+	      ggplot2::scale_fill_manual(values = cbpl) +
+	      ggplot2::scale_colour_manual(values = cbpl)
 	  }
 
 
