@@ -29,16 +29,22 @@
 #' @author Daniel Noble - daniel.noble@anu.edu.au
 #' @examples
 #' \dontrun{
-#' data(eklof)
+#' data(lim)
+#' lim[, "year"] <- as.numeric(lim$year)
+#' lim$vi<- 1/(lim$N - 3)
+#' model<-metafor::rma.mv(yi=yi, V=vi, mods= ~Environment*year,
+#' random=list(~1|Article,~1|Datapoint), data=na.omit(lim))
+#' test <- orchaRd::mod_results(model, mod = "year", group = "Article", data = lim, weights = "prop", by = "Environment")
+#' orchaRd::bubble_plot(test, mod = "year", legend.pos = "top.left")
+#' # Or just using model directly
+#' orchaRd::bubble_plot(model, mod = "year", legend.pos = "top.left", data = lim, weights = "prop", by = "Environment")
 #'
 #' }
 #' @export
 
-# TODO - need to draw ones without conditions (Done)
 # TODO - make poly works for
 # TODO - write to https://github.com/rvlenth/emmeans/issues
 # TODO k and g to add
-# TODO adding examples
 # TODO - what to do when transformed - it does not work if mod = scale() or log() etc (if not in the data, it won't run)
 # TODO - we need some explanation for weights
 #TODO - sample size by condition
