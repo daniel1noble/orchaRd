@@ -49,7 +49,7 @@
 # TODO - what to do when transformed - it does not work if mod = scale() or log() etc (if not in the data, it won't run)
 # TODO - we need some explanation for weights
 # TODO - sample size by condition (is it possible????)
-# TODO - add explnations for by and at (how do we say - see emmeans)
+# TODO - add explanations for by and at (how do we say - see emmeans)
 
 bubble_plot <- function(object, mod, group = NULL, data,
                         xlab = "Moderator", ylab = "Effect size", N = "none",
@@ -68,7 +68,7 @@ bubble_plot <- function(object, mod, group = NULL, data,
                         weights = "prop", by = NULL, at = NULL)
   {
   legend.pos <- match.arg(NULL, choices = legend.pos)
-       k.pos <- match.arg(NULL, choices = k.pos)
+  k.pos <- match.arg(NULL, choices = k.pos)
   #facet <- match.arg(NULL, choices = facet)
 
   if(any(class(object) %in% c("robust.rma", "rma.mv", "rma", "rma.uni"))){
@@ -109,13 +109,24 @@ bubble_plot <- function(object, mod, group = NULL, data,
   #   label <- xlab
   # }
 
-  #if
+  if(is.null(data_trim$condition) == TRUE){
   # the number of effect sizes
-  K <- nrow(data_trim)
+  effect_num <- nrow(data_trim)
 
   # Add in total levels of a grouping variable (e.g., study ID) within each moderator level.
-  g <- length(unique(data_trim$stdy))
+  group_num <- length(unique(data_trim$stdy))
 
+  dat_text <- data.frame(K = effect_num, G = group_num)
+
+  }else{
+  effect_num <- as.vector(by(data_trim, data_trim[,"condition"], function(x) length(x[,"yi"])))
+
+  # Add in total levels of a grouping variable (e.g., study ID) within each moderator level.
+  #group_num <- c(2,4)
+  group_num <- as.vector(by(data_trim, data_trim[,"condition"], function(x) length(unique(x[,"stdy"]))))
+
+  dat_text <- data.frame(K = effect_num, G = group_num, condition = as.vector(unique(data_trim$condition)))
+  }
   # the number of groups in a moderator & data points
   #group_no <- length(unique(mod_table[, "name"]))
 
@@ -221,66 +232,88 @@ bubble_plot <- function(object, mod, group = NULL, data,
   # c("top.right", "top.left", "bottom.right", "bottom.left","none")
   if(k == TRUE && g == FALSE && k.pos == "top.right"){
     plot <- plot +
-      ggplot2::annotate('text', y = max(data_trim$yi),
-                        x =  max(data_trim$moderator),
-                        label= paste("italic(k)==", mod_table$K[1]),
-                        parse = TRUE, hjust = "right", size = 3.5)
+      ggplot2::geom_text(data = dat_text,
+                        mapping = aes(x = Inf, y = Inf),
+                        label =  paste("italic(k)==", dat_text$K),
+                        parse = TRUE,
+                        hjust   = 2,
+                        vjust   = 2.5
+                        )
+
   } else if(k == TRUE && g == FALSE && k.pos == "top.left") {
     plot <- plot +
-      ggplot2::annotate('text', y = max(data_trim$yi),
-                        x = min(data_trim$moderator),
-                        label= paste("italic(k)==", mod_table$K[1]),
-                        parse = TRUE, hjust = "left", size = 3.5)
+      ggplot2::geom_text(data = dat_text,
+                         mapping = aes(x = -Inf, y = Inf),
+                         label =  paste("italic(k)==", dat_text$K),
+                         parse = TRUE,
+                         hjust   = -0.5,
+                         vjust   = 2.5
+      )
   } else if(k == TRUE && g == FALSE && k.pos == "bottom.right") {
     plot <- plot +
-      ggplot2::annotate('text', y = min(data_trim$yi),
-                        x =  max(data_trim$moderator),
-                        label= paste("italic(k)==", mod_table$K[1]),
-                        parse = TRUE, hjust = "right", size = 3.5)
+      ggplot2::geom_text(data = dat_text,
+                         mapping = aes(x = Inf, y = -Inf),
+                         label =  paste("italic(k)==", dat_text$K),
+                         parse = TRUE,
+                         hjust   = 2,
+                         vjust   = -2.5
+      )
   } else if (k == TRUE && g == FALSE && k.pos == "bottom.left"){
     plot <- plot +
-      ggplot2::annotate('text', y = min(data_trim$yi),
-                        x =  max(data_trim$moderator),
-                        label= paste("italic(k)==", mod_table$K[1]),
-                        parse = TRUE, hjust = "left", size = 3.5)
+      ggplot2::geom_text(data = dat_text,
+                         mapping = aes(x = -Inf, y = -Inf),
+                         label =  paste("italic(k)==", dat_text$K),
+                         parse = TRUE,
+                         hjust   = -0.5,
+                         vjust   = -2.5
+      )
     # below get g ----
 
   } else if (k == TRUE && g == TRUE && k.pos == "top.right"){
     # get group numbers for moderator
     plot <- plot +
-      ggplot2::annotate('text', y = max(data_trim$yi),
-                        x =  max(data_trim$moderator),
-                                     label= paste("italic(k)==",
-                                                  mod_table$K[1],
-                                                  "~","(", mod_table$g[1], ")"),
-                                     parse = TRUE, hjust = "right", size = 3.5)
+      ggplot2::geom_text(data = dat_text,
+                                   mapping = aes(x = Inf, y = Inf),
+                                   label =  paste("italic(k)==",
+                                                  dat_text$K,
+                                                         "~","(", dat_text$G, ")"),
+                                   parse = TRUE,
+                                   hjust   = 1.5,
+                                   vjust   = 2)
+
   } else if (k == TRUE && g == TRUE && k.pos == "top.left"){
     # get group numbers for moderator
     plot <- plot +
-      ggplot2::annotate('text', y = max(data_trim$yi) ,
-                        x =  min(data_trim$moderator),
-                        label= paste("italic(k)==",
-                                     mod_table$K[1],
-                                     "~","(", mod_table$g[1], ")"),
-                        parse = TRUE, hjust = "left", size = 3.5)
+      ggplot2::geom_text(data = dat_text,
+                         mapping = aes(x = -Inf, y = Inf),
+                         label =  paste("italic(k)==",
+                                        dat_text$K,
+                                        "~","(", dat_text$G, ")"),
+                         parse = TRUE,
+                         hjust   = -0.5,
+                         vjust   = 2)
   } else if (k == TRUE && g == TRUE && k.pos == "bottom.right"){
     # get group numbers for moderator
     plot <- plot +
-      ggplot2::annotate('text', y = min(data_trim$yi),
-                        x =  min(data_trim$moderator),
-                        label= paste("italic(k)==",
-                                     mod_table$K[1],
-                                     "~","(", mod_table$g[1], ")"),
-                        parse = TRUE, hjust = "right", size = 3.5)
+      ggplot2::geom_text(data = dat_text,
+                         mapping = aes(x = Inf, y = -Inf),
+                         label =  paste("italic(k)==",
+                                        dat_text$K,
+                                        "~","(", dat_text$G, ")"),
+                         parse = TRUE,
+                         hjust   = 1.5,
+                         vjust   = -2)
   } else if (k == TRUE && g == TRUE && k.pos == "bottom.left"){
     # get group numbers for moderator
     plot <- plot +
-      ggplot2::annotate('text', y = min(data_trim$yi),
-                        x =  max(data_trim$moderator),
-                        label= paste("italic(k)==",
-                                     mod_table$K[1],
-                                     "~","(", mod_table$g[1], ")"),
-                        parse = TRUE, hjust = "left", size = 3.5)
+      ggplot2::geom_text(data = dat_text,
+                         mapping = aes(x = -Inf, y = -Inf),
+                         label =  paste("italic(k)==",
+                                        dat_text$K,
+                                        "~","(", dat_text$G, ")"),
+                         parse = TRUE,
+                         hjust   = -0.5,
+                         vjust   = -2)
   }
 
   # # putting colors in
