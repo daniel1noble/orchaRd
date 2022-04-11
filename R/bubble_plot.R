@@ -48,7 +48,8 @@
 # TODO k and g to add
 # TODO - what to do when transformed - it does not work if mod = scale() or log() etc (if not in the data, it won't run)
 # TODO - we need some explanation for weights
-#TODO - sample size by condition (is it possible????)
+# TODO - sample size by condition (is it possible????)
+# TODO - add explnations for by and at (how do we say - see emmeans)
 
 bubble_plot <- function(object, mod, group = NULL, data,
                         xlab = "Moderator", ylab = "Effect size", N = "none",
@@ -108,11 +109,12 @@ bubble_plot <- function(object, mod, group = NULL, data,
   #   label <- xlab
   # }
 
+  #if
   # the number of effect sizes
-  mod_table$K <- nrow(data_trim)
+  K <- nrow(data_trim)
 
   # Add in total levels of a grouping variable (e.g., study ID) within each moderator level.
-  mod_table$g <- length(unique(data_trim$stdy))
+  g <- length(unique(data_trim$stdy))
 
   # the number of groups in a moderator & data points
   #group_no <- length(unique(mod_table[, "name"]))
@@ -231,14 +233,14 @@ bubble_plot <- function(object, mod, group = NULL, data,
                         parse = TRUE, hjust = "left", size = 3.5)
   } else if(k == TRUE && g == FALSE && k.pos == "bottom.right") {
     plot <- plot +
-      ggplot2::annotate('text', y = (min(data_trim$yi) + (min(data_trim$yi)*0.10)),
-                        x =  (max(data_trim$moderator) + (max(data_trim$moderator)*0.10)),
+      ggplot2::annotate('text', y = min(data_trim$yi),
+                        x =  max(data_trim$moderator),
                         label= paste("italic(k)==", mod_table$K[1]),
                         parse = TRUE, hjust = "right", size = 3.5)
   } else if (k == TRUE && g == FALSE && k.pos == "bottom.left"){
     plot <- plot +
-      ggplot2::annotate('text', y = (min(data_trim$yi) + (min(data_trim$yi)*0.10)),
-                        x =  (max(data_trim$moderator) + (max(data_trim$moderator)*0.10)),
+      ggplot2::annotate('text', y = min(data_trim$yi),
+                        x =  max(data_trim$moderator),
                         label= paste("italic(k)==", mod_table$K[1]),
                         parse = TRUE, hjust = "left", size = 3.5)
     # below get g ----
@@ -246,8 +248,8 @@ bubble_plot <- function(object, mod, group = NULL, data,
   } else if (k == TRUE && g == TRUE && k.pos == "top.right"){
     # get group numbers for moderator
     plot <- plot +
-      ggplot2::annotate('text', y = (max(data_trim$yi) + (max(data_trim$yi)*0.10)),
-                        x =  (max(data_trim$moderator) + (max(data_trim$moderator)*0.10)),
+      ggplot2::annotate('text', y = max(data_trim$yi),
+                        x =  max(data_trim$moderator),
                                      label= paste("italic(k)==",
                                                   mod_table$K[1],
                                                   "~","(", mod_table$g[1], ")"),
@@ -255,8 +257,8 @@ bubble_plot <- function(object, mod, group = NULL, data,
   } else if (k == TRUE && g == TRUE && k.pos == "top.left"){
     # get group numbers for moderator
     plot <- plot +
-      ggplot2::annotate('text', y = (max(data_trim$yi) + (max(data_trim$yi)*0.10)),
-                        x =  (min(data_trim$moderator) + (min(data_trim$moderator)*0.10)),
+      ggplot2::annotate('text', y = max(data_trim$yi) ,
+                        x =  min(data_trim$moderator),
                         label= paste("italic(k)==",
                                      mod_table$K[1],
                                      "~","(", mod_table$g[1], ")"),
@@ -264,8 +266,8 @@ bubble_plot <- function(object, mod, group = NULL, data,
   } else if (k == TRUE && g == TRUE && k.pos == "bottom.right"){
     # get group numbers for moderator
     plot <- plot +
-      ggplot2::annotate('text', y = (min(data_trim$yi) + (min(data_trim$yi)*0.10)),
-                        x =  (min(data_trim$moderator) + (min(data_trim$moderator)*0.10)),
+      ggplot2::annotate('text', y = min(data_trim$yi),
+                        x =  min(data_trim$moderator),
                         label= paste("italic(k)==",
                                      mod_table$K[1],
                                      "~","(", mod_table$g[1], ")"),
@@ -273,8 +275,8 @@ bubble_plot <- function(object, mod, group = NULL, data,
   } else if (k == TRUE && g == TRUE && k.pos == "bottom.left"){
     # get group numbers for moderator
     plot <- plot +
-      ggplot2::annotate('text', y = (min(data_trim$yi) + (min(data_trim$yi)*0.10)),
-                        x =  (max(data_trim$moderator) + (max(data_trim$moderator)*0.10)),
+      ggplot2::annotate('text', y = min(data_trim$yi),
+                        x =  max(data_trim$moderator),
                         label= paste("italic(k)==",
                                      mod_table$K[1],
                                      "~","(", mod_table$g[1], ")"),

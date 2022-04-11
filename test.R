@@ -16,6 +16,68 @@ library(metafor)
 library(emmeans)
 library(tidyverse)
 
+######################
+# creating bubble plot
+######################
+
+# Issues
+# TODO - if interaction combinations are missing - qdrg
+# TODO - qdrg does not work with poly
+
+
+#model$data
+
+#grid <- qdrg(object = model,  at = list("deg_dif" = seq(1,15, length.out = 100)))
+#test <-emmeans(grid, specs = "deg_dif", by =  c("deg_dif", "trait.type"))
+
+data(lim)
+lim[, "year"] <- as.numeric(lim$year)
+lim$vi<- 1/(lim$N - 3)
+model<-rma.mv(yi=yi, V=vi, mods= ~Environment*year, random=list(~1|Article,~1|Datapoint), data=lim)
+#grid <- qdrg(object = model,  at = list("year" = seq(1970, 2015, length.out = 100)))
+#test <-emmeans(grid, specs = "year", by =  c("year", "Environment"))
+
+test <- mod_results(model, mod = "year", group = "Article", data = lim, weights = "prop", by = "Environment")
+bubble_plot(test, mod = "year", legend.pos = "top.left", g = T)
+
+test2 <- mod_results(model, mod = "year", group = "Article", data = lim, weights = "prop")
+bubble_plot(test2, mod = "year", legend.pos = "top.left", g = T)
+
+model2 <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 | es_ID), mods = ~ experimental_design + trait.type+deg_dif*treat_end_days, method = "REML", test = "t", data = warm_dat, control=list(optimizer="optim", optmethod="Nelder-Mead"))
+
+
+mod2_results <- mod_results(model2, mod = "deg_dif", group = "group_ID", data = warm_dat)
+bubble_plot(mod2_results, mod = "deg_dif",condition.nrow = 3, legend.pos = "bottom.left") +
+  ylim(-1.5,1.8)
+
+### poly
+
+# read - this https://github.com/rvlenth/emmeans/issues/43
+# TODO
+
+data(lim)
+lim[, "year"] <- as.numeric(lim$year)
+lim$vi<- 1/(lim$N - 3)
+
+lim <- lim[complete.cases(lim), ]
+
+model<-rma.mv(yi=yi, V=vi, mods= ~poly(year, degree = 2) , random=list(~1|Article,~1|Datapoint), data=lim)
+summary(model)
+
+model <- lm(yi ~ poly(year, degree = 2) + Environment, data = lim)
+
+# model<-rma.mv(yi=yi, V=vi, mods= ~ 1 + year, random=list(~1|Article,~1|Datapoint), data=lim)
+# summary(model)
+
+grid <- qdrg(object = model, data = lim)
+test <-emmeans(model, specs = "year", at = list("year" = seq(min(lim$year) , max(lim$year), length.out = 100)))
+plot(test)
+
+
+
+######################
+# testing orchard_plot
+######################
 # Data
 data(fish)
 warm_dat <- fish
@@ -50,64 +112,6 @@ orchard_plot(model0, xlab = "lnRR", trunk.size = 1, branch.size = 2, twig.size =
 #   scale_x_discrete(labels = c('Intercept'))
 
 
-######################
-# creating bubble plot
-######################
-
-# Issues
-# TODO - if interaction combinations are missing - qdrg
-# TODO - qdrg does not work with poly
-
-
-#model$data
-
-grid <- qdrg(object = model,  at = list("deg_dif" = seq(1,15, length.out = 100)))
-test <-emmeans(grid, specs = "deg_dif", by =  c("deg_dif", "trait.type"))
-
-data(lim)
-lim[, "year"] <- as.numeric(lim$year)
-lim$vi<- 1/(lim$N - 3)
-model<-rma.mv(yi=yi, V=vi, mods= ~Environment*year, random=list(~1|Article,~1|Datapoint), data=lim)
-#grid <- qdrg(object = model,  at = list("year" = seq(1970, 2015, length.out = 100)))
-#test <-emmeans(grid, specs = "year", by =  c("year", "Environment"))
-
-test <- mod_results(model, mod = "year", group = "Article", data = lim, weights = "prop", by = "Environment")
-bubble_plot(test, mod = "year", legend.pos = "top.left")
-
-test2 <- mod_results(model, mod = "year", group = "Article", data = lim, weights = "prop")
-bubble_plot(test2, mod = "year", legend.pos = "top.left")
-
-model2 <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 | es_ID), mods = ~ experimental_design + trait.type+deg_dif*treat_end_days, method = "REML", test = "t", data = warm_dat, control=list(optimizer="optim", optmethod="Nelder-Mead"))
-
-
-mod2_results <- mod_results(model2, mod = "deg_dif", group = "group_ID", data = warm_dat)
-bubble_plot(mod2_results, mod = "deg_dif",condition.nrow = 3, legend.pos = "bottom.left") +
-  ylim(-1.5,1.8)
-
-legend.pos = c("top.right", "top.left", "bottom.right", "bottom.left", "top.out",
-              "bottom.out", "none")
-### poly
-
-# read - this https://github.com/rvlenth/emmeans/issues/43
-# TODO
-
-data(lim)
-lim[, "year"] <- as.numeric(lim$year)
-lim$vi<- 1/(lim$N - 3)
-
-lim <- lim[complete.cases(lim), ]
-
-model<-rma.mv(yi=yi, V=vi, mods= ~poly(year, degree = 2) , random=list(~1|Article,~1|Datapoint), data=lim)
-summary(model)
-
-model <- lm(yi ~ poly(year, degree = 2) + Environment, data = lim)
-
-# model<-rma.mv(yi=yi, V=vi, mods= ~ 1 + year, random=list(~1|Article,~1|Datapoint), data=lim)
-# summary(model)
-
-grid <- qdrg(object = model, data = lim)
-test <-emmeans(model, specs = "year", at = list("year" = seq(min(lim$year) , max(lim$year), length.out = 100)))
-plot(test)
 
 ####
 
