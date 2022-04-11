@@ -5,8 +5,8 @@
 #' @param model rma.mv model object
 #' @param mod Moderator variable of interest that one wants marginal means for. Defaults to intercept "1".
 #' @param group The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes.
-#' @param by Character name(s) of the 'condition' variables to use for grouping into separate tables.
-#' @param at Named list of levels for the corresponding 'condition' variable(s). Used for marginalized predictions or when one wishes to only present a subset of levels of the moderator (defined by 'mod' argument - see also 'subset' argument).
+#' @param by Character vector indicating the name that predictions should be conditioned on for the levels of the moderator.
+#' @param at List of levels one wishes to predict at for the corresponding varaibles in 'by'. Used when one wants marginalised means. This argument can also be used to supress levels of the modertator when argument 'subset = TRUE'. Provide a list as follows: list(mod = c("level1", "level2")).
 #' @param data The data frame used to fit the rma.mv model object
 #' @param weights how to marginalize categorical variables. The default is weights = "prop", which wights means for moderator levels based on their proportional representation in the data. For example, if "sex" is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal. In the case of sex, for example, males and females are roughly equally prevalent in a population. As such, you can give the moderator levels equal weight using weights = "equal".
 #' @param subset Used when one wishes to only plot a subset of levels within the main moderator of interest defined by 'mod'. Default is FALSE, but use TRUE if you wish to subset levels of a moderator plotted (defined by 'mod') for plotting. Levels one wishes to plot are specified as a list with the level names as a character string in the 'at' argument. For subsetting to work, 'at' argument also needs to be specified so that 'mod_results' knows what levels one wishes to plot.
@@ -62,9 +62,6 @@
 #'
 #'
 # We will need to make sure people use "1" or"moderator_names"
-
-#TODO we should adding missing(mod) as well
-# TODO - robust.rma added
 
 mod_results <- function(model, mod = "1", group, data, N = NULL,  weights = "prop", by = NULL, at = NULL, subset = FALSE, ...){
 
