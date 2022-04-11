@@ -4,8 +4,8 @@
 #' @param mod the name of a continious moderator.
 #' @param group The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes. Not needed of a orchard_plot is provided with a mod_results object of class 'orchard'.
 #' @param data The data frame used to fit the rma.mv model object. Not needed of a orchard_plot is provided with a mod_results object of class 'orchard'.
-#' @param by Used when one wants marginalised (marginal) means. The 'condition' variable that one wishes to have the mean for the moderator vary.
-#' @param at Used when one wants marginalised means. The 'condition' that one wishes to calculate the means at, but is not presented in output
+#' @param by Character vector indicating the name that predictions should be conditioned on for the levels of the moderator.
+#' @param at List of levels one wishes to predict at for the corresponding varaibles in 'by'. Used when one wants marginalised means. This argument can also be used to supress levels of the modertator when argument 'subset = TRUE'. Provide a list as follows: list(mod = c("level1", "level2")).
 #' @param weights Used when one wants marginalised means. How to marginalize categorical variables. The default is weights = "prop", which wights means for moderator levels based on their proportional representation in the data. For example, if "sex" is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal. IN the case if sex, for example, males and females are roughly equally prevalent in a population. As such, you can give the moderator levels equal weight using weights = "equal".
 #' @param xlab Moderator label.
 #' @param ylab Effect size measure label.
@@ -35,7 +35,7 @@
 #' model<-metafor::rma.mv(yi=yi, V=vi, mods= ~Environment*year,
 #' random=list(~1|Article,~1|Datapoint), data=na.omit(lim))
 #' test <- orchaRd::mod_results(model, mod = "year", group = "Article", data = lim, weights = "prop", by = "Environment")
-#' orchaRd::bubble_plot(test, mod = "year", legend.pos = "top.left")
+#' orchaRd::bubble_plot(test, mod = "year", data = lim, legend.pos = "top.left")
 #' # Or just using model directly
 #' orchaRd::bubble_plot(model, mod = "year", legend.pos = "top.left", data = lim, weights = "prop", by = "Environment")
 #'
@@ -46,10 +46,8 @@
 # TODO - make poly works for bubble???
 # TODO - write to https://github.com/rvlenth/emmeans/issues (missing combinations or interaction not allowed)
 # TODO k and g to add
-# TODO - what to do when transformed - it does not work if mod = scale() or log() etc (if not in the data, it won't run)
 # TODO - we need some explanation for weights
 # TODO - sample size by condition (is it possible????)
-# TODO - add explnations for by and at (how do we say - see emmeans)
 
 bubble_plot <- function(object, mod, group = NULL, data,
                         xlab = "Moderator", ylab = "Effect size", N = "none",
@@ -70,6 +68,14 @@ bubble_plot <- function(object, mod, group = NULL, data,
   legend.pos <- match.arg(NULL, choices = legend.pos)
        k.pos <- match.arg(NULL, choices = k.pos)
   #facet <- match.arg(NULL, choices = facet)
+
+  if(missing(data)){
+         stop("Please specify the 'data' argument by providing the data used to fit the model. See ?mod_results")
+       }
+
+  if(any(grepl(mod, colnames(data))) == FALSE){
+    error("The moderator specified is not found in your data. Did you transform the variable in the model and forget to add it to your dataframe?")
+  }
 
   if(any(class(object) %in% c("robust.rma", "rma.mv", "rma", "rma.uni"))){
 
