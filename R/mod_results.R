@@ -68,6 +68,10 @@
 
 mod_results <- function(model, mod = "1", group, data, N = NULL,  weights = "prop", by = NULL, at = NULL, subset = FALSE, ...){
 
+  if(any(grepl("-1|0", as.character(model$formula.mods)))){
+    warning("It is recommended that you fit the model with an intercept. Unanticipated errors can occur otherwise.")
+  }
+
   if(missing(model)){
     stop("Please specify the 'model' argument by providing rma.mv or rma model object. See ?mod_results")
   }

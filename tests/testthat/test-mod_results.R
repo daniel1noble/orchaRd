@@ -72,6 +72,10 @@ by = "treat_end_days", data = warm_dat)
   english_MR0 <- metafor::rma.mv(yi = SMD, V = vSMD, mods = ~ ManipType,
                         random = list(~ 1 | StudyNo, ~ 1 | EffectID), data = english)
 
+  english_MR0_noint <- metafor::rma.mv(yi = SMD, V = vSMD, mods = ~ -1 + ManipType,
+                                 random = list(~ 1 | StudyNo, ~ 1 | EffectID),
+                                 data = english)
+
   # Again, we can create a table of results
   res2 <- orchaRd::mod_results(english_MR0, mod = "ManipType", data = english, group = "StudyNo")
 
@@ -122,15 +126,18 @@ testthat::test_that("Checking mod_results output for fish dataset ..", {
   testthat::expect_equal(round(overall$mod_table[1,4],2), round(0.04375941, 2), info = "checking mod_results output for overall calculates correct upper confidence interval for Amphipod group...")
 
   testthat::expect_equal(round(across_trait_by_treat_end_days10And50$mod_table[1,6],2), round(-0.4187192, 2), info = "checking mod_results output for across_trait_by_treat_end_days10And50 calculates correct lower predcition interval for Behaviour group...")
+
+
+  testthat::expect_warning(orchaRd::mod_results(english_MR0_noint, mod = "ManipType", data = english, group = "StudyNo"))
 })
 
 
 ### calculate log risk ratios and corresponding sampling variances
-dat <- escalc(measure="RR", ai=tpos, bi=tneg, ci=cpos, di=cneg, data=dat.bcg)
+dat <- metafor::escalc(measure="RR", ai=tpos, bi=tneg, ci=cpos, di=cneg, data=dat.bcg)
 
 ### random-effects model, using log risk ratios and variances as input
 ### note: method="REML" is the default, so one could leave this out
-mod_uni <- rma(yi, vi, data=dat, method="REML")
+mod_uni <- metafor::rma(yi, vi, data=dat, method="REML")
 
 mod_rs_uni <- orchaRd::mod_results(mod_uni, group = "author", data=dat)
 
