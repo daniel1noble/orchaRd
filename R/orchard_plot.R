@@ -128,7 +128,7 @@ orchard_plot <- function(object, mod = "1", group, data, xlab, N = NULL,
 
 	 # setting fruit colour
 	 if(colour == TRUE){
-	   color <- data_trim$stdy
+	   color <- as.factor(data_trim$stdy)
 	   color2 <- NULL
 	 }else{
 	   color <- data_trim$mod
