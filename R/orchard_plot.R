@@ -140,8 +140,6 @@ orchard_plot <- function(object, mod = "1", group, data, xlab, N = NULL,
 	     fill <- NULL
 	   }
 
-
-
 	 # whether marginal
 	 if(names(mod_table)[2] == "condition"){
 

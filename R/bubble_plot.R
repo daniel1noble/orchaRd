@@ -35,13 +35,13 @@
 #' @export
 
 # TODO - need to draw ones without conditions (Done)
-# TODO - make poly works for
-# TODO - write to https://github.com/rvlenth/emmeans/issues
+# TODO - make poly works for bubble???
+# TODO - write to https://github.com/rvlenth/emmeans/issues (missing combinations or interaction not allowed)
 # TODO k and g to add
 # TODO adding examples
 # TODO - what to do when transformed - it does not work if mod = scale() or log() etc (if not in the data, it won't run)
 # TODO - we need some explanation for weights
-#TODO - sample size by condition
+#TODO - sample size by condition (is it possible????)
 
 bubble_plot <- function(object, mod, group = NULL, data,
                         xlab = "Moderator", ylab = "Effect size", N = "none",
