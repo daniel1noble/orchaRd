@@ -63,9 +63,6 @@
 #'
 # We will need to make sure people use "1" or"moderator_names"
 
-#TODO we should adding missing(mod) as well
-# TODO - robust.rma added
-
 mod_results <- function(model, mod = "1", group, data, N = NULL,  weights = "prop", by = NULL, at = NULL, subset = FALSE, ...){
 
   if(any(grepl("-1|0", as.character(model$formula.mods)))){
