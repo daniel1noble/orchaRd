@@ -42,12 +42,8 @@
 #' }
 #' @export
 
-# TODO - need to draw ones without conditions (Done)
 # TODO - make poly works for bubble???
 # TODO - write to https://github.com/rvlenth/emmeans/issues (missing combinations or interaction not allowed)
-# TODO k and g to add
-# TODO - we need some explanation for weights
-# TODO - sample size by condition (is it possible????)
 
 bubble_plot <- function(object, mod, group = NULL, data,
                         xlab = "Moderator", ylab = "Effect size", N = "none",
@@ -262,7 +258,7 @@ bubble_plot <- function(object, mod, group = NULL, data,
                          label =  paste("italic(k)==", dat_text$K),
                          parse = TRUE,
                          hjust   = 2,
-                         vjust   = -2.5
+                         vjust   = -1.5
       )
   } else if (k == TRUE && g == FALSE && k.pos == "bottom.left"){
     plot <- plot +
@@ -271,7 +267,7 @@ bubble_plot <- function(object, mod, group = NULL, data,
                          label =  paste("italic(k)==", dat_text$K),
                          parse = TRUE,
                          hjust   = -0.5,
-                         vjust   = -2.5
+                         vjust   = -1.5
       )
     # below get g ----
 
@@ -308,7 +304,7 @@ bubble_plot <- function(object, mod, group = NULL, data,
                                         "~","(", dat_text$G, ")"),
                          parse = TRUE,
                          hjust   = 1.5,
-                         vjust   = -2)
+                         vjust   = -0.5)
   } else if (k == TRUE && g == TRUE && k.pos == "bottom.left"){
     # get group numbers for moderator
     plot <- plot +
@@ -319,7 +315,7 @@ bubble_plot <- function(object, mod, group = NULL, data,
                                         "~","(", dat_text$G, ")"),
                          parse = TRUE,
                          hjust   = -0.5,
-                         vjust   = -2)
+                         vjust   = -0.5)
   }
 
   # # putting colors in
