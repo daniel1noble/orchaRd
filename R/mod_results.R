@@ -281,11 +281,11 @@ get_data_raw <- function(model, mod, group, N = NULL, data, at = NULL, subset = 
     moderator <- "Intrcpt"
   }else{
     # Get moderator
-    moderator <- as.character(data[,mod]) # Could default to base instead of tidy
+    moderator <- as.character(data[[mod]]) # Could default to base instead of tidy
     moderator <- firstup(moderator)
   }
   # Extract study grouping variable to calculate the
-  stdy <- data[ , group] # Could default to base instead of tidy
+  stdy <- data[[group]] # Could default to base instead of tidy
   data_reorg <- data.frame(yi, vi, moderator, stdy, type)
   names(data_reorg)[4] <- "stdy" # sometimes stdy gets replaced by group's names
   row.names(data_reorg) <- 1:nrow(data_reorg)
@@ -328,12 +328,12 @@ get_data_raw_cont <- function(model, mod, group, N = NULL, data, by = by){
   vi <- model$vi
   type <- attr(model$yi, "measure")
   # Get moderator
-  moderator <- data[,mod] # Could default to base instead of tidy
-  condition <- data[, by]
+  moderator <- data[[mod]] # Could default to base instead of tidy
+  condition <- data[[by]]
   # Extract study grouping variable to calculate the
-  stdy <- data[,group] # Could default to base instead of tidy
+  stdy <- data[[group]] # Could default to base instead of tidy
   data_reorg <- data.frame(yi, vi, moderator, condition, stdy, type)
-  names(data_reorg)[5] <- "stdy" # sometimes stdy gets replaced by group's names
+  #names(data_reorg)[5] <- "stdy" # sometimes stdy gets replaced by group's names
   row.names(data_reorg) <- 1:nrow(data_reorg)
 
   if(is.null(N) == FALSE){
