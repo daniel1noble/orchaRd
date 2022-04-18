@@ -235,7 +235,7 @@ bubble_plot <- function(object, mod, group = NULL, data,
   if(k == TRUE && g == FALSE && k.pos == "top.right"){
     plot <- plot +
       ggplot2::geom_text(data = dat_text,
-                        mapping = aes(x = Inf, y = Inf),
+                        mapping = ggplot2::aes(x = Inf, y = Inf),
                         label =  paste("italic(k)==", dat_text$K),
                         parse = TRUE,
                         hjust   = 2,
@@ -245,7 +245,7 @@ bubble_plot <- function(object, mod, group = NULL, data,
   } else if(k == TRUE && g == FALSE && k.pos == "top.left") {
     plot <- plot +
       ggplot2::geom_text(data = dat_text,
-                         mapping = aes(x = -Inf, y = Inf),
+                         mapping = ggplot2::aes(x = -Inf, y = Inf),
                          label =  paste("italic(k)==", dat_text$K),
                          parse = TRUE,
                          hjust   = -0.5,
@@ -254,7 +254,7 @@ bubble_plot <- function(object, mod, group = NULL, data,
   } else if(k == TRUE && g == FALSE && k.pos == "bottom.right") {
     plot <- plot +
       ggplot2::geom_text(data = dat_text,
-                         mapping = aes(x = Inf, y = -Inf),
+                         mapping = ggplot2::aes(x = Inf, y = -Inf),
                          label =  paste("italic(k)==", dat_text$K),
                          parse = TRUE,
                          hjust   = 2,
@@ -263,7 +263,7 @@ bubble_plot <- function(object, mod, group = NULL, data,
   } else if (k == TRUE && g == FALSE && k.pos == "bottom.left"){
     plot <- plot +
       ggplot2::geom_text(data = dat_text,
-                         mapping = aes(x = -Inf, y = -Inf),
+                         mapping = ggplot2::aes(x = -Inf, y = -Inf),
                          label =  paste("italic(k)==", dat_text$K),
                          parse = TRUE,
                          hjust   = -0.5,
@@ -275,7 +275,7 @@ bubble_plot <- function(object, mod, group = NULL, data,
     # get group numbers for moderator
     plot <- plot +
       ggplot2::geom_text(data = dat_text,
-                                   mapping = aes(x = Inf, y = Inf),
+                                   mapping = ggplot2::aes(x = Inf, y = Inf),
                                    label =  paste("italic(k)==",
                                                   dat_text$K,
                                                          "~","(", dat_text$G, ")"),
@@ -287,7 +287,7 @@ bubble_plot <- function(object, mod, group = NULL, data,
     # get group numbers for moderator
     plot <- plot +
       ggplot2::geom_text(data = dat_text,
-                         mapping = aes(x = -Inf, y = Inf),
+                         mapping = ggplot2::aes(x = -Inf, y = Inf),
                          label =  paste("italic(k)==",
                                         dat_text$K,
                                         "~","(", dat_text$G, ")"),
@@ -298,7 +298,7 @@ bubble_plot <- function(object, mod, group = NULL, data,
     # get group numbers for moderator
     plot <- plot +
       ggplot2::geom_text(data = dat_text,
-                         mapping = aes(x = Inf, y = -Inf),
+                         mapping = ggplot2::aes(x = Inf, y = -Inf),
                          label =  paste("italic(k)==",
                                         dat_text$K,
                                         "~","(", dat_text$G, ")"),
@@ -309,7 +309,7 @@ bubble_plot <- function(object, mod, group = NULL, data,
     # get group numbers for moderator
     plot <- plot +
       ggplot2::geom_text(data = dat_text,
-                         mapping = aes(x = -Inf, y = -Inf),
+                         mapping = ggplot2::aes(x = -Inf, y = -Inf),
                          label =  paste("italic(k)==",
                                         dat_text$K,
                                         "~","(", dat_text$G, ")"),
