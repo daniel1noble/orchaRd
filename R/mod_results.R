@@ -287,7 +287,7 @@ get_data_raw <- function(model, mod, group, N = NULL, data, at = NULL, subset = 
   # Extract study grouping variable to calculate the
   stdy <- data[[group]] # Could default to base instead of tidy
   data_reorg <- data.frame(yi, vi, moderator, stdy, type)
-  names(data_reorg)[4] <- "stdy" # sometimes stdy gets replaced by group's names
+  #names(data_reorg)[4] <- "stdy" # sometimes stdy gets replaced by group's names
   row.names(data_reorg) <- 1:nrow(data_reorg)
 
   if(is.null(N) == FALSE){
@@ -310,6 +310,9 @@ get_data_raw <- function(model, mod, group, N = NULL, data, at = NULL, subset = 
 #' @return Returns a data frame
 #' @export
 
+#TODO what if there is not "group"
+#TODO what if there is no "by"
+
 get_data_raw_cont <- function(model, mod, group, N = NULL, data, by = by){
   if(missing(group)){
     stop("Please specify the 'group' argument by providing the name of the grouping variable. See ?mod_results")
@@ -328,11 +331,16 @@ get_data_raw_cont <- function(model, mod, group, N = NULL, data, by = by){
   vi <- model$vi
   type <- attr(model$yi, "measure")
   # Get moderator
-  moderator <- data[[mod]] # Could default to base instead of tidy
-  condition <- data[[by]]
+  moderator <- data[ , mod][[1]] # Could default to base instead of tidy
+  #names(moderator) <  "moderator"
+  condition <- data[ , by]
+  #names(condition) <  "condition"
   # Extract study grouping variable to calculate the
   stdy <- data[[group]] # Could default to base instead of tidy
   data_reorg <- data.frame(yi, vi, moderator, condition, stdy, type)
+  if(!is.na(names(data_reorg)[names(data_reorg) == by]) == TRUE) {
+    names(data_reorg)[names(data_reorg) == by] <- "condition"
+  }
   #names(data_reorg)[5] <- "stdy" # sometimes stdy gets replaced by group's names
   row.names(data_reorg) <- 1:nrow(data_reorg)
 

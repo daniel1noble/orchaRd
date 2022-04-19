@@ -1,11 +1,11 @@
 #' @title bubble_plot
 #' @description Using a metafor model object of class rma or rma.mv or a results table of class orchard, it creates a bubble plot from slope estimates or panels of bubble plots in cases when a model includes interaction terms.
 #' @param object model object of class 'rma.mv', 'rma' or 'orchard' table of model results
-#' @param mod the name of a continious moderator.
+#' @param mod the name of a continuous moderator.
 #' @param group The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes. Not needed of a orchard_plot is provided with a mod_results object of class 'orchard'.
 #' @param data The data frame used to fit the rma.mv model object. Not needed of a orchard_plot is provided with a mod_results object of class 'orchard'.
 #' @param by Character vector indicating the name that predictions should be conditioned on for the levels of the moderator.
-#' @param at List of levels one wishes to predict at for the corresponding varaibles in 'by'. Used when one wants marginalised means. This argument can also be used to supress levels of the modertator when argument 'subset = TRUE'. Provide a list as follows: list(mod = c("level1", "level2")).
+#' @param at List of levels one wishes to predict at for the corresponding variables in 'by'. Used when one wants marginalised means. This argument can also be used to supress levels of the modertator when argument 'subset = TRUE'. Provide a list as follows: list(mod = c("level1", "level2")).
 #' @param weights Used when one wants marginalised means. How to marginalize categorical variables. The default is weights = "prop", which wights means for moderator levels based on their proportional representation in the data. For example, if "sex" is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal. IN the case if sex, for example, males and females are roughly equally prevalent in a population. As such, you can give the moderator levels equal weight using weights = "equal".
 #' @param xlab Moderator label.
 #' @param ylab Effect size measure label.
@@ -50,7 +50,7 @@ bubble_plot <- function(object, mod, group = NULL, data,
                         alpha = 0.5, cb = TRUE, k = TRUE, g = FALSE,
                         est.lwd = 1, ci.lwd = 0.5, pi.lwd = 0.5,
                         est.col = "black", ci.col = "black", pi.col = "black",
-                        legend.pos = c("top.right", "top.left",
+                        legend.pos = c("top.left", "top.right",
                                        "bottom.right", "bottom.left",
                                        "top.out", "bottom.out",
                                        "none"),
@@ -137,7 +137,7 @@ bubble_plot <- function(object, mod, group = NULL, data,
   # # colour blind friendly colours with grey
   # cbpl <- c("#88CCEE", "#CC6677", "#DDCC77", "#117733", "#332288", "#AA4499", "#44AA99", "#999933", "#882255", "#661100", "#6699CC", "#888888", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#999999")
 
-  if(is.null(data_trim$condition)){
+  if(is.null(data_trim$condition) == TRUE){
    plot <-ggplot2::ggplot() +
     # putting bubbles
      ggplot2::geom_point(data = data_trim, ggplot2::aes(x = moderator, y = yi, size = scale), shape = 21, alpha = alpha, fill = "grey90" ) +
@@ -159,7 +159,7 @@ bubble_plot <- function(object, mod, group = NULL, data,
     #theme(legend.background = element_rect(fill = "white", colour = "black")) +
      ggplot2::theme(legend.background = ggplot2::element_blank()) +
      ggplot2::theme(axis.text.y = ggplot2::element_text(size = 10, colour ="black", hjust = 0.5, angle = 90))
-  } else if(is.character(data_trim$condition)){
+  } else if(is.character(data_trim$condition) == TRUE || is.factor(data_trim$condition) == TRUE){
     plot <-ggplot2::ggplot() +
       # putting bubbles
       ggplot2::geom_point(data = data_trim, ggplot2::aes(x = moderator, y = yi, size = scale, fill = condition), shape = 21, alpha = alpha) +
