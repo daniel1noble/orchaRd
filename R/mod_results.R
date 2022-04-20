@@ -313,7 +313,7 @@ get_data_raw <- function(model, mod, group, N = NULL, data, at = NULL, subset = 
 #TODO what if there is not "group"
 #TODO what if there is no "by"
 
-get_data_raw_cont <- function(model, mod, group, N = NULL, data, by = by){
+get_data_raw_cont <- function(model, mod, group, N = NULL, data, by){
   if(missing(group)){
     stop("Please specify the 'group' argument by providing the name of the grouping variable. See ?mod_results")
   }
@@ -338,7 +338,7 @@ get_data_raw_cont <- function(model, mod, group, N = NULL, data, by = by){
   # Extract study grouping variable to calculate the
   stdy <- data[[group]] # Could default to base instead of tidy
   data_reorg <- data.frame(yi, vi, moderator, condition, stdy, type)
-  if(!is.na(names(data_reorg)[names(data_reorg) == by]) == TRUE) {
+  if(!is.na(names(data_reorg)[names(data_reorg) == by]) == TRUE) {  ## FAILING HERE
     names(data_reorg)[names(data_reorg) == by] <- "condition"
   }
   #names(data_reorg)[5] <- "stdy" # sometimes stdy gets replaced by group's names
