@@ -22,7 +22,7 @@ bubble_plot(
   est.col = "black",
   ci.col = "black",
   pi.col = "black",
-  legend.pos = c("top.right", "top.left", "bottom.right", "bottom.left", "top.out",
+  legend.pos = c("top.left", "top.right", "bottom.right", "bottom.left", "top.out",
     "bottom.out", "none"),
   k.pos = c("top.right", "top.left", "bottom.right", "bottom.left", "none"),
   condition.nrow = 2,
@@ -34,7 +34,7 @@ bubble_plot(
 \arguments{
 \item{object}{model object of class 'rma.mv', 'rma' or 'orchard' table of model results}
 
-\item{mod}{the name of a continious moderator.}
+\item{mod}{the name of a continuous moderator.}
 
 \item{group}{The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes. Not needed of a orchard_plot is provided with a mod_results object of class 'orchard'.}
 
@@ -76,7 +76,7 @@ bubble_plot(
 
 \item{by}{Character vector indicating the name that predictions should be conditioned on for the levels of the moderator.}
 
-\item{at}{List of levels one wishes to predict at for the corresponding varaibles in 'by'. Used when one wants marginalised means. This argument can also be used to supress levels of the modertator when argument 'subset = TRUE'. Provide a list as follows: list(mod = c("level1", "level2")).}
+\item{at}{List of levels one wishes to predict at for the corresponding variables in 'by'. Used when one wants marginalised means. This argument can also be used to supress levels of the modertator when argument 'subset = TRUE'. Provide a list as follows: list(mod = c("level1", "level2")).}
 }
 \value{
 Orchard plot

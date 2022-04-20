@@ -4,7 +4,7 @@
 \alias{get_data_raw_cont}
 \title{get_data_raw_cont}
 \usage{
-get_data_raw_cont(model, mod, group, N = NULL, data, by = by)
+get_data_raw_cont(model, mod, group, N = NULL, data, by)
 }
 \arguments{
 \item{model}{rma.mv object}
