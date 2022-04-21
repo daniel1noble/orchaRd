@@ -28,7 +28,8 @@ orchard_plot(
   fill = TRUE,
   weights = "prop",
   by = NULL,
-  at = NULL
+  at = NULL,
+  upper = TRUE
 )
 }
 \arguments{
@@ -77,6 +78,8 @@ orchard_plot(
 \item{by}{Character vector indicating the name that predictions should be conditioned on for the levels of the moderator.}
 
 \item{at}{List of levels one wishes to predict at for the corresponding varaibles in 'by'. Used when one wants marginalised means. This argument can also be used to supress levels of the modertator when argument 'subset = TRUE'. Provide a list as follows: list(mod = c("level1", "level2")).}
+
+\item{upper}{logical indicating if the first letter of the character string for moderator should be capitalized.}
 }
 \value{
 Orchard plot

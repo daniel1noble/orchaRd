@@ -4,10 +4,12 @@
 \alias{firstup}
 \title{firstup}
 \usage{
-firstup(x)
+firstup(x, upper = TRUE)
 }
 \arguments{
 \item{x}{a character string}
+
+\item{upper}{logical indicating if the first letter of the character string should be capitalized. Defaults to TRUE.}
 }
 \value{
 Returns a character string with all combinations of the moderator level names with upper case first letters
