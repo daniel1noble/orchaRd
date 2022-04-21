@@ -333,14 +333,18 @@ get_data_raw_cont <- function(model, mod, group, N = NULL, data, by){
   # Get moderator
   moderator <- data[ , mod][[1]] # Could default to base instead of tidy
   #names(moderator) <  "moderator"
+  if(is.null(by)){
   condition <- data[ , by]
+  }else{
+    condition <- data[[by]]
+  }
   #names(condition) <  "condition"
   # Extract study grouping variable to calculate the
   stdy <- data[[group]] # Could default to base instead of tidy
   data_reorg <- data.frame(yi, vi, moderator, condition, stdy, type)
-  if(!is.na(names(data_reorg)[names(data_reorg) == by]) == TRUE) {  ## FAILING HERE
-    names(data_reorg)[names(data_reorg) == by] <- "condition"
-  }
+  # if(!is.na(names(data_reorg)[names(data_reorg) == by]) == TRUE) {  ## FAILING HERE
+  #   names(data_reorg)[names(data_reorg) == by] <- "condition"
+  # }
   #names(data_reorg)[5] <- "stdy" # sometimes stdy gets replaced by group's names
   row.names(data_reorg) <- 1:nrow(data_reorg)
 
