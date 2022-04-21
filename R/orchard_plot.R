@@ -56,6 +56,7 @@
 #' @export
 
 # TODO - we need to add descriptions for by and at
+# TODO - turn on and off firstup
 
 orchard_plot <- function(object, mod = "1", group, data, xlab, N = NULL,
                          alpha = 0.5, angle = 90, cb = TRUE, k = TRUE, g = TRUE,
