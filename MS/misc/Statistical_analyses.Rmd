@@ -1,0 +1,3614 @@
+---
+title: "Developmental plasticity in thermal tolerance is insufficient to compensate for rising temperatures: a meta-analysis"
+author: Patrice Pottier, Samantha Burke, Rose Y. Zhang, Daniel W.A. Noble,
+  Lisa E. Schwanz, Szymon M. Drobniak, Shinichi Nakagawa
+subtitle: Supporting Information S2
+date: "latest update: `r format(Sys.time(), '%d %B %Y')`"
+output: 
+  rmdformats::readthedown:
+    code_folding: hide
+    code_download: true
+    toc_depth: 4
+editor_options: 
+  chunk_output_type: inline
+---
+
+
+```{r setup, include = FALSE}
+# knitr setting
+knitr::opts_chunk$set(
+  message = FALSE,
+  warning = FALSE, 
+  tidy = TRUE,
+  cache = TRUE,
+  echo=TRUE
+)
+```
+
+
+
+# **Load packages and data**
+
+## Load packages
+
+```{r}
+pacman::p_load(tidyverse,
+               kableExtra,
+               DataExplorer,
+               viridis,
+               viridisLite,
+               maps,
+               rotl,
+               ape,
+               patchwork,
+               R.utils,
+               ggtree, # devtools::install_github("YuLab-SMU/ggtree")
+               ggtreeExtra, # devtools::install_github("xiangpin/ggtreeExtra")
+               phytools,
+               tidytree,
+               ggnewscale, 
+               RColorBrewer,
+               metafor,
+               metaAidR,
+               orchaRd, # devtools::install_github("daniel1noble/orchaRd")
+               ggdist,
+               ggstatsplot,
+               here,
+               ggExtra, 
+               emmeans,# remotes::install_github("rvlenth/emmeans")
+               MuMIn) 
+
+```
+
+## Load data
+
+```{r}
+d.raw<-read_csv("data/All_extracted_data_dev_ctmax.csv")
+
+# Reformat ID variables as characters
+   d.raw$species_ID=as.character(d.raw$species_ID)
+   d.raw$study_ID=as.character(d.raw$study_ID)
+   d.raw$population_ID=as.character(d.raw$population_ID)
+   d.raw$family_ID=as.character(d.raw$family_ID)
+   d.raw$shared_trt_ID=as.character(d.raw$shared_trt_ID)
+   d.raw$cohort_ID=as.character(d.raw$cohort_ID)
+   d.raw$es_ID=as.character(d.raw$es_ID)
+
+# Quick summary of the data set
+kable(summary(d.raw),"html") %>% kable_styling("striped", position="left") %>% scroll_box(width="100%",height="600px")
+
+# 1131 effect sizes
+# 158 studies
+# 147 species
+# 251 populations
+
+```
+
+# **Data processing**
+
+On 2022/01/13, we noticed few mistakes in the extracted data. We also had concerns about one study. Specifically, two different species_ID were assigned to *Ischura elegans* and *Litopenaeus vannamei*. We also found that *Lampsilis abrupta*, *Lampsilis radiata* and *Lampsilis cariosa* were mistakenly each assigned the same species_ID as *Myxocyprinus asiaticus*, *Procypris rabaudi* and *Schizopygopsis younghusbandi*, respectively.
+
+The study from Buckley and Nufio (2014) Conservation Physiology, was also found not to be eligible to our inclusion criteria. The main author of the study indicated to us that *"The acclimation to 25C was short term (1-2 hours) immediately before CTmax measurements. Animals were raised at either 24 or 27C until adulthood (and CTmax measurements)"* which suggests an overlap between juvenile and adult acclimation. In additon, the re-acclimation period turned out to be short to be considered relevant in our study. 
+
+On 2022/01/21, we also realised that the equation 6 (imputation of missing standard deviations) is not valid to impute missing standard errors. Therefore, we had to exclude all observations for which the standard error was missing (studies from: Rosa_et_al_2014; Campbell_et_al_2020; Blaxter 1960; Hokanson & Koenst 1986; Brown_1969; Edsall_and_Colby_1970; Reynolds_1976; Threader_and_Houston_1983). These observations were all LT50 measurements, for which sample standard deviation does not make particular sense because the measure of dispersion (standard error) is inferred from regression-based interpolations. 
+
+There was also one effect size (es_ID 1009 from Re_et_al_2006) for which the standard deviation was taken as "0". This value was replaced as "NA". 
+
+
+```{r}
+# Identify different species IDs used from the same species
+d.raw$species_ID[d.raw$genus_species=="Ischnura elegans"]
+d.raw$species_ID[d.raw$genus_species=="Litopenaeus vannamei"]
+
+# Identify different species with the same species ID
+d.raw$genus_species[d.raw$species_ID=="109"]
+d.raw$genus_species[d.raw$species_ID=="110"]
+d.raw$genus_species[d.raw$species_ID=="111"]
+
+
+# Correct mistakes
+d.raw$species_ID[d.raw$genus_species=="Ischnura elegans"] <-"15" # Same species_ID for this species
+d.raw$species_ID[d.raw$genus_species=="Litopenaeus vannamei"] <-"50" # Same species_ID for this species
+
+d.raw$species_ID[d.raw$genus_species=="Lampsilis abrupta"] <- "148" # Use number not used previously
+d.raw$species_ID[d.raw$genus_species=="Lampsilis radiata"] <- "149" # Use number not used previously
+d.raw$species_ID[d.raw$genus_species=="Lampsilis cariosa"] <- "150" # Use number not used previously
+
+
+
+# Exclude the study from Buckley and Nufio (2014)
+d.raw<-filter(d.raw, ref!="Buckley_and_Nufio_2014")
+
+d.raw$sd_HT_high[d.raw$sd_HT_high=="0"] <- NA # Replace the null SD value by NA
+
+# Identify effect sizes where the measure of dispersion is standard error, and sample size is missing
+d.raw$ref[d.raw$error_type=="se"&is.na(d.raw$sd_HT_high)=="TRUE"]
+d.raw<-mutate(d.raw, exclude = ifelse(error_type=="se"&is.na(sd_HT_high)=="TRUE"|error_type=="se"&is.na(sd_HT_low)=="TRUE", "yes", "no")) # If the standard error is missing for either the low or high acclimation temperature, indicate exclude = "yes", otherwise "no"
+
+d.raw<-filter(d.raw, exclude!="yes") # Exclude all observations where the standard error is missing
+```
+
+
+
+# **Calculate effect sizes**
+
+## Impute missing standard deviations
+
+Missing standard deviation was estimated using formula 13.1 (p. 199) of the Handbook of Meta-anlysis in Ecology and Evolution (Koricheva, Gurevitch and Mengersen, 2013)
+
+Because treatments are repeated in stepwise multiple comparisons (i.e., the same data is used twice to calculate different effect sizes), we made sure the imputed standard deviations (or standard error) were the same for the repeated data. 
+
+First, only keep data with SD (because we can only impute SD), then do the within/between study means, then impute.
+
+```{r, fig.width=15, fig.height=9}
+# First, only take observations with standard deviations because they are the only ones we can impute
+d.sd<-filter(d.raw, error_type=="sd")
+
+# Check assumption that SD/mean ratio is relatively constant between studies
+
+d.sd  %>%  group_by(study_ID) %>%        # Group each study together
+           mutate(within_study_mean_low = mean(mean_HT_low, na.rm = T), # Calculate the within study heat tolerance at the lowest acclimation temperature
+                  within_study_mean_high = mean(mean_HT_high, na.rm = T),  # Calculate the within study heat tolerance at the highest acclimation temperature
+                                         
+                  within_study_sd_low = mean(sd_HT_low, na.rm=T), # Calculate the within study standard deviation at the lowest acclimation temperature
+                  within_study_sd_high  =mean(sd_HT_high, na.rm=T), # Calculate the within study standard deviation at the lowest acclimation temperature
+  
+                  sd_mean_ratio_low = within_study_sd_low / within_study_mean_low, # Calculate the mean to SD ratio for lowest acclimation temperatures
+                  sd_mean_ratio_high = within_study_sd_high / within_study_mean_high) %>%  # Calculate the mean to SD ratio for highest acclimation temperatures
+                  ggplot() + geom_histogram(aes(x=sd_mean_ratio_low), fill="red", alpha=0.2) + # Plot the results
+                             geom_histogram(aes(x=sd_mean_ratio_high), fill="blue", alpha=0.2)
+
+
+
+# Indicate which treatment is re-used in >1 comparisons
+d.trt <- group_by(d.sd,shared_trt_ID) %>% summarise(n_trt=n())
+d.sd <-left_join(d.sd, d.trt, by="shared_trt_ID")
+
+# Indicate which cohort is repeated >1 times to calculate sampling variances of non-independent observations differently. 
+d.cohort <- group_by(d.sd,cohort_ID) %>% summarise(n_cohort=n())
+d.sd<-left_join(d.sd, d.cohort, by="cohort_ID")
+
+
+# Calculate within and between study heat tolerance and standard deviation
+d.sd  <- d.sd %>% 
+                group_by(study_ID) %>%  # Group by study 
+                                  mutate(within_study_mean_low = mean(mean_HT_low, na.rm = T), # Calculate within study heat tolerance at the lowest acclimation temperature
+                                         within_study_mean_high = mean(mean_HT_high, na.rm = T), # Calculate within study heat tolerance at the highest acclimation temperature
+                                         
+                                         within_study_sd_low = mean(sd_HT_low, na.rm=T),  # Calculate within study standard deviation at the lowest acclimation temperature
+                                         within_study_sd_high = mean(sd_HT_high, na.rm=T)) %>% # Calculate within study standard deviation at the highest acclimation temperature
+                                         ungroup() %>%  # Ungroup observations to calculate between study heat tolerance and SD
+                                  mutate(
+                                         
+                                         between_study_mean_low=mean(within_study_mean_low, na.rm=T),  # Calculate between study heat tolerance at the lowest acclimation temperature
+                                         between_study_mean_high=mean(within_study_mean_high, na.rm=T), # Calculate between study heat tolerance at the highest acclimation temperature
+                                         
+                                         between_study_sd_low=mean(within_study_sd_low, na.rm=T), # Calculate between study standard deviation at the lowest acclimation temperature
+                                         between_study_sd_high=mean(within_study_sd_high, na.rm=T) # Calculate between study standard deviation at the highest acclimation temperature
+                                         ) 
+
+
+d.sd$sd_HT_high[is.na(d.sd$sd_HT_high)]<-"missing" # Problem detecting NA so replaced NA with "missing"
+d.sd$sd_HT_low[is.na(d.sd$sd_HT_low)]<-"missing"
+  
+d.sd <- d.sd %>%  mutate(imputed=ifelse(sd_HT_low=="missing"|sd_HT_high=="missing", "yes", "no")) # Add a column `imputed`, indicated whether or not the standard deviation is missing and need to be imputed
+
+
+# Impute missing standard deviations
+d.sd <- mutate(d.sd, 
+                      imputed_sd_low = ifelse(sd_HT_low=="missing"&n_trt!="1", 
+                                             (within_study_mean_high*(between_study_sd_high/between_study_mean_high)), 
+                                       ifelse(sd_HT_low=="missing"&n_trt=="1", 
+                                             (within_study_mean_low*(between_study_sd_low/between_study_mean_low)), sd_HT_low)),  # If the treatments are repeated, take the sd of the high acclimation group (because we made stepwise comparisons), otherwise estimate sd normally. 
+             
+                      imputed_sd_high = ifelse(sd_HT_high=="missing", 
+                                              (within_study_mean_high*(between_study_sd_high/between_study_mean_high)), sd_HT_high))
+
+d.sd$imputed_sd_low = as.numeric(d.sd$imputed_sd_low) # Force sd to be considered as numeric values
+d.sd$imputed_sd_high = as.numeric(d.sd$imputed_sd_high) # Force sd to be considered as numeric values
+d.sd$sd_HT_low = as.numeric(d.sd$sd_HT_low) # Force sd to be considered as numeric values
+d.sd$sd_HT_high = as.numeric(d.sd$sd_HT_high) # Force sd to be considered as numeric values
+ 
+
+d.se<-filter(d.raw, error_type=="se") # Filter the data where the measure of dispersion is SE
+d.se$imputed<- "no" # Assign the value "no" for the column "imputed"
+
+# Indicate which treatment is re-used in >1 comparisons
+d.trt.se <- group_by(d.se,shared_trt_ID) %>% summarise(n_trt=n())
+d.se <-left_join(d.se, d.trt.se, by="shared_trt_ID") # Join this information to d.se
+
+# Indicate which cohort is repeated >1 times to calculate sampling variances of non-independent observations differently. 
+d.cohort.se <- group_by(d.se,cohort_ID) %>% summarise(n_cohort=n())
+d.se<-left_join(d.se, d.cohort.se, by="cohort_ID") # Join this information to d.se
+
+d<-full_join(d.sd, d.se) # Join the data with imputed standard deviations
+
+
+d$es_ID=as.numeric(d$es_ID) # Convert effect size ID to numeric to order the data
+d<-arrange(d, es_ID) # Order the data by effect size ID
+d$es_ID=as.factor(d$es_ID) # Convert effect size ID back to a factor
+
+
+
+# General diagnostic plots 
+ggplot(d, aes(x=study_ID, y=log10(imputed_sd_low), col=imputed, shape=metric), show.legend=F)+geom_point(size=2, alpha=0.5)
+ggplot(d, aes(x=study_ID, y=log10(imputed_sd_high), col=imputed, shape=metric), show.legend=F)+geom_point(size=2, alpha=0.5)
+
+```
+
+## Calculate effect sizes and sampling variances
+
+```{r}
+# Calculate effect sizes (formulas are presented in the manuscript)
+d <- d %>%  mutate(dARR = ((mean_HT_high-mean_HT_low)/(acc_temp_high-acc_temp_low)),
+                   
+                   Var_dARR = ifelse(error_type=="sd"&n_cohort=="1", 
+                                    ((1/(acc_temp_high - acc_temp_low))^2*(imputed_sd_low^2/n_HT_low+imputed_sd_high^2/n_HT_high)), # If SD and independent, use this formula 
+                              ifelse(error_type=="sd"&n_cohort!="1", # If SD and non-independent, use this formula
+                                    ((1/(acc_temp_high - acc_temp_low))^2*((imputed_sd_low^2 + imputed_sd_high^2 - 2*0.5*imputed_sd_low*imputed_sd_high)/(n_HT_low + n_HT_high))), 
+                         
+                              ifelse(error_type=="se"&n_cohort=="1", # If SE and independent, use this formula
+                                    ((1/(acc_temp_high - acc_temp_low))^2*(sd_HT_low^2+sd_HT_high^2)),
+                        
+                                    ((1/(acc_temp_high - acc_temp_low))^2*(sd_HT_low^2+ sd_HT_high^2 - 2*0.5*sd_HT_low*sd_HT_high))))), # Otherwise (if SE and non-independent, use this last formula)
+         
+                   precision =(1/sqrt(Var_dARR))) # Calculate precision (1/SE)
+
+summary(d$dARR) # Summary of the effect sizes
+summary(d$Var_dARR) # Summary of the sampling variance of dARR; seems fine except for the maximum
+summary(d$precision) # Summary of the precision; seems fine except for the maximum
+
+ggplot(d, aes(x=study_ID, y=log10(Var_dARR), col=imputed, shape=metric), show.legend=F)+geom_point(size=2, alpha=0.5) 
+ggplot(d, aes(x=study_ID, y=precision, col=imputed, shape=metric), show.legend=F)+geom_point(size=2, alpha=0.5)
+```
+
+## Merge designs E and F into the same design and rename design G
+
+Originally, the design presented as design E in Figure 2 of the manuscript was separated into two designs "E" and "F", with the current design "F" being classified as "G". The difference between the former designs "E" and "F" was on the life stage tested (i.e., former design "E" only comprised data from animals tested at the juveniles stage, whereas former design "F" only comprised data from animals tested right after the adult transition; although both designs shared similar acclimation periods)
+
+Because designs E and F are very similar, and the sample size for design F was very low (2 studies), we decided to merge these designs. Design G was renamed to design "F".
+
+```{r}
+d$exp_design<-str_replace(d$exp_design, "F", "E") # Merge designs "E" and "F"
+d$exp_design<-str_replace(d$exp_design, "G", "F") # Rename "G" as "F"
+```
+
+
+
+# **Data exploration**
+
+## Check for extreme values and/or studies
+
+Here, we checked the mean, minimum, and maximum values of dARR and Var_dARR for each study to see if the extreme values are particularly condensed in certain studies.
+
+We also plotted the distribution of dARR to see if the response variable is skewed.
+
+```{r, fig.height=10, fig.width=12}
+kable(d %>%
+    group_by(ref) %>% # Group by study
+    summarise(mean_dARR = mean(dARR), 
+              var_dARR = mean(Var_dARR), 
+              prec = mean(precision), 
+              max_dARR = max(dARR), 
+              min_dARR = min(dARR), 
+              n = n())) %>% # Calculate descriptive statistics
+    kable_styling("striped", position = "left") %>% # Stylize the table
+    scroll_box(width = "100%", height = "500px")
+
+d %>%
+    group_by(ref) %>%
+    summarise(mean_dARR = mean(dARR), 
+              var_dARR = mean(Var_dARR), 
+              prec = mean(precision),
+              max_dARR = max(dARR),
+              min_dARR = min(dARR), 
+              n = n()) %>% 
+    ggplot() + 
+    stat_dots(aes(x=mean_dARR), col="darkcyan") # Plot the results
+
+ggplot(d, aes(dARR)) + 
+  geom_histogram(fill = "darkcyan", col = "black", binwidth = 0.02) +
+  theme_classic() # Plot the distribution of dARR
+
+ggplot(d) +
+  stat_slab(aes(x=dARR, fill_ramp=stat(cut_cdf_qi(cdf, .width=c(.5, .8, .95), labels=scales::percent_format()))), side="bottom", scale=0.5, show.legend=F, col="darkcyan") +
+  stat_dots(aes(x=dARR), alpha=0.8, quantiles=1000, dotsize=1.5, shape=16, show.legend=F, col="darkcyan") # More stylised version of the distribution
+```
+
+
+
+## Missing data patterns
+
+The package `DataExplorer` has some useful resources for data exploration
+
+```{r, fig.height=15, fig.width=12}
+plot_missing(d) # Missing data patterns
+```
+
+## Frequency of the different variables
+
+```{r, fig.height=20, fig.width=20}
+plot_bar(d) # Distribution of categorical variables
+
+plot_histogram(d) # Distribution of continuous variables
+```
+
+## Map effect sizes against all extracted moderators {.tabset .tabset_fade .tabset_pills}
+
+### Habitat type
+
+```{r, fig.width=12, fig.height=10}
+# Plot habitat variation in dARR, with data points scaled by precision
+ggplot(data=d, aes(y=dARR, x=habitat, col=habitat,size=precision))+
+                     geom_hline(yintercept = 0,linetype = 2, colour = "black",alpha=0.5)+ 
+                     geom_jitter(alpha=0.5)+ # display data points with a jitter, so they don't overlap
+                     scale_size_continuous(range = c(1, 7))+ # change scaling of data points
+                     labs(x="Experimental design",y="dARR") + # rename axis labels
+                     theme_classic() # Classic theme
+
+ggbetweenstats(data=d, y=dARR, x=habitat) # The ggbetweenstats function provides a neat visualisation of the data along with descriptive statistics
+
+
+# Plot habitat variation in precision
+ggplot(data=d, aes(y=precision, x=habitat, col=habitat))+
+                     geom_hline(yintercept = 0,linetype = 2, colour = "black",alpha=0.5)+ 
+                     geom_jitter(alpha=0.5)+ 
+                     scale_size_continuous(range = c(1, 7))+ 
+                     labs(x="Experimental design",y="Precision (1/SE)") + 
+                     theme_classic() 
+
+ggbetweenstats(data=d, y=precision, x=habitat) 
+```
+
+### Taxonomic group
+
+```{r, fig.width=12, fig.height=10}
+# Plot taxonomic variation in dARR, with data points scaled by precision
+ggplot(data=d, aes(y=dARR, x=taxonomic_group, col=taxonomic_group,size=precision))+
+                     geom_hline(yintercept = 0,linetype = 2, colour = "black",alpha=0.5)+ 
+                     geom_jitter(alpha=0.5)+ 
+                     scale_size_continuous(range = c(1, 7))+ 
+                     labs(x="Experimental design",y="dARR") + 
+                     theme_classic()
+
+ggbetweenstats(data=d, y=dARR, x=taxonomic_group)
+
+# Plot taxonomic variation in precision, with data points scaled by precision
+ggplot(data=d, aes(y=precision, x=taxonomic_group, col=taxonomic_group))+
+                     geom_hline(yintercept = 0,linetype = 2, colour = "black",alpha=0.5)+ 
+                     geom_jitter(alpha=0.5)+ 
+                     scale_size_continuous(range = c(1, 7))+ 
+                     labs(x="Experimental design",y="Precision (1/SE)") + 
+                     theme_classic()
+
+ggbetweenstats(data=d, y=precision, x=taxonomic_group)
+```
+
+### Time in a common garden condition
+
+```{r, fig.width=12, fig.height=10}
+# Plot variation in dARR with re-acclimation time, with data points scaled by precision
+ggplot(data=d, aes(y=dARR, x=time_common_temp, size=precision), alpha=0.5)+
+                     geom_hline(yintercept = 0,linetype = 2, colour = "black",alpha=0.5)+ 
+                     geom_jitter(alpha=0.5)+ 
+                     scale_size_continuous(range = c(1, 7))+ 
+                     labs(x="age_tested",y="dARR") + 
+                     theme_classic()+geom_smooth(method="lm")
+
+ggscatterstats(data=d, x=time_common_temp, y=dARR)
+
+# Plot variation in precision with re-acclimation time.
+ggplot(data=d, aes(y=precision, x=time_common_temp), alpha=0.5)+
+                     geom_hline(yintercept = 0,linetype = 2, colour = "black",alpha=0.5)+ 
+                     geom_jitter(alpha=0.5)+ 
+                     scale_size_continuous(range = c(1, 7))+ 
+                     labs(x="age_tested",y="Precision (1/SE)") + 
+                     theme_classic()+geom_smooth(method="lm")
+
+ggscatterstats(data=d, x=time_common_temp, y=precision)
+```
+
+
+### Experimental design
+
+```{r, fig.height=10, fig.width=12}
+# Plot variation in dARR between experimental designs (life history variation and persistence)
+p_design<-ggplot(data=d, aes(y=dARR, x=exp_design, col=exp_design,size=precision))+
+                     geom_hline(yintercept = 0,linetype = 2, colour = "black",alpha=0.5)+ 
+                     geom_jitter(alpha=0.5)+ 
+                     scale_size_continuous(range = c(1, 7))+ 
+                     labs(x="Experimental design",y="dARR") + 
+                     theme_classic()
+
+# Plot variation in precision between experimental designs (life history variation and persistence)
+p_design_var<-ggplot(data=d, aes(y=precision, x=exp_design, col=exp_design))+
+                     geom_hline(yintercept = 0,linetype = 2, colour = "black",alpha=0.5)+ 
+                     geom_jitter(alpha=0.5)+ 
+                     scale_size_continuous(range = c(1, 7))+ 
+                     labs(x="Experimental design",y="Precision (1/SE)") +
+                     theme_classic()
+
+# Plot variation in dARR between experimental designs (life history variation and persistence), with points coloured for each taxonomic group
+p_design_taxa<-ggplot(data=d, aes(y=dARR, x=exp_design, col=taxonomic_group,size=precision))+
+                     geom_hline(yintercept = 0,linetype = 2, colour = "black",alpha=0.5)+ 
+                     geom_jitter(alpha=0.5)+ 
+                     scale_size_continuous(range = c(1, 7))+ 
+                     labs(x="Experimental design",y="dARR") + 
+                     theme_classic()
+
+# Plot variation in dARR between experimental designs (life history variation and persistence), with points coloured for each metric
+p_design_metric<-ggplot(data=d, aes(y=dARR, x=exp_design, col=metric,size=precision))+
+                     geom_hline(yintercept = 0,linetype = 2, colour = "black",alpha=0.5)+ 
+                     geom_jitter(alpha=0.5)+ 
+                     scale_size_continuous(range = c(1, 7))+ 
+                     labs(x="Experimental design",y="dARR") + 
+                     theme_classic()
+
+(p_design+p_design_var) / (p_design_taxa + p_design_metric) # Combine plots
+
+
+ggbetweenstats(data=d, y=dARR, x=exp_design) # dARR variation between designs
+ggbetweenstats(data=d, y=precision, x=exp_design) # Precision variation between designs
+```
+
+
+### Acute vs. persistent effects 
+
+```{r, fig.width=12, fig.height=10}
+# Plot variation in dARR between acute and persistent effect sizes
+ggplot(data=d, aes(y=dARR, x=brought_common_temp, col=brought_common_temp,size=precision))+
+                     geom_hline(yintercept = 0,linetype = 2, colour = "black",alpha=0.5)+ 
+                     geom_jitter(alpha=0.5)+ 
+                     scale_size_continuous(range = c(1, 7))+ 
+                     labs(x="Experimental design",y="dARR") + 
+                     theme_classic()
+
+ggbetweenstats(data=d, y=dARR, x=brought_common_temp)
+
+# Plot variation in precision between acute and persistent effect sizes
+ggplot(data=d, aes(y=precision, x=brought_common_temp, col=brought_common_temp))+
+                     geom_hline(yintercept = 0,linetype = 2, colour = "black",alpha=0.5)+ 
+                     geom_jitter(alpha=0.5)+ 
+                     scale_size_continuous(range = c(1, 7))+ 
+                     labs(x="Experimental design",y="Precision (1/SE)") + 
+                     theme_classic()
+
+ggbetweenstats(data=d, y=precision, x=brought_common_temp)
+```
+
+
+### Metric type
+
+```{r, fig.width=12, fig.height=10}
+# Plot variation in dARR between metric types
+p_metric<-ggplot(data=d, aes(y=dARR, x=metric, col=metric,size=precision))+
+                     geom_hline(yintercept = 0,linetype = 2, colour = "black",alpha=0.5)+ 
+                     geom_jitter(alpha=0.5)+ 
+                     scale_size_continuous(range = c(1, 7))+ 
+                     labs(x="Metric type",y="dARR") + 
+                     theme_classic()
+
+# Plot variation in precision between metric types
+p_metric_prec<-ggplot(data=d, aes(y=precision, x=metric, col=metric))+
+                     geom_hline(yintercept = 0,linetype = 2, colour = "black",alpha=0.5)+ 
+                     geom_jitter(alpha=0.5)+ 
+                     scale_size_continuous(range = c(1, 7))+
+                     labs(x="Metric type",y="Precision (1/SE)") +
+                     theme_classic()
+
+# Plot variation in dARR between metric types, with different colours for each taxomic groups
+p_metric_taxa<-ggplot(data=d, aes(y=dARR, x=metric, col=taxonomic_group,size=precision))+
+                     geom_hline(yintercept = 0,linetype = 2, colour = "black",alpha=0.5)+ 
+                     geom_jitter(alpha=0.5)+ 
+                     scale_size_continuous(range = c(1, 7))+ 
+                     labs(x="Metric type",y="dARR") + 
+                     theme_classic()
+
+# Plot variation in precision between metric types, with different colours for each taxomic groups
+p_metric_design<-ggplot(data=d, aes(y=dARR, x=metric, col=exp_design,size=precision))+
+                     geom_hline(yintercept = 0,linetype = 2, colour = "black",alpha=0.5)+ 
+                     geom_jitter(alpha=0.5)+ 
+                     scale_size_continuous(range = c(1, 7))+ 
+                     labs(x="Metric type",y="dARR") + 
+                     theme_classic()
+
+(p_metric+p_metric_prec) / (p_metric_taxa + p_metric_design) # Combine plots
+
+
+ggbetweenstats(data=d, y=dARR, x=metric) # dARR variation between metrics
+ggbetweenstats(data=d, y=precision, x=metric) # precision variation between metrics
+
+```
+
+### Heating rate
+
+```{r, fig.width=12, fig.height=10}
+# Plot variation in dARR with heating rate
+ggplot(data=d, aes(y=dARR, x=ramping, size=precision), alpha=0.5)+
+                     geom_hline(yintercept = 0,linetype = 2, colour = "black",alpha=0.5)+ 
+                     geom_jitter(alpha=0.5)+ 
+                     scale_size_continuous(range = c(1, 7))+ 
+                     labs(x="age_tested",y="dARR") +
+                     theme_classic()+geom_smooth(method="lm")
+
+ggscatterstats(data=d, x=ramping, y=dARR)
+
+# Plot variation in precision with heating rate
+ggplot(data=d, aes(y=precision, x=ramping), alpha=0.5)+
+                     geom_hline(yintercept = 0,linetype = 2, colour = "black",alpha=0.5)+ 
+                     geom_jitter(alpha=0.5)+
+                     scale_size_continuous(range = c(1, 7))+ 
+                     labs(x="age_tested",y="Precision (1/SE)") +
+                     theme_classic()+geom_smooth(method="lm")
+
+ggscatterstats(data=d, x=ramping, y=precision)
+```
+
+
+### Viviparous or Oviparous exposure
+
+Note that external fertilizers were considered as "oviparous" because the temperature treatment was experienced through the egg, instead of through the mothers' body. 
+
+```{r, fig.width=12, fig.height=10}
+# Plot variation in dARR between viviparous and oviparous animals
+ggplot(data=d, aes(y=dARR, x=reproduction_mode, col=reproduction_mode,size=precision))+
+                     geom_hline(yintercept = 0,linetype = 2, colour = "black",alpha=0.5)+ 
+                     geom_jitter(alpha=0.5)+ 
+                     scale_size_continuous(range = c(1, 7))+ 
+                     labs(x="Experimental design",y="dARR") +
+                     theme_classic()
+
+ggbetweenstats(data=d, y=dARR, x=reproduction_mode)
+
+# Plot variation in precision between viviparous and oviparous animals
+ggplot(data=d, aes(y=precision, x=reproduction_mode, col=reproduction_mode))+
+                     geom_hline(yintercept = 0,linetype = 2, colour = "black",alpha=0.5)+ 
+                     geom_jitter(alpha=0.5)+ 
+                     scale_size_continuous(range = c(1, 7))+ 
+                     labs(x="Experimental design",y="Precision (1/SE)") +
+                     theme_classic()
+
+ggbetweenstats(data=d, y=precision, x=reproduction_mode)
+```
+
+### Sex
+
+```{r, fig.width=12, fig.height=10}
+# Plot variation in dARR between sexes
+ggplot(data=d, aes(y=dARR, x=sex, col=sex,size=precision))+
+                     geom_hline(yintercept = 0,linetype = 2, colour = "black",alpha=0.5)+ 
+                     geom_jitter(alpha=0.5)+ 
+                     scale_size_continuous(range = c(1, 7))+ 
+                     labs(x="Experimental design",y="dARR") + 
+                     theme_classic()
+
+ggbetweenstats(data=d, y=dARR, x=sex)
+
+# Plot variation in precision between sexes
+ggplot(data=d, aes(y=precision, x=sex, col=sex))+
+                     geom_hline(yintercept = 0,linetype = 2, colour = "black",alpha=0.5)+ 
+                     geom_jitter(alpha=0.5)+ 
+                     scale_size_continuous(range = c(1, 7))+ 
+                     labs(x="Experimental design",y="Precision (1/SE)") + 
+                     theme_classic()
+
+ggbetweenstats(data=d, y=precision, x=sex)
+```
+
+### Age tested
+
+```{r, fig.width=12, fig.height=10}
+# Plot variation in dARR with the age of testing
+ggplot(data=d, aes(y=dARR, x=age_tested, size=precision), alpha=0.5)+
+                     geom_hline(yintercept = 0,linetype = 2, colour = "black",alpha=0.5)+ 
+                     geom_jitter(alpha=0.5)+ 
+                     scale_size_continuous(range = c(1, 7))+ 
+                     labs(x="age_tested",y="dARR") + 
+                     theme_classic()+geom_smooth(method="lm")
+
+ggscatterstats(data=d, x=age_tested, y=dARR)
+
+# Plot variation in precision with the age of testing
+ggplot(data=d, aes(y=precision, x=age_tested), alpha=0.5)+
+                     geom_hline(yintercept = 0,linetype = 2, colour = "black",alpha=0.5)+ 
+                     geom_jitter(alpha=0.5)+ 
+                     scale_size_continuous(range = c(1, 7))+ 
+                     labs(x="age_tested",y="Precision (1/SE)") + 
+                     theme_classic()+geom_smooth(method="lm")
+
+ggscatterstats(data=d, x=precision, y=dARR)
+```
+
+### Heat tolerance endpoint
+
+```{r, fig.width=12, fig.height=10}
+# Plot variation in dARR between heat tolerance endpoints
+ggplot(data=d, aes(y=dARR, x=endpoint, col=endpoint,size=precision))+
+                     geom_hline(yintercept = 0,linetype = 2, colour = "black",alpha=0.5)+ 
+                     geom_jitter(alpha=0.5)+ 
+                     scale_size_continuous(range = c(1, 7))+ 
+                     labs(x="Experimental design",y="dARR") + 
+                     theme_classic()
+
+ggbetweenstats(data=d, y=dARR, x=endpoint)
+
+# Plot variation in precision between heat tolerance endpoints
+ggplot(data=d, aes(y=precision, x=endpoint, col=endpoint))+
+                     geom_hline(yintercept = 0,linetype = 2, colour = "black",alpha=0.5)+ 
+                     geom_jitter(alpha=0.5)+ 
+                     scale_size_continuous(range = c(1, 7))+ 
+                     labs(x="Experimental design",y="Precision (1/SE)") + 
+                     theme_classic()
+
+ggbetweenstats(data=d, y=precision, x=endpoint)
+```
+
+### Hatching origin
+
+```{r, fig.width=12, fig.height=10}
+# Plot variation in dARR between locations where animals hatched
+ggplot(data=d, aes(y=dARR, x=origin_hatching, col=origin_hatching,size=precision))+
+                     geom_hline(yintercept = 0,linetype = 2, colour = "black",alpha=0.5)+ 
+                     geom_jitter(alpha=0.5)+ 
+                     scale_size_continuous(range = c(1, 7))+ 
+                     labs(x="Origin",y="dARR") + 
+                     theme_classic()
+
+ggbetweenstats(data=d, y=dARR, x=origin_hatching)
+
+# Plot variation in precision between locations where animals hatched
+ggplot(data=d, aes(y=precision, x=origin_hatching, col=origin_hatching))+
+                     geom_hline(yintercept = 0,linetype = 2, colour = "black",alpha=0.5)+ 
+                     geom_jitter(alpha=0.5)+ 
+                     scale_size_continuous(range = c(1, 7))+ 
+                     labs(x="Origin",y="Precision (1/SE)") + 
+                     theme_classic()
+
+ggbetweenstats(data=d, y=precision, x=origin_hatching)
+```
+
+
+### Body mass
+
+```{r, fig.width=12, fig.height=10}
+# Plot variation in dARR with body mass
+ggplot(data=d, aes(y=dARR, x=body_mass, size=precision), alpha=0.5)+
+                     geom_hline(yintercept = 0,linetype = 2, colour = "black",alpha=0.5)+ 
+                     geom_jitter(alpha=0.5)+ 
+                     scale_size_continuous(range = c(1, 7))+ 
+                     labs(x="Body mass",y="dARR") + 
+                     theme_classic()+geom_smooth(method="lm")
+
+ggscatterstats(data=d, x=body_mass, y=dARR)
+
+# Plot variation in precision with body mass
+ggplot(data=d, aes(y=precision, x=body_mass), alpha=0.5)+
+                     geom_hline(yintercept = 0,linetype = 2, colour = "black",alpha=0.5)+ 
+                     geom_jitter(alpha=0.5)+ 
+                     scale_size_continuous(range = c(1, 7))+ 
+                     labs(x="Body mass",y="Precision (1/SE)") + 
+                     theme_classic()+geom_smooth(method="lm")
+
+ggscatterstats(data=d, x=body_mass, y=precision)
+```
+
+
+### Whether the acclimation temperatures used are independent from housing temperatures prior to acclimation
+
+```{r, fig.width=12, fig.height=10}
+# Plot variation in dARR depending on whether all temperature acclimation treatments were independent from housing temperatures prior to acclimation
+ggplot(data=d, aes(y=dARR, x=incubation_independent, col=incubation_independent,size=precision))+
+                     geom_hline(yintercept = 0,linetype = 2, colour = "black",alpha=0.5)+ 
+                     geom_jitter(alpha=0.5)+ 
+                     scale_size_continuous(range = c(1, 7))+ 
+                     labs(x="Origin",y="dARR") + 
+                     theme_classic()
+
+ggbetweenstats(data=d, y=dARR, x=incubation_independent)
+
+# Plot variation in precision depending on whether all temperature acclimation treatments were independent from housing temperatures prior to acclimation
+ggplot(data=d, aes(y=precision, x=incubation_independent, col=incubation_independent))+
+                     geom_hline(yintercept = 0,linetype = 2, colour = "black",alpha=0.5)+ 
+                     geom_jitter(alpha=0.5)+ 
+                     scale_size_continuous(range = c(1, 7))+ 
+                     labs(x="Origin",y="Precision (1/SE)") + 
+                     theme_classic()
+
+ggbetweenstats(data=d, y=precision, x=incubation_independent)
+```
+
+
+### The time after which survival was assessed in static assays
+
+```{r, fig.width=12, fig.height=10}
+# Plot variation in dARR depending on experiment duration in static assays
+ggplot(data=d, aes(y=dARR, x=set_time, size=precision), alpha=0.5)+
+                     geom_hline(yintercept = 0,linetype = 2, colour = "black",alpha=0.5)+ 
+                     geom_jitter(alpha=0.5)+ 
+                     scale_size_continuous(range = c(1, 7))+ 
+                     labs(x="Body mass",y="dARR") + 
+                     theme_classic()+geom_smooth(method="lm")
+
+ggscatterstats(data=d, x=set_time, y=dARR)
+
+
+# Plot variation in precision depending on experiment duration in static assays
+ggplot(data=d, aes(y=precision, x=set_time), alpha=0.5)+
+                     geom_hline(yintercept = 0,linetype = 2, colour = "black",alpha=0.5)+ 
+                     geom_jitter(alpha=0.5)+ 
+                     scale_size_continuous(range = c(1, 7))+ 
+                     labs(x="Body mass",y="Precision (1/SE)") + 
+                     theme_classic()+geom_smooth(method="lm")
+
+ggscatterstats(data=d, x=set_time, y=precision)
+```
+
+
+### Concerns with data quality 
+
+```{r, fig.width=12, fig.height=10}
+d <- d %>%  mutate(is_concern=ifelse(is.na(major_concerns), "no", "yes")) # Create a new column to indicate whether there are concerns with the data or not
+
+# Plot variation in dARR depending on whether the study has a risk of bias
+ggplot(data=d, aes(y=dARR, x=is_concern, col=is_concern, size=precision)) +
+                     geom_hline(yintercept = 0,linetype = 2, colour = "black",alpha=0.5)+ 
+                     geom_jitter(alpha=0.5)+ 
+                     scale_size_continuous(range = c(1, 7))+ 
+                     labs(x="Major data concerns",y="dARR") + 
+                     theme_classic()
+
+ggbetweenstats(data=d, x=is_concern, y=dARR)
+
+# Plot variation in precision depending on whether the study has a risk of bias
+ggplot(data=d, aes(y=precision, x=is_concern, col=is_concern)) +
+                     geom_hline(yintercept = 0,linetype = 2, colour = "black",alpha=0.5)+ 
+                     geom_jitter(alpha=0.5)+ 
+                     scale_size_continuous(range = c(1, 7))+ 
+                     labs(x="Major data concerns",y="Precision (1/SE)") + 
+                     theme_classic()
+
+ggbetweenstats(data=d, x=is_concern, y=precision)
+```
+
+### Imputed vs original data
+
+```{r, fig.width=12, fig.height=10}
+# Plot variation in dARR depending on whether the sampling variance was imputed
+ggplot(data=d, aes(y=dARR, x=imputed, col=imputed,size=precision))+
+                     geom_hline(yintercept = 0,linetype = 2, colour = "black",alpha=0.5)+ 
+                     geom_jitter(alpha=0.5)+ 
+                     scale_size_continuous(range = c(1, 7))+ 
+                     labs(x="SD imputation",y="dARR") + 
+                     theme_classic()
+
+ggbetweenstats(data=d, y=dARR, x=imputed)
+
+# Plot variation in precision depending on whether the sampling variance was imputed
+ggplot(data=d, aes(y=precision, x=imputed, col=Var_dARR,size=precision))+
+                     geom_hline(yintercept = 0,linetype = 2, colour = "black",alpha=0.5)+ 
+                     geom_jitter(alpha=0.5)+ 
+                     scale_size_continuous(range = c(1, 7))+ 
+                     labs(x="SD imputation",y="Precision (1/SE)") + 
+                     theme_classic()
+
+ggbetweenstats(data=d, y=precision, x=imputed)
+```
+
+###
+
+# **Phylogeny**
+
+*Potamilus alatus* was not classified in the *Open Tree of Life taxonomy*. Quick searches in the *Integrated Taxonomic Information System* for all bivalve species included in our study indicate that *Potamilus alatus* belongs to the *Lampsilini* tribe. Species of the genus *Villosa*, *Ligumia*, *Lampsilis* and *Ellipsaria* all belong to this tribe. 
+
+Therefore, this species was arbitrarily added next to *Villosa delumbis* and polytomies were resolved at random
+```{r, fig.height=25, fig.width=14}
+d<-as.data.frame(d)
+
+d$genus_species=as.factor(d$genus_species) # Convert species name as factor
+taxa <- tnrs_match_names(names = levels(d$genus_species), context="Animals")  # Match species name to the Open Tree of Life taxonomy
+kable(taxa) #  Some species are synonyms, but they don't have >1 match so it's all good.
+
+
+taxa$unique_name <- gsub(" ", "_", taxa$unique_name) # Replace spaces between species name by an underscore
+
+#phylo_tree <- tol_induced_subtree(ott_ids = taxa$ott_id, label_format = "name") # This is a comment because this code cannot run without the additional processing below. 
+
+# Potamilus alatus (ott732215) is not found in the Open tree taxonomy 
+
+d %>% filter(class=="Bivalvia") %>% select(order, family, genus_species) %>% arrange(genus_species) # check all species of bivalves to see where Potamilus alatus sits
+
+
+taxa.tree<-filter(taxa, ott_id!="732215") # remove Potamilus alatus, as it will be manually added later
+phylo_tree <- tol_induced_subtree(ott_ids = taxa.tree$ott_id, label_format = "name") # Generate phylogenetic tree based on the Open Tree of Life taxonomy
+
+
+ott_in_tree <- ott_id(taxa.tree)[is_in_tree(ott_id(taxa.tree))] # Make sure that all identifiers are in the taxonomy
+
+phylo_tree <- tol_induced_subtree(ott_ids = ott_in_tree) # Generate tree with all species found in the taxonomy
+
+is.binary(phylo_tree) # Check if tree is binary 
+set.seed(1) # Set a seed to resolve politomies at random, and obtain similar results
+
+binary.tree <- multi2di(phylo_tree, random=T) #resolve polytomies at random
+binary.tree<-bind.tip(binary.tree, tip.label = "Potamilus_alatus", where=95) # Add Potamilus alatus to the tree
+
+phylo_branched <- compute.brlen(binary.tree, method = "Grafen", power = 1) # compute branch lengths using Grafen's method
+
+
+phylo_branched$tip.label <- strip_ott_ids(phylo_branched$tip.label, remove_underscores = FALSE) # remove ott ID from species name to match it to the data set
+phylo_matrix<-vcv(phylo_branched,cor=T) # Generate variance covariance matrix to correlate species relatedness 
+
+d<-as.data.frame(d)
+d<-mutate(d, search_string=decapitalize(genus_species)) # Decapitalise species name to match it to the species name presented in "taxa"
+d <-left_join(d,select(taxa, search_string, unique_name, ott_id), by="search_string") # Join data sets
+
+d<- d[d$unique_name %in% phylo_branched$tip.label, ] # Check that species names are well matched with the phylogenetic tree
+```
+
+
+
+## Plot the tree
+
+Note that the tree presented in Figure 3 of the manuscript was generated using the code in `Figures for publication` 
+
+```{r, fig.width=15, fig.height=15}
+d.tree<-mutate(d, tip.label=unique_name) # For the correspondence between tree and data
+d.tree$tip.label=as.factor(d.tree$tip.label) # Convert to factor
+d.tree$tip.label<-gsub("_", " ", d.tree$tip.label) # remove underscores from data
+phylo_branched$tip.label <- strip_ott_ids(phylo_branched$tip.label, remove_underscores = TRUE) # remove underscores from tree
+
+
+
+summary(d.tree$tip.label) # Need to remove duplicate species for building the tree
+d.tree<- d.tree %>% 
+                group_by(tip.label) %>% 
+                                    mutate(n_es=sum(n=n())) %>% ungroup() # Count the number of effect sizes for each species
+d.tree<-mutate(d.tree, log_es=log10(n_es)) # Log the number of effect sizes, if needed for visualisations
+d.tree_plot<- distinct(d.tree,tip.label, .keep_all=TRUE) # Only keep one row per species
+d.tree_plot<-as.data.frame(d.tree_plot) # Convert tibble to data frame
+d.tree_plot$phylum<-as.character(d.tree_plot$phylum) # Convert phylum to character
+d.tree_plot<-select(d.tree_plot, tip.label, phylum, class, family, exp_design, metric, n_es, log_es, dARR) # important: select only the columns you need, otherwise this does not run
+
+tree_for_plot<-drop.tip(phylo_branched, setdiff(phylo_branched$tip.label, phylo_branched$tip.label)) # Make sure to keep all matching observations
+
+
+
+design_dat<-d.tree %>% group_by(tip.label) %>% summarise( 
+                                               acute=brought_common_temp=="no", 
+                                               persistent=brought_common_temp=="yes",
+                                               CTmax=metric=="CTmax",
+                                               LT50=metric=="LT50") # Summarise, for each species, whether they tested acute effects, persistent effects, CTmax, or LT50
+
+design_dat<-distinct(design_dat) # Only keep unique rows
+design_dat$acute=as.numeric(design_dat$acute) # convert TRUE/FALSE to binary values
+design_dat$persistent=as.numeric(design_dat$persistent) # convert TRUE/FALSE to binary values
+design_dat$CTmax=as.numeric(design_dat$CTmax)  #convert TRUE/FALSE to binary values
+design_dat$LT50=as.numeric(design_dat$LT50) #convert TRUE/FALSE to binary values
+
+design_dat<-design_dat %>% group_by(tip.label) %>% summarise(acute=sum(acute),        
+                                                             persistent=sum(persistent),
+                                                             CTmax=sum(CTmax),
+                                                             LT50=sum(LT50))# calculate the sum for each species (i.e. if 1, the species has the given design or metric)   
+
+# In some cases, values were repeated, so need to replace "2" values by "1"
+design_dat$acute[design_dat$acute=="2"] <- "1" 
+design_dat$persistent[design_dat$persistent=="2"] <- "1"
+design_dat$CTmax[design_dat$CTmax=="2"] <- "1"
+                                                               
+design_dat$acute=as.factor(design_dat$acute) # convert back to factor for the plot
+design_dat$persistent=as.factor(design_dat$persistent)
+design_dat$CTmax=as.factor(design_dat$CTmax)
+design_dat$LT50=as.factor(design_dat$LT50)
+
+
+design_dat <- mutate(design_dat, 
+                     persistence = 
+                          ifelse(acute=="1"&persistent=="1", "both",
+                          ifelse(acute=="1"&persistent=="0", "acute", "persistent"))) # If both acute and persistent, indicate "both", if only acute, indicate "acute", otherwise indicate "persistent"
+
+design_dat<-mutate(design_dat, metrics = 
+                     ifelse(CTmax=="1"&LT50=="1", "both", 
+                     ifelse(CTmax=="1"&LT50=="0", "CTmax", "LT50"))) # If both CTmax and LT50, indicate "both", if only CTmax, indicate "CTmax", otherwise indicate "LT50"
+                                    
+d.tree_plot<-left_join(d.tree_plot, design_dat, by="tip.label") # Join this information to the rest of the data we want to plot
+
+
+
+p<-ggtree(tree_for_plot, layout="circular", lwd=0.75) # Circular tree
+p <- p %<+% d.tree_plot # link plot to data
+p2<- p+  geom_fruit(geom=geom_tile, mapping=aes(fill=metrics), width=0.07, offset=0.085, col="gray30")+scale_fill_manual(values=c("gray70", "white","black")) # Create tiles to indicate which metric was used for this species
+
+p3<- p2 + new_scale_fill()+ geom_fruit(geom=geom_tile, mapping=aes(fill=persistence),offset=0.1,width=0.07, col="gray30")+scale_fill_manual(values=c("#7570B3","#D95F02","#1B9E77")) # Create tiles to indicate whether acute or persistent effects were assessed
+
+d.tree_plot$n_es=as.numeric(d.tree_plot$n_es) # Convert to numeric 
+
+p4<-p3 + new_scale_fill() + geom_fruit(geom=geom_bar, mapping=aes(x=n_es, fill=class), stat="identity", col="gray1",orientation="y", axis.params=list(axis="x", text.angle=-45, hjust=0, text.size=3), border=1.2,grid.params=list(alpha=0.35),offset=0.085, pwidth=0.55, alpha=0.8)+scale_fill_manual(values=c("#00BBDB", "darkslategray4", "darkorange", "chartreuse", "indianred2", "lightsteelblue2", "darkorchid", "darkseagreen1", "deeppink", "darkred", "forestgreen", "darkolivegreen2", "#39568CFF", "darkgoldenrod2")) # Display number of effect sizes
+
+p4
+
+```
+
+
+
+
+# **Account for treatments re-used in multiple comparisons**
+
+In many cases, authors used multiple temperature treatments that can be compared. In this case, we calculated our effect sizes on stepwise comparisons (e.g., 15C-17C; 17C-19C, 19C-22C). Doing such creates a source of non-independence that needs to be accounted for. In our case, sampling errors from treatments involved in multiple comparisons were correlated (using a conservative r = 0.5) with a variance covariance matrix using the make_VCV_matrix function from the metaAidR package.
+
+```{r}
+names(d)<-make.names(names(d))
+d<-as.data.frame(d) # Important: only works with data frames! 
+VCV_dARR<-make_VCV_matrix(d, V = "Var_dARR", cluster = "shared_trt_ID", obs = "es_ID")
+```
+
+# **Sample sizes** 
+
+```{r}
+d %>%
+  summarise(
+    
+# Number of studies, species and effect sizes
+    `Studies` = n_distinct(study_ID),
+    `Species` = n_distinct(genus_species), 
+    `Effect sizes` = n_distinct(es_ID),
+    
+# Number of studies, species, and effect sizes for acute and persistent designs
+    `Studies (Acute)` = n_distinct(study_ID[brought_common_temp=="no"]),
+    `Studies (Persistent)` = n_distinct(study_ID[brought_common_temp=="yes"]),
+    
+    `Species (Acute)` = n_distinct(genus_species[brought_common_temp=="no"]),
+    `Species (Persistent)` = n_distinct(genus_species[brought_common_temp=="yes"]),   
+    
+    `Effect sizes (Acute)` = n_distinct(es_ID[brought_common_temp=="no"]),  
+    `Effect sizes (Persistent)` = n_distinct(es_ID[brought_common_temp=="yes"]),  
+   
+# Number of studies, species, and effect sizes for each habitat
+    `Studies (Aquatic)` = n_distinct(study_ID[habitat=="aquatic"]),
+    `Studies (Terrestrial)` = n_distinct(study_ID[habitat=="terrestrial"]),
+    
+    `Species (Aquatic)` = n_distinct(genus_species[habitat=="aquatic"]),
+    `Species (Terrestrial)` = n_distinct(genus_species[habitat=="terrestrial"]),   
+    
+    `Effect sizes (Aquatic)` = n_distinct(es_ID[habitat=="aquatic"]),  
+    `Effect sizes (Terrestrial)` = n_distinct(es_ID[habitat=="terrestrial"]),  
+    
+# Number of studies, species, and effect sizes for each taxonomic group
+    `Studies (Fishes)` = n_distinct(study_ID[taxonomic_group=="fish"]),
+    `Studies (Reptiles)` = n_distinct(study_ID[taxonomic_group=="reptile"]),
+    `Studies (Amphibians)` = n_distinct(study_ID[taxonomic_group=="amphibian"]),
+    `Studies (Aquatic invertebrates)` = n_distinct(study_ID[taxonomic_group=="aquatic invertebrate"]),
+    `Studies (Terrestrial invertebrates)` = n_distinct(study_ID[taxonomic_group=="terrestrial invertebrate"]),
+    `Studies (Arthropods)` = n_distinct(study_ID[phylum=="Arthropoda"]),
+    `Studies (Echinoderms)` = n_distinct(study_ID[phylum=="Echinodermata"]),
+    `Studies (Molluscs)` = n_distinct(study_ID[phylum=="Mollusca"]),
+    
+    `Species (Fishes)` = n_distinct(genus_species[taxonomic_group=="fish"]),
+    `Species (Reptiles)` = n_distinct(genus_species[taxonomic_group=="reptile"]),
+    `Species (Amphibians)` = n_distinct(genus_species[taxonomic_group=="amphibian"]),
+    `Species (Aquatic invertebrates)` = n_distinct(genus_species[taxonomic_group=="aquatic invertebrate"]),
+    `Species (Terrestrial invertebrates)` = n_distinct(genus_species[taxonomic_group=="terrestrial invertebrate"]),
+    `Species (Arthropods)` = n_distinct(genus_species[phylum=="Arthropoda"]),
+    `Species (Echinoderms)` = n_distinct(genus_species[phylum=="Echinodermata"]),
+    `Species (Molluscs)` = n_distinct(genus_species[phylum=="Mollusca"]),    
+    
+    `Effect sizes (Fishes)` = n_distinct(es_ID[taxonomic_group=="fish"]),
+    `Effect sizes (Reptiles)` = n_distinct(es_ID[taxonomic_group=="reptile"]),
+    `Effect sizes (Amphibians)` = n_distinct(es_ID[taxonomic_group=="amphibian"]),
+    `Effect sizes (Aquatic invertebrates)` = n_distinct(es_ID[taxonomic_group=="aquatic invertebrate"]),
+    `Effect sizes (Terrestrial invertebrates)` = n_distinct(es_ID[taxonomic_group=="terrestrial invertebrate"]),
+    `Effect sizes (Arthropods)` = n_distinct(es_ID[phylum=="Arthropoda"]),
+    `Effect sizes (Echinoderms)` = n_distinct(es_ID[phylum=="Echinodermata"]),
+    `Effect sizes (Molluscs)` = n_distinct(es_ID[phylum=="Mollusca"]),
+   
+# Number of studies, species and effect sizes for each experimental design
+    `Studies (Design A)` = n_distinct(study_ID[exp_design=="A"]),
+    `Studies (Design B)` = n_distinct(study_ID[exp_design=="B"]),
+    `Studies (Design C)` = n_distinct(study_ID[exp_design=="C"]),
+    `Studies (Design D)` = n_distinct(study_ID[exp_design=="D"]),
+    `Studies (Design E)` = n_distinct(study_ID[exp_design=="E"]),
+    `Studies (Design F)` = n_distinct(study_ID[exp_design=="F"]),  
+    
+    `Species (Design A)` = n_distinct(genus_species[exp_design=="A"]),
+    `Species (Design B)` = n_distinct(genus_species[exp_design=="B"]),
+    `Species (Design C)` = n_distinct(genus_species[exp_design=="C"]),
+    `Species (Design D)` = n_distinct(genus_species[exp_design=="D"]),
+    `Species (Design E)` = n_distinct(genus_species[exp_design=="E"]),
+    `Species (Design F)` = n_distinct(genus_species[exp_design=="F"]),      
+    
+    `Effect sizes (Design A)` = n_distinct(es_ID[exp_design=="A"]),
+    `Effect sizes (Design B)` = n_distinct(es_ID[exp_design=="B"]),
+    `Effect sizes (Design C)` = n_distinct(es_ID[exp_design=="C"]),
+    `Effect sizes (Design D)` = n_distinct(es_ID[exp_design=="D"]),
+    `Effect sizes (Design E)` = n_distinct(es_ID[exp_design=="E"]),
+    `Effect sizes (Design F)` = n_distinct(es_ID[exp_design=="F"]),      
+    
+# Number of studies, species and effect sizes for each metric type
+    `Studies (CTmax)` = n_distinct(study_ID[metric=="CTmax"]),
+    `Studies (LT50)` = n_distinct(study_ID[metric=="LT50"]),
+
+    `Species (CTmax)` = n_distinct(genus_species[metric=="CTmax"]),
+    `Species (LT50)` = n_distinct(genus_species[metric=="LT50"]),   
+    
+    `Effect sizes (CTmax)` = n_distinct(es_ID[metric=="CTmax"]),
+    `Effect sizes (LT50)` = n_distinct(es_ID[metric=="LT50"]),
+
+     ) -> table_sample_sizes
+
+table_sample_sizes<-t(table_sample_sizes)
+colnames(table_sample_sizes)<-"n (sample size)"
+kable(table_sample_sizes) %>% kable_styling("striped", position="center")  # Stylise table 
+
+
+kable(d %>% group_by(study_ID) %>% # Calculate the number of effect sizes per study
+            summarise(n = n_distinct(es_ID)) %>%  
+            ungroup() %>% 
+            summarise(`n effect sizes per study` = mean(n), 
+                       `sd effect sizes per study`= sd (n), 
+                       `min effect sizes per study` = min(n),
+                       `max effect sizes per study`= max(n))) %>% 
+kable_styling("striped", position="center") 
+
+
+# Risk of bias 
+
+d.concern<-mutate(d,
+                  Elliott=ifelse(major_concerns=="Elliot's hybrid methodology. Sample size unclear."|major_concerns=="Elliott's hybrid methodology"|major_concerns=="Elliott's hybrid methodology."|major_concerns=="Elliott's hybrid methodology.  SD missing for animals acclimated to 25C"|major_concerns=="Elliott's hybrid methodology. SD missing for animals acclimated to 10C and 15C."| major_concerns=="Elliott's hybrid methodology. SD missing for animals acclimated to 15C"| major_concerns=="Elliott's hybrid methodology. SD missing for animals acclimated to 15C."|major_concerns=="Elliott's hybrid methodology. SD missing for animals acclimated to 25C."|major_concerns=="Elliott's hybrid methodology. SD missing for animals acclimated to 27C."|major_concerns=="Elliott's hybrid methodology. SD missing for animals acclimated to 5C."|major_concerns=="Elliott's hybrid methodology. SD missing."|major_concerns=="hybrid between LT50 and CTmax", study_ID, NA),
+                  
+                  Missing_est_SD=ifelse(major_concerns=="Elliott's hybrid methodology.  SD missing for animals acclimated to 25C"|major_concerns=="Elliott's hybrid methodology. SD missing for animals acclimated to 10C and 15C."| major_concerns=="Elliott's hybrid methodology. SD missing for animals acclimated to 15C"| major_concerns=="Elliott's hybrid methodology. SD missing for animals acclimated to 15C."|major_concerns=="Elliott's hybrid methodology. SD missing for animals acclimated to 25C."|major_concerns=="Elliott's hybrid methodology. SD missing for animals acclimated to 27C."|major_concerns=="Elliott's hybrid methodology. SD missing for animals acclimated to 5C."|major_concerns=="Elliott's hybrid methodology. SD missing."|major_concerns=="Missing sd."|major_concerns=="SD missing"|major_concerns=="SD missing."|major_concerns=="SD possibly under-estimated."|major_concerns=="SE was taken instead of the SD reported."|major_concerns=="SE was taken instead of the SD reported."|major_concerns=="Standard deviation calculated as 0 so it was assigned as \"NA\"."|major_concerns=="Standard deviation was reported as 0 so it was assigned as \"NA\""|major_concerns=="Standard error missing."|major_concerns=="Standard error probably under- or over-estimated because the number of animals at each test temperatures was not clearly stated and is used for calculating LT50."|imputed=="yes", study_ID, NA), 
+                  Unclear_N=ifelse(major_concerns=="Elliot's hybrid methodology. Sample size unclear."|major_concerns=="N missing", study_ID, NA),
+                  Tolerance_landscape=ifelse(major_concerns=="The CTmax was estimated from death times at different temperatures (thermal tolerance landscapes)."|major_concerns=="The CTmax was estimated from death times at different temperatures (thermal tolerance landscapes).\\", study_ID, NA),
+                  Data_similar=ifelse(major_concerns=="Data very similar to study_ID 69.", study_ID, NA),
+                  High_SE=ifelse(major_concerns=="Very high standard error because low sample size (4 test temperatures) in the 28C acclimated group.", study_ID, NA),
+                  Short_test=ifelse(major_concerns=="Very short set_time at the test temperatures.", study_ID, NA)
+                  
+                  )
+
+
+  
+  
+table_bias<- d.concern %>% 
+  summarise(
+  `Studies (data similar)` = n_distinct(Data_similar, na.rm=T),
+  `Studies (Elliott's hybrid)` = n_distinct(Elliott, na.rm=T),
+  `Studies (Missing or estimated SD)`= n_distinct(Missing_est_SD, na.rm=T),
+  `Studies (Unclear sample size)`= n_distinct(Unclear_N, na.rm=T),
+  `Studies (Tolerance landscape)`= n_distinct(Tolerance_landscape, na.rm=T),
+  `Studies (High standard error)`= n_distinct(High_SE, na.rm=T),
+  `Studies (Short test time)`= n_distinct(Short_test, na.rm=T)
+)
+
+table_bias<-t(table_bias)
+colnames(table_bias)<-"n (sample size)"
+kable(table_bias) %>% kable_styling("striped", position="center") 
+
+```
+
+# **Save processed data** 
+
+```{r}
+d$phylogeny<-d$unique_name # Rename "unique_name" to "phylogeny" for the models
+save(d, 
+     VCV_dARR, 
+     phylo_matrix,
+     file=here("RData","processed_data.RData"))
+
+load(here("Rdata", "processed_data.RData"))  
+```
+
+
+# **Choose random effect structure**
+
+Study ID and species ID were not included in the same model because their levels overlapped too much. We kept "species ID" because it allows to decompose phylogenetic and non-phylogenetic species effects, as recommended in Cinar et al. 2021
+
+Because population_ID was explaining virtually no variance, they were removed from further models.
+
+Cohort_ID and shared_treatment_ID were not included as random effects because the non-independence arising from shared measurements and treatments reused in multiple comparisons were already accounted for in the calculation of effect sizes (see equation 4 and 5) and associated sampling variances (see calculation of VCV_dARR).
+
+Note that all models are relatively long to run, but they are saved in the folder `models` and code for loading each model is presented at the end of each section in the .Rmd file. 
+
+```{r, fig.height=8, fig.width=12}
+d<-as.data.frame(d) # 
+random_effect_mod<- rma.mv(dARR~1, # Intercept only
+                           V=VCV_dARR,  
+                           method="REML", # Restricted maximum likelihood
+                           test="t", # Test statistics using a t distribution
+                           dfs="contain", # Contain degrees of freedom (recommended)
+                           random=list(~1|species_ID,
+                                       ~1|population_ID, 
+                                       ~1|phylogeny,
+                                       ~1|es_ID),
+                           R = list(phylogeny = phylo_matrix), # Assign the phylogenetic relatedness matrix to "phylogeny"
+                           data=d)
+
+summary(random_effect_mod) # Summary of the model
+
+```
+
+
+# **Custom functions**
+
+## Run models
+```{r}
+run.model<-function(data,formula){
+  data<-as.data.frame(data) # convert data set into a data frame to calculate VCV matrix 
+  VCV<-make_VCV_matrix(data, V="Var_dARR", cluster="shared_trt_ID", obs="es_ID") # create VCV matrix for the specified data
+  
+mod<-  rma.mv(yi=dARR, 
+         V=VCV, # run the model, as described earlier
+         mods= formula,
+         method="REML",
+         test="t",
+         dfs="contain",
+         random=list(~1|species_ID,
+                     ~1|phylogeny,
+                     ~1|es_ID),
+         R = list(phylogeny = phylo_matrix),
+         data=data,
+         sparse=TRUE) # To reduce model run time
+return(mod)
+}
+```
+
+## Plot orchaRd plots
+
+```{r}
+my.orchard<- function (object, mod = "1", group, data, xlab, N = "none", 
+    alpha = 0.5, angle = 90, cb = FALSE, k = TRUE, g = TRUE, 
+    trunk.size = 7, branch.size = 2, twig.size = 0.8, whisker, transfm = c("none", # increased point size, branch size, and added a whisker argument
+        "tanh"), condition.lab = "Condition", legend.pos = c("bottom.right", 
+        "bottom.left", "top.right", "top.left", 
+        "top.out", "bottom.out"), k.pos = c("right", 
+        "left")) 
+{
+    transfm <- match.arg(transfm)
+    if (any(class(object) %in% c("rma.mv", "rma"))) {
+        if (mod != "1") {
+            results <- orchaRd::mod_results(object, mod, group, 
+                data)
+        }
+        else {
+            results <- orchaRd::mod_results(object, mod = "1", 
+                group, data)
+        }
+    }
+    if (any(class(object) %in% c("orchard"))) {
+        results <- object
+    }
+    mod_table <- results$mod_table
+    data <- results$data
+    data$moderator <- factor(data$moderator, levels = mod_table$name, 
+        labels = mod_table$name)
+    data$scale <- (1/sqrt(data[, "vi"]))
+    legend <- "Precision (1/SE)"
+    if (any(N != "none")) {
+        data$scale <- N
+        legend <- "Sample Size (N)"
+    }
+    if (transfm == "tanh") {
+        cols <- sapply(mod_table, is.numeric)
+        mod_table[, cols] <- Zr_to_r(mod_table[, cols])
+        data$yi <- Zr_to_r(data$yi)
+        label <- xlab
+    }
+    else {
+        label <- xlab
+    }
+    mod_table$K <- as.vector(by(data, data[, "moderator"], 
+        function(x) length(x[, "yi"])))
+    mod_table$g <- as.vector(num_studies(data, moderator, stdy)[, 
+        2])
+    group_no <- length(unique(mod_table[, "name"]))
+    cbpl <- c("#88CCEE", "#CC6677", "#DDCC77", 
+        "#117733", "#332288", "#AA4499", "#44AA99", 
+        "#999933", "#882255", "#661100", "#6699CC", 
+        "#888888", "#E69F00", "#56B4E9", "#009E73", 
+        "#F0E442", "#0072B2", "#D55E00", "#CC79A7", 
+        "#999999")
+    if (names(mod_table)[2] == "condition") {
+        condition_no <- length(unique(mod_table[, "condition"]))
+        plot <- ggplot2::ggplot() + ggbeeswarm::geom_quasirandom(data = data, 
+            ggplot2::aes(y = yi, x = moderator, size = scale, 
+                colour = moderator), alpha = alpha) + ggplot2::geom_hline(yintercept = 0, 
+            linetype = 2, colour = "black", alpha = alpha) + 
+            ggplot2::geom_linerange(data = mod_table, ggplot2::aes(x = name, 
+                ymin = lowerCL, ymax = upperCL), size = branch.size, 
+                position = ggplot2::position_dodge2(width = 0.3)) + 
+            ggplot2::geom_pointrange(data = mod_table, ggplot2::aes(y = estimate, 
+                x = name, ymin = lowerPR, ymax = upperPR, shape = as.factor(condition), 
+                fill = name), size = twig.size, position = ggplot2::position_dodge2(width = 0.3), 
+                fatten = trunk.size) + ggplot2::scale_shape_manual(values = 20 + 
+            (1:condition_no)) + ggplot2::coord_flip() + ggplot2::theme_bw() + 
+            ggplot2::guides(fill = "none", colour = "none") + 
+            ggplot2::theme(legend.position = c(0, 1), legend.justification = c(0, 
+                1)) + ggplot2::theme(legend.title = ggplot2::element_text(size = 9)) + 
+            ggplot2::theme(legend.direction = "horizontal") + 
+            ggplot2::theme(legend.background = ggplot2::element_blank()) + 
+            ggplot2::labs(y = label, x = "", size = legend) + 
+            ggplot2::labs(shape = condition.lab) + ggplot2::theme(axis.text.y = ggplot2::element_text(size = 10, 
+            colour = "black", hjust = 0.5, angle = angle))
+    }
+    else {
+        plot <- ggplot2::ggplot() + ggbeeswarm::geom_quasirandom(data = data, 
+            ggplot2::aes(y = yi, x = moderator, size = scale, 
+                fill = moderator), alpha = alpha, width=0.4, pch=21, stroke=1.1, col="black") + # Change point shape (21, with black borders)
+            ggplot2::geom_hline(yintercept = 0, 
+            linetype = 2, colour = "black", alpha = 0.3, lwd=1.3) + # Change thickness 0 line
+            ggplot2::geom_errorbar(data = mod_table, ggplot2::aes(x = name, 
+                ymin = lowerCL, ymax = upperCL), size = branch.size, width= whisker) + # Added variable whisker size
+            ggplot2::geom_pointrange(data = mod_table, ggplot2::aes(y = estimate, 
+                x = name, ymin = lowerPR, ymax = upperPR, fill = name), 
+                size = twig.size, fatten = trunk.size, shape = 23, stroke=2.2) + # Change point shape
+            scale_size_continuous(range = c(1, 14))+ # change point scaling
+            ggplot2::coord_flip() + 
+            ggplot2::theme_bw() + 
+            ggplot2::guides(fill = "none", colour = "none") + 
+            ggplot2::theme(text=element_text(size=26, colour="black"))+ # Change font size
+            ggplot2::theme(legend.title = ggplot2::element_text(size = 16)) + # Increased font legend title
+            ggplot2::theme(legend.text = ggplot2::element_text(size = 14)) +
+            ggplot2::theme(legend.direction = "horizontal") + 
+            ggplot2::theme(legend.background = ggplot2::element_blank()) + 
+            ggplot2::labs(y = label, x = "", size = legend) + 
+            ggplot2::theme(axis.text.y = ggplot2::element_text(size = 20, 
+                colour = "black", hjust = 0.5, angle = angle)) + # Increased size title axis label
+            ggplot2::theme(axis.text.x = ggplot2::element_text(size = 20)) + # Increase size axis ticks
+            ggplot2::theme(panel.border = element_rect(colour = "black", fill=NA, size=1.3))
+            
+    }
+    if (legend.pos == "bottom.right") {
+        plot <- plot + ggplot2::theme(legend.position = c(1, 
+            0), legend.justification = c(1, 0))
+    }
+    else if (legend.pos == "bottom.left") {
+        plot <- plot + ggplot2::theme(legend.position = c(0, 
+            0), legend.justification = c(0, 0))
+    }
+    else if (legend.pos == "top.right") {
+        plot <- plot + ggplot2::theme(legend.position = c(1, 
+            1), legend.justification = c(1, 1))
+    }
+    else if (legend.pos == "top.left") {
+        plot <- plot + ggplot2::theme(legend.position = c(0, 
+            1), legend.justification = c(0, 1))
+    }
+    else if (legend.pos == "top.out") {
+        plot <- plot + ggplot2::theme(legend.position = "top")
+    }
+    else if (legend.pos == "bottom.out") {
+        plot <- plot + ggplot2::theme(legend.position = "bottom")
+    }
+    if (cb == TRUE) {
+        plot <- plot + ggplot2::scale_fill_manual(values = cbpl) + 
+            ggplot2::scale_colour_manual(values = cbpl)
+    }
+    if (k == TRUE && g == FALSE && k.pos == "right") {
+        plot <- plot + ggplot2::annotate("text", y = (max(data$yi) + 
+            (max(data$yi) * 0.1)), x = (seq(1, group_no, 1) + 
+            0.3), label = paste("italic(k)==", mod_table$K[1:group_no]), # Size changed to 5.5
+            parse = TRUE, hjust = "right", size = 6.5)
+    }
+    else if (k == TRUE && g == FALSE && k.pos == "left") {
+        plot <- plot + ggplot2::annotate("text", y = (min(data$yi) + 
+            (min(data$yi) * 0.1)), x = (seq(1, group_no, 1) + 
+            0.3), label = paste("italic(k)==", mod_table$K[1:group_no]), 
+            parse = TRUE, hjust = "left", size = 6.5) # Size changed to 5.5
+    }
+    else if (k == TRUE && g == TRUE && k.pos == "right") {
+        plot <- plot + ggplot2::annotate("text", y = (max(data$yi) + 
+            (max(data$yi) * 0.1)), x = (seq(1, group_no, 1) + 
+            0.3), label = paste("italic(k)==", mod_table$K[1:group_no], 
+            " (", mod_table$g[1:group_no], ")"), 
+            parse = TRUE, hjust = "right", size = 6.5) # Size changed to 5.5
+    }
+    else if (k == TRUE && g == TRUE && k.pos == "left") {
+        plot <- plot + ggplot2::annotate("text", y = (min(data$yi) + 
+            (min(data$yi) * 0.1)), x = (seq(1, group_no, 1) + 
+            0.3), label = paste("italic(k)==", mod_table$K[1:group_no], 
+            " (", mod_table$g[1:group_no], ")"), 
+            parse = TRUE, hjust = "left", size = 6.5) # Size changed to 5.5
+    }
+    return(plot)
+}
+
+```
+
+
+## Plot continuous moderator 
+
+```{r}
+
+plot_continuous<-function(data, model, moderator, xlab){
+
+pred<-predict.rma(model) # Generate predictions from the model
+
+data<- data %>% mutate(fit=pred$pred,  # Mutate predicted values and prediction/confidence intervals to the dataset
+               ci.lb=pred$ci.lb,
+               ci.ub=pred$ci.ub,
+               pr.lb=pred$cr.lb,
+               pr.ub=pred$cr.ub)
+  
+plot<-ggplot(data=data, aes(x = moderator, y = dARR)) + # Plot the results
+     geom_ribbon(aes(ymin = pr.lb, ymax = pr.ub, color = NULL), alpha = .1) + # Shaded area for prediction intervals
+     geom_ribbon(aes(ymin = ci.lb, ymax = ci.ub, color = NULL), alpha = .3) + # Shaded area for confidence intervals
+     geom_point(aes(size=precision), shape=21, alpha=0.7, fill="sienna1", col="gray25",stroke=1) + # Plot scaled data points
+     geom_line(aes(y = fit), size = 1.5)+  # Display predicted regression line
+  labs(x = xlab, y = "dARR", size = "Precison (1/SE)") +
+  theme_bw() + # Black and white theme
+  scale_size_continuous(range=c(1,12)) + # CHange extent of point scaling
+  geom_hline(yintercept = 0,linetype = 2, colour = "black",alpha=0.5)+   # horizontal line at dARR = 0
+  theme(text = element_text(size = 18, colour = "black", hjust = 0.5), # change font sizes and legend position
+          legend.text=element_text(size=14),
+          legend.position=c(0,0), 
+          legend.justification = c(0,0),
+          legend.background = element_blank(), 
+          legend.direction="horizontal",
+          legend.title = element_text(size=15), 
+          panel.border=element_rect(colour="black", fill=NA, size=1.2))
+return(plot)
+}
+
+```
+
+```{r}
+my.orchard<- function (object, mod = "1", group, data, xlab, N = "none", 
+    alpha = 0.5, angle = 90, cb = FALSE, k = TRUE, g = TRUE, 
+    trunk.size = 7, branch.size = 2, twig.size = 0.8, whisker, transfm = c("none", # increased point size, branch size, and added a whisker argument
+        "tanh"), condition.lab = "Condition", legend.pos = c("bottom.right", 
+        "bottom.left", "top.right", "top.left", 
+        "top.out", "bottom.out"), k.pos = c("right", 
+        "left")) 
+{
+    transfm <- match.arg(transfm)
+    if (any(class(object) %in% c("rma.mv", "rma"))) {
+        if (mod != "1") {
+            results <- orchaRd::mod_results(object, mod, group, 
+                data)
+        }
+        else {
+            results <- orchaRd::mod_results(object, mod = "1", 
+                group, data)
+        }
+    }
+    if (any(class(object) %in% c("orchard"))) {
+        results <- object
+    }
+    mod_table <- results$mod_table
+    data <- results$data
+    data$moderator <- factor(data$moderator, levels = mod_table$name, 
+        labels = mod_table$name)
+    data$scale <- (1/sqrt(data[, "vi"]))
+    legend <- "Precision (1/SE)"
+    if (any(N != "none")) {
+        data$scale <- N
+        legend <- "Sample Size (N)"
+    }
+    if (transfm == "tanh") {
+        cols <- sapply(mod_table, is.numeric)
+        mod_table[, cols] <- Zr_to_r(mod_table[, cols])
+        data$yi <- Zr_to_r(data$yi)
+        label <- xlab
+    }
+    else {
+        label <- xlab
+    }
+    mod_table$K <- as.vector(by(data, data[, "moderator"], 
+        function(x) length(x[, "yi"])))
+    mod_table$g <- as.vector(num_studies(data, moderator, stdy)[, 
+        2])
+    group_no <- length(unique(mod_table[, "name"]))
+    cbpl <- c("#88CCEE", "#CC6677", "#DDCC77", 
+        "#117733", "#332288", "#AA4499", "#44AA99", 
+        "#999933", "#882255", "#661100", "#6699CC", 
+        "#888888", "#E69F00", "#56B4E9", "#009E73", 
+        "#F0E442", "#0072B2", "#D55E00", "#CC79A7", 
+        "#999999")
+    if (names(mod_table)[2] == "condition") {
+        condition_no <- length(unique(mod_table[, "condition"]))
+        plot <- ggplot2::ggplot() + ggbeeswarm::geom_quasirandom(data = data, 
+            ggplot2::aes(y = yi, x = moderator, size = scale, 
+                colour = moderator), alpha = alpha) + ggplot2::geom_hline(yintercept = 0, 
+            linetype = 2, colour = "black", alpha = alpha) + 
+            ggplot2::geom_linerange(data = mod_table, ggplot2::aes(x = name, 
+                ymin = lowerCL, ymax = upperCL), size = branch.size, 
+                position = ggplot2::position_dodge2(width = 0.3)) + 
+            ggplot2::geom_pointrange(data = mod_table, ggplot2::aes(y = estimate, 
+                x = name, ymin = lowerPR, ymax = upperPR, shape = as.factor(condition), 
+                fill = name), size = twig.size, position = ggplot2::position_dodge2(width = 0.3), 
+                fatten = trunk.size) + ggplot2::scale_shape_manual(values = 20 + 
+            (1:condition_no)) + ggplot2::coord_flip() + ggplot2::theme_bw() + 
+            ggplot2::guides(fill = "none", colour = "none") + 
+            ggplot2::theme(legend.position = c(0, 1), legend.justification = c(0, 
+                1)) + ggplot2::theme(legend.title = ggplot2::element_text(size = 9)) + 
+            ggplot2::theme(legend.direction = "horizontal") + 
+            ggplot2::theme(legend.background = ggplot2::element_blank()) + 
+            ggplot2::labs(y = label, x = "", size = legend) + 
+            ggplot2::labs(shape = condition.lab) + ggplot2::theme(axis.text.y = ggplot2::element_text(size = 10, 
+            colour = "black", hjust = 0.5, angle = angle))
+    }
+    else {
+        plot <- ggplot2::ggplot() + ggbeeswarm::geom_quasirandom(data = data, 
+            ggplot2::aes(y = yi, x = moderator, size = scale, 
+                fill = moderator), alpha = alpha, width=0.4, pch=21, stroke=1.1, col="black") + # Change point shape (21, with black borders)
+            ggplot2::geom_hline(yintercept = 0, 
+            linetype = 2, colour = "black", alpha = 0.3, lwd=1.3) + # Change thickness 0 line
+            ggplot2::geom_errorbar(data = mod_table, ggplot2::aes(x = name, 
+                ymin = lowerCL, ymax = upperCL), size = branch.size, width= whisker) + # Added variable whisker size
+            ggplot2::geom_pointrange(data = mod_table, ggplot2::aes(y = estimate, 
+                x = name, ymin = lowerPR, ymax = upperPR, fill = name), 
+                size = twig.size, fatten = trunk.size, shape = 23, stroke=2.2) + # Change point shape
+            scale_size_continuous(range = c(1, 14))+ # change point scaling
+            ggplot2::coord_flip() + 
+            ggplot2::theme_bw() + 
+            ggplot2::guides(fill = "none", colour = "none") + 
+            ggplot2::theme(text=element_text(size=24, colour="black"))+ # Change font size
+            ggplot2::theme(legend.title = ggplot2::element_text(size = 15)) + # Increased font legend title
+            ggplot2::theme(legend.text = ggplot2::element_text(size = 13)) +
+            ggplot2::theme(legend.direction = "horizontal") + 
+            ggplot2::theme(legend.background = ggplot2::element_blank()) + 
+            ggplot2::labs(y = label, x = "", size = legend) + 
+            ggplot2::theme(axis.text.y = ggplot2::element_text(size = 18, 
+                colour = "black", hjust = 0.5, angle = angle)) + # Increased size title axis label
+            ggplot2::theme(axis.text.x = ggplot2::element_text(size = 18)) + # Increase size axis ticks
+            ggplot2::theme(panel.border = element_rect(colour = "black", fill=NA, size=1.3))
+            
+    }
+    if (legend.pos == "bottom.right") {
+        plot <- plot + ggplot2::theme(legend.position = c(1, 
+            0), legend.justification = c(1, 0))
+    }
+    else if (legend.pos == "bottom.left") {
+        plot <- plot + ggplot2::theme(legend.position = c(0, 
+            0), legend.justification = c(0, 0))
+    }
+    else if (legend.pos == "top.right") {
+        plot <- plot + ggplot2::theme(legend.position = c(1, 
+            1), legend.justification = c(1, 1))
+    }
+    else if (legend.pos == "top.left") {
+        plot <- plot + ggplot2::theme(legend.position = c(0, 
+            1), legend.justification = c(0, 1))
+    }
+    else if (legend.pos == "top.out") {
+        plot <- plot + ggplot2::theme(legend.position = "top")
+    }
+    else if (legend.pos == "bottom.out") {
+        plot <- plot + ggplot2::theme(legend.position = "bottom")
+    }
+    if (cb == TRUE) {
+        plot <- plot + ggplot2::scale_fill_manual(values = cbpl) + 
+            ggplot2::scale_colour_manual(values = cbpl)
+    }
+    if (k == TRUE && g == FALSE && k.pos == "right") {
+        plot <- plot + ggplot2::annotate("text", y = (max(data$yi) + 
+            (max(data$yi) * 0.1)), x = (seq(1, group_no, 1) + 
+            0.3), label = paste("italic(k)==", mod_table$K[1:group_no]), # Size changed to 5.5
+            parse = TRUE, hjust = "right", size = 5.5)
+    }
+    else if (k == TRUE && g == FALSE && k.pos == "left") {
+        plot <- plot + ggplot2::annotate("text", y = (min(data$yi) + 
+            (min(data$yi) * 0.1)), x = (seq(1, group_no, 1) + 
+            0.3), label = paste("italic(k)==", mod_table$K[1:group_no]), 
+            parse = TRUE, hjust = "left", size = 5.5) # Size changed to 5.5
+    }
+    else if (k == TRUE && g == TRUE && k.pos == "right") {
+        plot <- plot + ggplot2::annotate("text", y = (max(data$yi) + 
+            (max(data$yi) * 0.1)), x = (seq(1, group_no, 1) + 
+            0.3), label = paste("italic(k)==", mod_table$K[1:group_no], 
+            " (", mod_table$g[1:group_no], ")"), 
+            parse = TRUE, hjust = "right", size = 5.5) # Size changed to 5.5
+    }
+    else if (k == TRUE && g == TRUE && k.pos == "left") {
+        plot <- plot + ggplot2::annotate("text", y = (min(data$yi) + 
+            (min(data$yi) * 0.1)), x = (seq(1, group_no, 1) + 
+            0.3), label = paste("italic(k)==", mod_table$K[1:group_no], 
+            " (", mod_table$g[1:group_no], ")"), 
+            parse = TRUE, hjust = "left", size = 5.5) # Size changed to 5.5
+    }
+    return(plot)
+}
+```
+
+
+# **Intercept Meta-analytic model**
+
+```{r, fig.height=8, fig.width=12}
+int_model<- run.model(d, ~1)
+
+summary(int_model)
+mod_results(int_model, mod="1", data=d, group="species_ID") # For prediction intervals
+
+i2_ml(int_model) # Estimate heterogeneity
+
+my.orchard(int_model, mod="1", xlab="dARR", alpha=0.1, data=d, group="species_ID", whisker=0.04) # Display orchard plot
+```
+
+
+```{r, include=F}
+# Save models 
+
+save(random_effect_mod, 
+     int_model, 
+     file=here("RData","intercept_models.RData"))
+
+load(here("Rdata", "intercept_models.RData")) # Load the output of the models to avoid running them 
+```
+
+# **Single moderator metaregressions** 
+
+## *Habitat* {.tabset .tabset_fade .tabset_pills}
+
+### Individual coefficients
+
+```{r, fig.height=8, fig.width=12}
+mod.habitat<- run.model(d, ~habitat-1)
+summary(mod.habitat)
+mod_results(mod.habitat, mod="habitat",data=d, group="species_ID") 
+
+r2_ml(mod.habitat) # Calculate R2 (percentage of explained variation). Note that, throughout the manuscript, we report the marginal R2, which is the percentage of variation explained by the fixed effects
+
+my.orchard(mod.habitat, mod="habitat", xlab="dARR", alpha=0.1, data=d, group="species_ID", whisker=0.07) 
+```
+
+### Contrasts
+
+```{r}
+mod.habitat_cont<- run.model(d, ~habitat) # Keep intercept for contrasts
+summary(mod.habitat_cont)
+```
+
+
+### Heteroscedasticity check
+
+Here, we can clearly see that the  plastic responses of aquatic animals are more variable than the ones of terrestrial animals. 
+```{r, fig.height=6, fig.width=12}
+qplot(y = sqrt(residuals(mod.habitat)^2), x = fitted(mod.habitat)) + # plot sqrt(residuals^2) against fitted values
+      geom_point() +
+      geom_smooth(method = "lm") + # method ="lm" to generate a straight line 
+      geom_hline(yintercept = 0, colour="red")  # Seems heteroscedastic
+```
+
+### Individual coefficients (with heteroscedasticity)
+
+The `rma.mv` function has options to model heteroscedasticity. In our case, most of the heterogeneity is explained by residual variation (es_ID; within-species variation). Below, we model the heteroscedasticity at effect size level and compare AIC values to determine whether accounting for variance differences between habitats improves model's fit.
+
+```{r, fig.height=8, fig.width=12}
+##### Heteroscedasticity modeled at the effect size level
+mod.habitat_het <-  rma.mv(yi=dARR, 
+                           V=VCV_dARR, # run the model, as described earlier
+                           mods= ~habitat-1,
+                           method="REML",
+                           test="t",
+                           dfs="contain",
+                           random=list(~1|species_ID,
+                                       ~1|phylogeny,
+                                       ~habitat|es_ID), # To model heteroscedasticity at the effect size level, for each habitat
+                           struct="HCS", # heteroscedastic compound symmetric structure
+                           rho=0, # Correlation of 0 for the HCS structure
+                           R = list(phylogeny = phylo_matrix),
+                           data=d,
+                           sparse=TRUE)
+
+AICc(mod.habitat)
+AICc(mod.habitat_het) # Best fit
+
+
+summary(mod.habitat_het)
+mod_results(mod.habitat_het, mod="habitat",data=d, group="species_ID") 
+r2_ml(mod.habitat_het)
+
+my.orchard(mod.habitat_het, mod="habitat", xlab="dARR", alpha=0.1, data=d, group="species_ID", whisker=0.07)
+```
+
+### Contrasts (with heteroscedasticity)
+
+```{r}
+### Contrasts with heteroscedasticity 
+mod.habitat_het_cont <-  rma.mv(yi=dARR, 
+                           V=VCV_dARR, 
+                           mods= ~habitat, # Keep intercept
+                           method="REML",
+                           test="t",
+                           dfs="contain",
+                           random=list(~1|species_ID,
+                                       ~1|phylogeny,
+                                       ~habitat|es_ID),
+                           struct="HCS", 
+                           rho=0, 
+                           R = list(phylogeny = phylo_matrix),
+                           data=d,
+                           sparse=TRUE)
+
+summary(mod.habitat_het_cont)
+```
+
+###
+
+## *Taxonomic groups* {.tabset .tabset_fade .tabset_pills}
+
+### Individual coefficients
+
+```{r, fig.height=12, fig.width=12}
+mod.taxa<- run.model(d, ~taxonomic_group-1)
+summary(mod.taxa)
+mod_results(mod.taxa, mod="taxonomic_group",data=d, group="species_ID") 
+
+r2_ml(mod.taxa)
+
+my.orchard(mod.taxa, mod="taxonomic_group", xlab="dARR", alpha=0.1, data=d, group="species_ID", whisker=0.09)
+```
+
+### Contrasts
+
+```{r}
+# Reptiles as the reference group
+mod.taxa_reptile_ref_cont<- run.model(d, ~relevel(factor(taxonomic_group), ref="reptile"))
+summary(mod.taxa_reptile_ref_cont)
+
+# Terrestrial invertebrates as the reference group
+mod.taxa_tinvert_ref_cont<- run.model(d, ~relevel(factor(taxonomic_group), ref="terrestrial invertebrate"))
+summary(mod.taxa_tinvert_ref_cont)
+
+# Aquatic invertebrates as the reference group
+mod.taxa_ainvert_ref_cont<- run.model(d, ~relevel(factor(taxonomic_group), ref="aquatic invertebrate"))
+summary(mod.taxa_ainvert_ref_cont)
+
+# Amphibians as the reference group
+mod.taxa_amph_ref_cont<- run.model(d, ~relevel(factor(taxonomic_group), ref="amphibian"))
+summary(mod.taxa_amph_ref_cont)
+
+# Fishes as the reference group
+mod.taxa_fish_ref_cont<- run.model(d, ~relevel(factor(taxonomic_group), ref="fish"))
+summary(mod.taxa_fish_ref_cont)
+```
+
+
+### Heteroscedasticity check
+
+```{r, fig.height=6, fig.width=12}
+qplot(y = sqrt(residuals(mod.taxa)^2), x = fitted(mod.taxa)) + 
+      geom_point() +
+      geom_smooth(method = "lm") + 
+      geom_hline(yintercept = 0, colour="red") # Seems heteroscedastic
+```
+
+### Individual coefficients (with heteroscedasticity)
+
+Here, the heteroscedasticity is also modeled at both the effect size and cohort levels, which improved the model fit.
+```{r, fig.height=12, fig.width=12}
+mod.taxa_het <-  rma.mv(yi=dARR, 
+                           V=VCV_dARR, 
+                           mods= ~taxonomic_group-1,
+                           method="REML",
+                           test="t",
+                           dfs="contain",
+                           random=list(~1|species_ID,
+                                       ~1|phylogeny,
+                                       ~taxonomic_group|es_ID),
+                           struct="HCS", 
+                           rho=0, 
+                           R = list(phylogeny = phylo_matrix),
+                           data=d,
+                           sparse=TRUE)
+AICc(mod.taxa)
+AICc(mod.taxa_het) # Improved model fit
+
+summary(mod.taxa_het)
+mod_results(mod.taxa_het, mod="taxonomic_group",data=d, group="species_ID") 
+r2_ml(mod.taxa_het) 
+
+my.orchard(mod.taxa_het, mod="taxonomic_group", xlab="dARR", alpha=0.1, data=d, group="species_ID", whisker=0.09)
+```
+
+### Contrasts (with heteroscedasticity)
+
+```{r}
+
+## Reptiles as the reference group 
+mod.taxa_het_cont_rept_ref <-  rma.mv(yi=dARR, 
+                           V=VCV_dARR, 
+                           mods= ~relevel(factor(taxonomic_group), ref="reptile"),
+                           method="REML",
+                           test="t",
+                           dfs="contain",
+                           random=list(~1|species_ID,
+                                       ~1|phylogeny,
+                                       ~taxonomic_group|es_ID),
+                           struct="HCS", 
+                           rho=0, 
+                           R = list(phylogeny = phylo_matrix),
+                           data=d,
+                           sparse=TRUE)
+
+summary(mod.taxa_het_cont_rept_ref)
+
+## Terrestrial invertebrates as the reference group 
+mod.taxa_het_cont_tinvert_ref <-  rma.mv(yi=dARR, 
+                           V=VCV_dARR, 
+                           mods= ~relevel(factor(taxonomic_group), ref="terrestrial invertebrate"),
+                           method="REML",
+                           test="t",
+                           dfs="contain",
+                           random=list(~1|species_ID,
+                                       ~1|phylogeny,
+                                       ~taxonomic_group|es_ID), 
+                           struct="HCS", 
+                           rho=0, 
+                           R = list(phylogeny = phylo_matrix),
+                           data=d,
+                           sparse=TRUE)
+summary(mod.taxa_het_cont_tinvert_ref)
+
+## Aquatic invertebrates as the reference group 
+mod.taxa_het_cont_ainvert_ref <-  rma.mv(yi=dARR, 
+                           V=VCV_dARR, 
+                           mods= ~relevel(factor(taxonomic_group), ref="aquatic invertebrate"),
+                           method="REML",
+                           test="t",
+                           dfs="contain",
+                           random=list(~1|species_ID,
+                                       ~1|phylogeny,
+                                       ~taxonomic_group|es_ID),
+                           struct="HCS", 
+                           rho=0, 
+                           R = list(phylogeny = phylo_matrix),
+                           data=d,
+                           sparse=TRUE)
+summary(mod.taxa_het_cont_ainvert_ref)
+
+## Amphibians as the reference group 
+mod.taxa_het_cont_amph_ref <-  rma.mv(yi=dARR, 
+                           V=VCV_dARR, 
+                           mods= ~relevel(factor(taxonomic_group), ref="amphibian"),
+                           method="REML",
+                           test="t",
+                           dfs="contain",
+                           random=list(~1|species_ID,
+                                       ~1|phylogeny,
+                                       ~taxonomic_group|es_ID),
+                           struct="HCS", 
+                           rho=0, 
+                           R = list(phylogeny = phylo_matrix),
+                           data=d,
+                           sparse=TRUE)
+summary(mod.taxa_het_cont_amph_ref)
+
+
+## Fishes as the reference group 
+mod.taxa_het_cont_fish_ref <-  rma.mv(yi=dARR, 
+                           V=VCV_dARR, 
+                           mods= ~relevel(factor(taxonomic_group), ref="fish"),
+                           method="REML",
+                           test="t",
+                           dfs="contain",
+                           random=list(~1|species_ID,
+                                       ~1|phylogeny,
+                                       ~taxonomic_group|es_ID),
+                           struct="HCS", 
+                           rho=0, 
+                           R = list(phylogeny = phylo_matrix),
+                           data=d,
+                           sparse=TRUE)
+summary(mod.taxa_het_cont_fish_ref)
+```
+
+### 
+
+## *Persistence of developmental effects* {.tabset .tabset_fade .tabset_pills}
+
+Here the effect sizes estimating the "acute" and "persistent" effects of developmental temperatures on heat tolerance are compared.
+
+### Individual coefficients
+
+```{r, fig.width=12, fig.height=8}
+mod.persist<- run.model(d, ~brought_common_temp-1)
+summary(mod.persist)
+mod_results(mod.persist, mod="brought_common_temp",data=d, group="species_ID") 
+
+r2_ml(mod.persist)
+
+my.orchard(mod.persist, mod="brought_common_temp", xlab="dARR", alpha=0.1, data=d, group="species_ID", whisker=0.07)
+```
+
+### Contrasts
+
+```{r}
+mod.persist_cont<- run.model(d, ~brought_common_temp)
+summary(mod.persist_cont)
+```
+
+### Heteroscedasticity check 
+
+```{r, fig.height=6, fig.width=12}
+qplot(y = sqrt(residuals(mod.persist)^2), x = fitted(mod.persist)) + 
+      geom_point() +
+      geom_smooth(method = "lm") + 
+      geom_hline(yintercept = 0, colour="red") # Seems fine
+```
+
+### Individual coefficients (with heteroscedasticity)
+
+```{r, fig.width=12, fig.height=8}
+mod.persist_het <-  rma.mv(yi=dARR, 
+                           V=VCV_dARR, 
+                           mods= ~brought_common_temp-1,
+                           method="REML",
+                           test="t",
+                           dfs="contain",
+                           random=list(~1|species_ID,
+                                       ~1|phylogeny,
+                                       ~brought_common_temp|es_ID),
+                           struct="HCS", 
+                           rho=0, 
+                           R = list(phylogeny = phylo_matrix),
+                           data=d,
+                           sparse=TRUE)
+AICc(mod.persist)
+AICc(mod.persist_het) # Improved model fit
+
+summary(mod.persist_het)
+mod_results(mod.persist_het, mod="brought_common_temp",data=d, group="species_ID") 
+r2_ml(mod.persist_het)
+
+my.orchard(mod.persist_het, mod="brought_common_temp", xlab="dARR", alpha=0.1, data=d, group="species_ID", whisker=0.07)
+```
+
+### Contrasts (with heteroscedasticity)
+
+```{r}
+mod.persist_het_cont <-  rma.mv(yi=dARR, 
+                           V=VCV_dARR, 
+                           mods= ~brought_common_temp,
+                           method="REML",
+                           test="t",
+                           dfs="contain",
+                           random=list(~1|species_ID,
+                                       ~1|phylogeny,
+                                       ~brought_common_temp|es_ID),
+                           struct="HCS", 
+                           rho=0, 
+                           R = list(phylogeny = phylo_matrix),
+                           data=d,
+                           sparse=TRUE)
+
+summary(mod.persist_het_cont)
+```
+
+###
+
+## *Life history variation and persistence* {.tabset .tabset_fade .tabset_pills}
+
+Here, the types of experimental designs presented in Figure 2 are compared to estimate the life history variation and persistence of developmental effects. 
+
+### Individual coefficients
+
+```{r, fig.width=12, fig.height=14}
+mod.design<- run.model(d, ~exp_design-1)
+summary(mod.design)
+mod_results(mod.design, mod="exp_design",data=d, group="species_ID") 
+
+r2_ml(mod.design)
+
+my.orchard(mod.design, mod="exp_design", xlab="dARR", alpha=0.1, data=d, group="species_ID", whisker=0.09)
+```
+
+### Contrasts
+
+```{r}
+## Design A as the reference group
+mod.design_cont_A_ref<- run.model(d, ~relevel(factor(exp_design), ref="A"))
+summary(mod.design_cont_A_ref)
+
+## Design B as the reference group
+mod.design_cont_B_ref<- run.model(d, ~relevel(factor(exp_design), ref="B"))
+summary(mod.design_cont_B_ref)
+
+## Design C as the reference group
+mod.design_cont_C_ref<- run.model(d, ~relevel(factor(exp_design), ref="C"))
+summary(mod.design_cont_C_ref)
+
+## Design D as the reference group
+mod.design_cont_D_ref<- run.model(d, ~relevel(factor(exp_design), ref="D"))
+summary(mod.design_cont_D_ref)
+
+## Design E as the reference group
+mod.design_cont_E_ref<- run.model(d, ~relevel(factor(exp_design), ref="E"))
+summary(mod.design_cont_E_ref)
+
+## Design F as the reference group
+mod.design_cont_F_ref<- run.model(d, ~relevel(factor(exp_design), ref="F"))
+summary(mod.design_cont_F_ref)
+```
+
+
+### Heteroscedasticity check 
+
+```{r, fig.height=6, fig.width=12}
+qplot(y = sqrt(residuals(mod.design)^2), x = fitted(mod.design)) + 
+      geom_point() +
+      geom_smooth(method = "lm") + 
+      geom_hline(yintercept = 0, colour="red") 
+```
+
+### Individual coefficients (with heteroscedasticity)
+
+```{r, fig.width=12, fig.height=14}
+mod.design_het <-  rma.mv(yi=dARR, 
+                           V=VCV_dARR, 
+                           mods= ~exp_design-1,
+                           method="REML",
+                           test="t",
+                           dfs="contain",
+                           random=list(~1|species_ID,
+                                       ~1|phylogeny,
+                                       ~exp_design|es_ID), 
+                           struct="HCS", 
+                           rho=0, 
+                           R = list(phylogeny = phylo_matrix),
+                           data=d,
+                           sparse=TRUE)
+AICc(mod.design)
+AICc(mod.design_het) # Better fit
+
+
+summary(mod.design_het)
+mod_results(mod.design_het, mod="exp_design",data=d, group="species_ID") 
+r2_ml(mod.design_het) 
+
+my.orchard(mod.design_het, mod="exp_design", xlab="dARR", alpha=0.1, data=d, group="species_ID", whisker=0.09) 
+
+```
+
+### Contrasts (with heteroscedasticity)
+
+```{r}
+## Design A as the reference group
+mod.design_het_cont_A_ref <-  rma.mv(yi=dARR, 
+                                     V=VCV_dARR, 
+                                     mods= ~relevel(factor(exp_design), ref="A"),
+                                     method="REML",
+                                     test="t",
+                                     dfs="contain",
+                                     random=list(~1|species_ID,
+                                                 ~1|phylogeny,
+                                                 ~exp_design|es_ID), 
+                                     struct="HCS", 
+                                     rho=0, 
+                                     R = list(phylogeny = phylo_matrix),
+                                     data=d,
+                           sparse=TRUE)
+summary(mod.design_het_cont_A_ref)
+
+## Design B as the reference group 
+mod.design_het_cont_B_ref <-  rma.mv(yi=dARR, 
+                                     V=VCV_dARR, 
+                                     mods= ~relevel(factor(exp_design), ref="B"),
+                                     method="REML",
+                                     test="t",
+                                     dfs="contain",
+                                     random=list(~1|species_ID,
+                                                 ~1|phylogeny,
+                                                 ~exp_design|es_ID), 
+                                     struct="HCS", 
+                                     rho=0, 
+                                     R = list(phylogeny = phylo_matrix),
+                                     data=d,
+                           sparse=TRUE)
+summary(mod.design_het_cont_B_ref)
+
+## Design C as the reference group 
+mod.design_het_cont_C_ref <-  rma.mv(yi=dARR, 
+                                     V=VCV_dARR, 
+                                     mods= ~relevel(factor(exp_design), ref="C"),
+                                     method="REML",
+                                     test="t",
+                                     dfs="contain",
+                                     random=list(~1|species_ID,
+                                                 ~1|phylogeny,
+                                                 ~exp_design|es_ID), 
+                                     struct="HCS", 
+                                     rho=0, 
+                                     R = list(phylogeny = phylo_matrix),
+                                     data=d,
+                           sparse=TRUE)
+summary(mod.design_het_cont_C_ref)
+
+## Design D as the reference group 
+mod.design_het_cont_D_ref <-  rma.mv(yi=dARR, 
+                                     V=VCV_dARR, 
+                                     mods= ~relevel(factor(exp_design), ref="D"),
+                                     method="REML",
+                                     test="t",
+                                     dfs="contain",
+                                     random=list(~1|species_ID,
+                                                 ~1|phylogeny,
+                                                 ~exp_design|es_ID), 
+                                     struct="HCS", 
+                                     rho=0, 
+                                     R = list(phylogeny = phylo_matrix),
+                                     data=d,
+                           sparse=TRUE)
+summary(mod.design_het_cont_D_ref)
+
+## Design E as the reference group 
+mod.design_het_cont_E_ref <-  rma.mv(yi=dARR, 
+                                     V=VCV_dARR, 
+                                     mods= ~relevel(factor(exp_design), ref="E"),
+                                     method="REML",
+                                     test="t",
+                                     dfs="contain",
+                                     random=list(~1|species_ID,
+                                                 ~1|phylogeny,
+                                                 ~exp_design|es_ID), 
+                                     struct="HCS", 
+                                     rho=0, 
+                                     R = list(phylogeny = phylo_matrix),
+                                     data=d,
+                           sparse=TRUE)
+summary(mod.design_het_cont_E_ref)
+
+## Design F as the reference group 
+mod.design_het_cont_F_ref <-  rma.mv(yi=dARR, 
+                                     V=VCV_dARR, 
+                                     mods= ~relevel(factor(exp_design), ref="F"),
+                                     method="REML",
+                                     test="t",
+                                     dfs="contain",
+                                     random=list(~1|species_ID,
+                                                 ~1|phylogeny,
+                                                 ~exp_design|es_ID), 
+                                     struct="HCS", 
+                                     rho=0, 
+                                     R = list(phylogeny = phylo_matrix),
+                                     data=d,
+                           sparse=TRUE)
+summary(mod.design_het_cont_F_ref)
+```
+
+###
+
+## *Time in a common garden condition* {.tabset .tabset_fade .tabset_pills}
+
+### Run model and plot results
+
+```{r, fig.width=12, fig.height=8}
+mod.common_temp<- run.model(d, ~scale(time_common_temp, center=T, scale=F)) # Center to zero mean
+summary(mod.common_temp)
+
+r2_ml(mod.common_temp)
+
+d.common_temp<-filter(d, time_common_temp!="NA")
+plot_continuous(d.common_temp, mod.common_temp, d.common_temp$time_common_temp, "Time at common temperature (days)")
+```
+
+### Heteroscedasticity check 
+
+```{r, fig.height=6, fig.width=12}
+qplot(y = sqrt(residuals(mod.common_temp)^2), x = fitted(mod.common_temp)) + 
+      geom_point() +
+      geom_smooth(method = "lm") + 
+      geom_hline(yintercept = 0, colour="red") # Seems relatively stable
+```
+
+###
+
+## *Type of metric* {.tabset .tabset_fade .tabset_pills}
+
+### Individual coefficients
+
+```{r, fig.width=12, fig.height=8}
+mod.metric<- run.model(d, ~metric-1)
+summary(mod.metric)
+mod_results(mod.metric, mod="metric",data=d, group="species_ID") 
+
+r2_ml(mod.metric)
+
+my.orchard(mod.metric, mod="metric", xlab="dARR", alpha=0.1, data=d, group="species_ID", whisker=0.07)
+```
+
+### Contrasts
+
+```{r}
+mod.metric_cont<- run.model(d, ~metric)
+summary(mod.metric_cont)
+```
+
+### Heteroscedasticity check 
+
+```{r, fig.height=6, fig.width=12}
+qplot(y = sqrt(residuals(mod.metric)^2), x = fitted(mod.metric)) + 
+      geom_point() +
+      geom_smooth(method = "lm") + 
+      geom_hline(yintercept = 0, colour="red") # Seems fine
+```
+
+### Individual coefficients (with heteroscedasticity)
+
+```{r, fig.width=12, fig.width=8}
+mod.metric_het <-  rma.mv(yi=dARR, 
+                           V=VCV_dARR, 
+                           mods= ~metric-1,
+                           method="REML",
+                           test="t",
+                           dfs="contain",
+                           random=list(~1|species_ID,
+                                       ~1|phylogeny,
+                                       ~metric|es_ID), 
+                           struct="HCS", 
+                           rho=0, 
+                           R = list(phylogeny = phylo_matrix),
+                           data=d,
+                           sparse=TRUE)
+AICc(mod.metric)
+AICc(mod.metric_het) # Better fit
+
+
+summary(mod.metric_het)
+mod_results(mod.metric_het, mod="metric",data=d, group="species_ID") 
+r2_ml(mod.metric_het) 
+
+my.orchard(mod.metric_het, mod="metric", xlab="dARR", alpha=0.1, data=d, group="species_ID", whisker=0.07) 
+```
+
+### Contrasts (with heteroscedasticity)
+
+```{r}
+mod.metric_het_cont <-  rma.mv(yi=dARR, 
+                           V=VCV_dARR, 
+                           mods= ~metric,
+                           method="REML",
+                           test="t",
+                           dfs="contain",
+                           random=list(~1|species_ID,
+                                       ~1|phylogeny,
+                                       ~metric|es_ID), 
+                           struct="HCS", 
+                           rho=0, 
+                           R = list(phylogeny = phylo_matrix),
+                           data=d,
+                           sparse=TRUE)
+summary(mod.metric_het_cont)
+
+```
+
+###
+
+## *Heating rate* {.tabset .tabset_fade .tabset_pills}
+
+### Run model and plot results
+
+```{r, fig.width=12, fig.height=8}
+mod.ramping<- run.model(d, ~scale(ramping, center=T, scale=F)) # Center to zero mean
+summary(mod.ramping)
+
+r2_ml(mod.ramping)
+
+d.ramping<-filter(d, ramping!="NA")
+plot_continuous(d.ramping, mod.ramping, d.ramping$ramping, "Heating rate (degrees/min)")
+```
+
+### Heteroscedasticity check 
+
+```{r, fig.height=6, fig.width=12}
+qplot(y = sqrt(residuals(mod.ramping)^2), x = fitted(mod.ramping)) +
+      geom_point() +
+      geom_smooth(method = "lm") + 
+      geom_hline(yintercept = 0, colour="red") 
+```
+
+###
+
+
+```{r, include=F}
+# Save models 
+
+save(mod.habitat,  # Habitat without intercept
+     mod.habitat_cont,  # Contrast between habitats
+     mod.habitat_het, # Habitat without intercept, with heteroscedasticity modeled (Results presented in the MS)
+     mod.habitat_het_cont, # Contrast between habitats, with heteroscedasticity modeled 
+     
+     mod.taxa, # Taxa without intercept
+     mod.taxa_reptile_ref_cont, # Contrasts between taxa, with reptiles as the reference group
+     mod.taxa_tinvert_ref_cont, # Contrasts between taxa, with terrestrial invertebrates as the reference group
+     mod.taxa_ainvert_ref_cont, # Contrasts between taxa, with aquatic invertebrates as the reference group
+     mod.taxa_amph_ref_cont, # Contrasts between taxa, with amphibians as the reference group
+     mod.taxa_fish_ref_cont, # Contrasts between taxa, with fishes as the reference group
+     mod.taxa_het, # Taxa without intercept, and heteroscedasticity modeled (results presented in the MS)
+     mod.taxa_het_cont_rept_ref, # Contrasts between taxa, with reptiles as the reference group, and  heteroscedasticity modeled
+     mod.taxa_het_cont_tinvert_ref, # Contrasts between taxa, with terrestrial invertebrates as the reference group, and  heteroscedasticity modeled
+     mod.taxa_het_cont_ainvert_ref, # Contrasts between taxa, with aquatic invertebrates as the reference group, and  heteroscedasticity modeled
+     mod.taxa_het_cont_amph_ref, # Contrasts between taxa, with amphibians as the reference group, and  heteroscedasticity modeled
+     mod.taxa_het_cont_fish_ref, # Contrasts between taxa, with fishes as the reference group, and  heteroscedasticity modeled
+
+     mod.persist, # Persistence of developmental effects, without intercept
+     mod.persist_cont, # Contrast between acute and persistent effects
+     mod.persist_het, # Persistence of developmental effects without intercept, and heteroscedasticity modeled (results represented in the MS)
+     mod.persist_het_cont, # Contrasts between acute and persistent effects, with heteroscedasticity modeled
+     
+     mod.design, # Type of experimental design (life history variation), without intercept
+     mod.design_cont_A_ref, # Contrasts between experimental designs, with design A as the reference
+     mod.design_cont_B_ref, # Contrasts between experimental designs, with design B as the reference
+     mod.design_cont_C_ref, # Contrasts between experimental designs, with design C as the reference
+     mod.design_cont_D_ref, # Contrasts between experimental designs, with design D as the reference
+     mod.design_cont_E_ref, # Contrasts between experimental designs, with design E as the reference
+     mod.design_cont_F_ref, # Contrasts between experimental designs, with design F as the reference
+     mod.design_het, # Type of experimental design (life history variation), without intercept and with heteroscedasticity modeled (results presented in the MS)
+     mod.design_het_cont_A_ref, # Contrasts between experimental designs, with design A as the reference and heteroscedasticity modeled
+     mod.design_het_cont_B_ref, # Contrasts between experimental designs, with design B as the reference and heteroscedasticity modeled
+     mod.design_het_cont_C_ref, # Contrasts between experimental designs, with design C as the reference and heteroscedasticity modeled
+     mod.design_het_cont_F_ref, # Contrasts between experimental designs, with design D as the reference and heteroscedasticity modeled
+     mod.design_het_cont_E_ref, # Contrasts between experimental designs, with design E as the reference and heteroscedasticity modeled
+     mod.design_het_cont_F_ref, # Contrasts between experimental designs, with design F as the reference and heteroscedasticity modeled
+
+    mod.common_temp,# Meta-regression between dARR and the time at a common garden temperature (results presented in the MS)
+    
+    mod.metric, # Differences between metric types, without intercept (results presented in the MS)
+    mod.metric_cont, # Contrast between metric types
+    mod.metric_het, # Differences between metric types, without intercept, and heteroscedasticity modeled 
+    mod.metric_het_cont, # Contrast between metric types, with heteroscedasticity modeled (results presented in the MS)
+    
+    mod.ramping,  # Meta-regression between dARR and the heating rate in assays (results presented in the MS)
+    
+    file=here("RData","metaregressions.RData"))
+
+load(here("Rdata", "metaregressions.RData")) # Load the output of the models to avoid running them 
+```
+
+
+# **Mean adjusted for habitat differences**
+
+## Overall mean with habitat weighted equally
+
+```{r, fig.width=12, fig.height=8}
+mod.adjusted_mean<-mod_results(model=mod.habitat_het, data=d, mod="1", weights="equal", group="species_ID")
+mod.adjusted_mean$mod_table
+
+my.orchard(mod.adjusted_mean, mod="1", xlab="dARR", alpha=0.1, data=d, group="species_ID", whisker=0.04)
+```
+
+
+```{r, include=F, eval=F}
+save(mod.adjusted_mean, file=here("RData","adjusted_intercept_model.RData"))
+
+load(here("Rdata", "adjusted_intercept_model.RData")) # Load the output of the models to avoid running them 
+```
+
+# **Multi-model inference**
+
+We used the `MuMin` package to generate all combinations of moderators, and determine the set of models explaining the most variation
+
+```{r}
+eval(metafor:::.MuMIn) # Required for the models to run. 
+  
+full_model.MuMIn<- rma.mv(dARR, V=VCV_dARR,  
+                   method="ML", # maximum likelihood for model selection
+                   test="t",
+                   dfs="contain",
+                   mods= ~ habitat + # All moderators without missing values
+                           taxonomic_group +
+                           metric +
+                           exp_design,
+                   random=list(~1|species_ID, 
+                               ~1|phylogeny,
+                               ~1|es_ID),
+                   R = list(phylogeny = phylo_matrix),
+                   data=d,
+                   sparse=TRUE)
+
+options(na.action = "na.fail") #required for dredge to run
+candidate_models<-dredge(full_model.MuMIn) # Generate all possible combinations of moderators
+options(na.action = "na.omit") #set back to default
+
+subset(candidate_models, delta<=2) # Display all models within 2 values of AICc
+sw(model.avg(candidate_models, subset=delta<=2))# relative importance (sum of weights) of the moderators
+
+```
+
+## Best models {.tabset .tabset_fade .tabset_pills}
+
+### Best model
+
+```{r}
+best_model<- run.model(d, ~ habitat + # Paste best model
+                            metric +
+                            exp_design)
+
+summary(best_model) # summary of the best model identified 
+r2_ml(best_model) # R-squared of the best model 
+
+# Assumptions
+
+qplot(y = sqrt(residuals(best_model)^2), x = fitted(best_model)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  geom_hline(yintercept = 0, colour="red") 
+
+
+```
+
+### Second best model
+
+```{r}
+best_model_n2<- run.model(d, ~ habitat +
+                               exp_design)
+
+summary(best_model_n2) 
+r2_ml(best_model_n2) 
+
+# Assumptions
+
+qplot(y = sqrt(residuals(best_model_n2)^2), x = fitted(best_model_n2)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  geom_hline(yintercept = 0, colour="red") 
+
+```
+
+
+### Third best model
+
+```{r}
+best_model_n3<- run.model(d, ~ metric +
+                               exp_design)
+
+summary(best_model_n3) 
+r2_ml(best_model_n3) 
+
+# Assumptions
+
+qplot(y = sqrt(residuals(best_model_n3)^2), x = fitted(best_model_n3)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  geom_hline(yintercept = 0, colour="red") 
+
+```
+
+
+### Fourth best model
+
+```{r}
+best_model_n4<- run.model(d, ~ exp_design)
+
+summary(best_model_n4) 
+r2_ml(best_model_n4) 
+
+# Assumptions
+
+qplot(y = sqrt(residuals(best_model_n4)^2), x = fitted(best_model_n4)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  geom_hline(yintercept = 0, colour="red") 
+
+```
+
+### Fifth best model
+
+```{r}
+best_model_n5<- run.model(d, ~ exp_design + 
+                               metric + 
+                               taxonomic_group)
+
+summary(best_model_n5) 
+r2_ml(best_model_n5) 
+
+# Assumptions
+
+qplot(y = sqrt(residuals(best_model_n5)^2), x = fitted(best_model_n5)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  geom_hline(yintercept = 0, colour="red") 
+
+```
+
+
+
+
+```{r, include=F}
+save(candidate_models, 
+     best_model, 
+     best_model_n2, 
+     best_model_n3, 
+     best_model_n4, 
+     best_model_n5, 
+     file=here("RData","best_models.RData"))
+
+load(here("Rdata", "best_models.RData")) # Load the output of the models to avoid running them 
+```
+
+
+### 
+
+
+# **Publication bias**
+
+## Funnel plot 
+
+```{r, fig.height=8, fig.width=12}
+funnel(int_model, 
+      yaxis="seinv", # Inverse of standard error (precision) as the y axis
+      level = c(90, 95),  # levels of statistical significance highlighted 
+      shade = c("white", "gray55"), # shades for different levels of statistical significance
+      legend = TRUE, # display legend
+      ylab="Precision (1/SE)", 
+      cex.lab=1.5, 
+      digits=1, 
+      xlim=c(-1.8,1.8),
+      col=ifelse(d$imputed=="no", "blue", "red")) #imputed values in red, original values in blue
+```
+
+
+## Data type 
+
+Whether the data was `published` (reported in the publication) or `unpublished` (provided by authors)
+
+### Run model and plot results
+```{r, fig.height=8, fig.width=12}
+mod.data_type<-run.model(d, ~data_type-1)
+
+summary(mod.data_type)
+my.orchard(mod.data_type, mod="data_type", xlab="dARR", alpha=0.1, data=d, group="species_ID", whisker=0.07)
+```
+
+### Heteroscedasticity check 
+
+```{r, fig.height=6, fig.width=12}
+qplot(y = sqrt(residuals(mod.data_type)^2), x = fitted(mod.data_type)) + # plot sqrt(residuals^2) against fitted values
+      geom_point() +
+      geom_smooth(method = "lm") + # method ="lm" to generate a straight line 
+      geom_hline(yintercept = 0, colour="red") 
+```
+
+### Contrasts
+```{r, fig.height=8, fig.width=12}
+mod.data_type_cont<-run.model(d, ~data_type)
+
+summary(mod.data_type_cont)
+```
+
+
+
+## Publication type
+
+Whether the data was `peer-reviewed` or `not-peer-reviewed` (PhD or MSc dissertations)
+
+### Run model and plot results
+```{r, fig.height=8, fig.width=12}
+mod.pub_type<-run.model(d, ~peer.reviewed-1)
+
+summary(mod.pub_type)
+my.orchard(mod.pub_type, mod="peer.reviewed", xlab="dARR", alpha=0.1, data=d, group="species_ID", whisker=0.07)
+```
+
+### Heteroscedasticity check
+
+```{r, fig.height=6, fig.width=12}
+qplot(y = sqrt(residuals(mod.pub_type)^2), x = fitted(mod.pub_type)) + # plot sqrt(residuals^2) against fitted values
+      geom_point() +
+      geom_smooth(method = "lm") + # method ="lm" to generate a straight line 
+      geom_hline(yintercept = 0, colour="red") 
+```
+
+### Contrasts
+```{r, fig.height=8, fig.width=12}
+mod.pub_type_cont<-run.model(d, ~peer.reviewed)
+
+summary(mod.pub_type_cont)
+```
+
+
+## Publication year
+
+Test for time-lag bias
+
+### Run model and plot results
+```{r, fig.height=8, fig.width=12}
+mod.pub_year<-run.model(d, ~scale(pub_year, center=T, scale=F)) # Center to zero mean
+
+summary(mod.pub_year)
+
+plot_continuous(d, mod.pub_year, d$pub_year, "Publication year")
+```
+
+### Heteroscedasticity check 
+
+```{r, fig.height=6, fig.width=12}
+qplot(y = sqrt(residuals(mod.pub_year)^2), x = fitted(mod.pub_year)) + # plot sqrt(residuals^2) against fitted values
+      geom_point() +
+      geom_smooth(method = "lm") + # method ="lm" to generate a straight line 
+      geom_hline(yintercept = 0, colour="red") 
+```
+
+
+## Egger's regression 
+
+We performed an Eggerâs regression by fitting standard error (sqrt(Var_dARR)) as a moderator
+
+```{r, fig.height=8, fig.width=12}
+mod.Egger <- run.model(d, ~sqrt(Var_dARR))  # standard error = sqrt(Var_dARRD)
+summary(mod.Egger)
+
+
+pred<-predict.rma(mod.Egger)
+
+d   %>% mutate(fit=pred$pred, 
+               ci.lb=pred$ci.lb,
+               ci.ub=pred$ci.ub,
+               pr.lb=pred$cr.lb,
+               pr.ub=pred$cr.ub) %>% 
+ggplot(aes(x = sqrt(Var_dARR), y = dARR)) +
+     geom_ribbon(aes(ymin = pr.lb, ymax = pr.ub, color = NULL), alpha = .1) +
+     geom_ribbon(aes(ymin = ci.lb, ymax = ci.ub, color = NULL), alpha = .3) +
+     geom_point(size=2,shape=21, alpha=0.7, fill="sienna1", col="gray25",stroke=1) +
+     geom_line(aes(y = fit), size = 1.2)+  
+  labs(x = "Standard error", y = "dARR") +
+  theme_bw() +
+  geom_hline(yintercept = 0,linetype = 2, colour = "black",alpha=0.5)+   # horizontal line at lnRR = 0
+  theme(text = element_text(size = 18, colour = "black", hjust = 0.5), # change font sizes and legend position
+          legend.text=element_text(size=14),
+          legend.position=c(0,0), 
+          legend.justification = c(0,0),
+          legend.background = element_blank(), 
+          legend.direction="horizontal",
+          legend.title = element_text(size=15), 
+          panel.border=element_rect(colour="black", fill=NA, size=1.2))
+```
+
+
+## Sampling variance fitted as a moderator
+
+```{r, fig.height=8, fig.width=12}
+mod.var <- run.model(d, ~Var_dARR)  
+summary(mod.var)
+
+
+pred<-predict.rma(mod.var)
+
+d   %>% mutate(fit=pred$pred, 
+               ci.lb=pred$ci.lb,
+               ci.ub=pred$ci.ub,
+               pr.lb=pred$cr.lb,
+               pr.ub=pred$cr.ub) %>% 
+ggplot(aes(x = Var_dARR, y = dARR)) +
+     geom_ribbon(aes(ymin = pr.lb, ymax = pr.ub, color = NULL), alpha = .1) +
+     geom_ribbon(aes(ymin = ci.lb, ymax = ci.ub, color = NULL), alpha = .3) +
+     geom_point(size=2,shape=21, alpha=0.7, fill="sienna1", col="gray25",stroke=1) +
+     geom_line(aes(y = fit), size = 1.2)+  
+  labs(x = "Sampling variance", y = "dARR") +
+  theme_bw() +
+  geom_hline(yintercept = 0,linetype = 2, colour = "black",alpha=0.5)+   # horizontal line at lnRR = 0
+  theme(text = element_text(size = 18, colour = "black", hjust = 0.5), # change font sizes and legend position
+          legend.text=element_text(size=14),
+          legend.position=c(0,0), 
+          legend.justification = c(0,0),
+          legend.background = element_blank(), 
+          legend.direction="horizontal",
+          legend.title = element_text(size=15), 
+          panel.border=element_rect(colour="black", fill=NA, size=1.2))
+```
+
+
+```{r, include=F}
+# Save models 
+
+save(mod.data_type, 
+     mod.data_type_cont, 
+     mod.pub_type, 
+     mod.pub_type_cont,
+     mod.pub_year, 
+     mod.Egger, 
+     mod.var, 
+     file=here("RData","publication_bias.RData"))
+
+load(here("Rdata", "publication_bias.RData")) # Load the output of the models to avoid running them 
+```
+
+
+# **Sensitivity analyses**
+
+## *Leave-one-out analyses* {.tabset .tabset_fade .tabset_pills}
+
+Here, we iteratively removed one study or one species at a time and investigated how it affected the overall mean. We also tried to iteratively remove one independent comparison (shared_trt_ID) because it was too computationally extensive. 
+
+### Leave one study out
+
+```{r, fig.height=8, fig.width=12, eval=F}
+d$study_ID<-as.factor(d$study_ID)
+d<-as.data.frame(d) # Only work with a dataframe
+VCV_matrix<-list() # will need new VCV matrices because the sample size will be iteratively reduced
+Leave1studyout<-list() # create a list that will host the results of each model 
+for(i in 1:length(levels(d$study_ID))){ # N models = N studies 
+  VCV_matrix[[i]]<-make_VCV_matrix(d[d$study_ID != levels(d$study_ID)[i], ], V="Var_dARR", cluster="shared_trt_ID", obs="es_ID") # Create a new VCV matrix for each new model
+  Leave1studyout[[i]] <- rma.mv(yi = dARR, V = VCV_matrix[[i]], # Same model structure as all the models we fitted
+                                method="REML",
+                                test="t",
+                                dfs="contain",
+                                random = list(~1|species_ID,
+                                              ~1|phylogeny, 
+                                              ~1|es_ID),
+                                R= list(phylogeny = phylo_matrix), 
+                                data = d[d$study_ID != levels(d$study_ID)[i], ],
+                                sparse=TRUE) # Generate a new model for each new data (iterative removal of one study at a time)
+}
+ 
+
+
+# The output is a list so we need to summarise the coefficients of all the models performed
+
+results.Leave1studyout<-as.data.frame(cbind(
+                                           sapply(Leave1studyout, function(x) summary(x)$beta), # extract the beta coefficient from all models
+                                           sapply(Leave1studyout, function(x) summary(x)$se), # extract the standard error from all models
+                                           sapply(Leave1studyout, function(x) summary(x)$zval),  # extract the z value from all models
+                                           sapply(Leave1studyout, function(x) summary(x)$pval), # extract the p value from all models
+                                           sapply(Leave1studyout, function(x) summary(x)$ci.lb), # extract the lower confidence interval for all models
+                                           sapply(Leave1studyout, function(x) summary(x)$ci.ub))) # extract the upper confidence interval for all models
+
+colnames(results.Leave1studyout)=c("Estimate", "SE", "zval", "pval", "ci.lb", "ci.ub") # change column names 
+kable(results.Leave1studyout)%>% kable_styling("striped", position="left") %>% scroll_box(width="100%", height="500px") # Table of the results from all models
+
+ggplot(results.Leave1studyout)+stat_dots(aes(x=Estimate), alpha=0.8, dotsize=1.5, shape=16, show.legend=F, col="darkcyan")
+
+results.Leave1studyout %>% 
+                          summarise(estimate= mean(Estimate), # calculate the mean coefficients across the models generated
+                                    se=mean(SE), 
+                                    zval=mean(zval), 
+                                    pval=mean(pval), 
+                                    ci.lb=mean(ci.lb), 
+                                    ci.ub=mean(ci.ub)) %>% 
+                                                          kable()%>% kable_styling("striped", position="left")
+```
+
+```{r, include=F, eval=F}
+save(results.Leave1studyout, file=here("RData","Leaveonestudyout.RData"))
+```
+
+
+```{r, fig.height=8, fig.width=12}
+load(here("Rdata", "Leaveonestudyout.RData")) # Load the output of the models to avoid running them 
+
+kable(results.Leave1studyout)%>% kable_styling("striped", position="left") %>% scroll_box(width="100%", height="500px") # Table of the results from all models
+
+ggplot(results.Leave1studyout)+stat_dots(aes(x=Estimate), alpha=0.8, dotsize=1.5, shape=16, show.legend=F, col="darkcyan") # Distribution of overall mean after removal of one study at a time
+
+results.Leave1studyout %>% 
+                          summarise(estimate= mean(Estimate), # calculate the mean coefficients across the models generated
+                                    se=mean(SE), 
+                                    zval=mean(zval), 
+                                    pval=mean(pval), 
+                                    ci.lb=mean(ci.lb), 
+                                    ci.ub=mean(ci.ub)) %>% 
+                                                          kable()%>% kable_styling("striped", position="left")
+```
+
+
+
+### Leave one species out 
+
+```{r, fig.height=8, fig.width=12, eval=F}
+d$species_ID<-as.factor(d$species_ID)
+d<-as.data.frame(d) # Only work with a dataframe
+VCV_matrix<-list() # will need new VCV matrices because the sample size will be iteratively reduced
+Leave1speciesout<-list() # create a list that will host the results of each model 
+for(i in 1:length(levels(d$species_ID))){ # N models = N species 
+  VCV_matrix[[i]]<-make_VCV_matrix(d[d$species_ID != levels(d$species_ID)[i], ], V="Var_dARR", cluster="shared_trt_ID", obs="es_ID") # Create a new VCV matrix for each new model
+  Leave1speciesout[[i]] <- rma.mv(yi = dARR, V = VCV_matrix[[i]], # Same model structure as all the models we fitted
+                                method="REML",
+                                test="t",
+                                dfs="contain",
+                                random = list(~1|species_ID,
+                                              ~1|phylogeny, 
+                                              ~1|es_ID),
+                                R= list(phylogeny = phylo_matrix), 
+                                data = d[d$species_ID != levels(d$species_ID)[i], ],
+                                sparse=TRUE) # Generate a new model for each new data (iterative removal of one species at a time)
+}
+ 
+
+
+# The output is a list so we need to summarise the coefficients of all the models performed
+
+results.Leave1speciesout<-as.data.frame(cbind(
+                                           sapply(Leave1speciesout, function(x) summary(x)$beta), # extract the beta coefficient from all models
+                                           sapply(Leave1speciesout, function(x) summary(x)$se), # extract the standard error from all models
+                                           sapply(Leave1speciesout, function(x) summary(x)$zval),  # extract the z value from all models
+                                           sapply(Leave1speciesout, function(x) summary(x)$pval), # extract the p value from all models
+                                           sapply(Leave1speciesout, function(x) summary(x)$ci.lb), # extract the lower confidence interval for all models
+                                           sapply(Leave1speciesout, function(x) summary(x)$ci.ub))) # extract the upper confidence interval for all models
+
+colnames(results.Leave1speciesout)=c("Estimate", "SE", "zval", "pval", "ci.lb", "ci.ub") # change column names 
+kable(results.Leave1speciesout)%>% kable_styling("striped", position="left") %>% scroll_box(width="100%", height="500px") # Table of the results from all models
+
+ggplot(results.Leave1speciesout)+stat_dots(aes(x=Estimate), alpha=0.8, dotsize=1.5, shape=16, show.legend=F, col="darkcyan") # Distribution of overall mean after removal of one species at a time
+
+results.Leave1speciesout %>% 
+                          summarise(estimate= mean(Estimate), # calculate the mean coefficients across the models generated
+                                    se=mean(SE), 
+                                    zval=mean(zval), 
+                                    pval=mean(pval), 
+                                    ci.lb=mean(ci.lb), 
+                                    ci.ub=mean(ci.ub)) %>% 
+                                                          kable()%>% kable_styling("striped", position="left")
+```
+
+```{r, include=F, eval=F}
+save(results.Leave1speciesout, file=here("RData","Leaveonespeciesout.RData"))
+```
+
+
+```{r LOO_species_results, fig.height=8, fig.width=12}
+load(here("Rdata", "Leaveonespeciesout.RData")) # Load the output of the models to avoid running them 
+
+kable(results.Leave1speciesout)%>% kable_styling("striped", position="left") %>% scroll_box(width="100%", height="500px") # Table of the results from all models
+
+ggplot(results.Leave1speciesout)+stat_dots(aes(x=Estimate), alpha=0.8, dotsize=1.5, shape=16, show.legend=F, col="darkcyan") # Distribution of overall mean after removal of one species at a time
+
+results.Leave1speciesout %>% 
+                          summarise(estimate= mean(Estimate), # calculate the mean coefficients across the models generated
+                                    se=mean(SE), 
+                                    zval=mean(zval), 
+                                    pval=mean(pval), 
+                                    ci.lb=mean(ci.lb), 
+                                    ci.ub=mean(ci.ub)) %>% 
+                                                          kable()%>% kable_styling("striped", position="left")
+```
+
+
+
+```{r, fig.height=8, fig.width=12, eval=F, include=F}
+### Leave one independent comparison out
+d$shared_trt_ID<-as.factor(d$shared_trt_ID)
+d<-as.data.frame(d) # Only work with a dataframe
+VCV_matrix<-list() # will need new VCV matrices because the sample size will be iteratively reduced
+Leave1trtout<-list() # create a list that will host the results of each model 
+for(i in 1:length(levels(d$shared_trt_ID))){ # N models = N independent comparisons
+  VCV_matrix[[i]]<-make_VCV_matrix(d[d$shared_trt_ID != levels(d$shared_trt_ID)[i], ], V="Var_dARR", cluster="shared_trt_ID", obs="es_ID") # Create a new VCV matrix for each new model
+  Leave1trtout[[i]] <- rma.mv(yi = dARR, V = VCV_matrix[[i]], # Same model structure as all the models we fitted
+                                method="REML",
+                                test="t",
+                                dfs="contain",
+                                random = list(~1|species_ID,
+                                              ~1|phylogeny, 
+                                              ~1|es_ID),
+                                R= list(phylogeny = phylo_matrix), 
+                                control= list(optimizer= "optim", optmethod="Nelder-Mead"), # Need optimizer for this model to run!
+                                data = d[d$shared_trt_ID != levels(d$shared_trt_ID)[i], ],
+                                sparse=TRUE) # Generate a new model for each new data (iterative removal of one independent comparison at a time)
+}
+ 
+
+
+# The output is a list so we need to summarise the coefficients of all the models performed
+
+results.Leave1trtout<-as.data.frame(cbind(
+                                           sapply(Leave1trtout, function(x) summary(x)$beta), # extract the beta coefficient from all models
+                                           sapply(Leave1trtout, function(x) summary(x)$se), # extract the standard error from all models
+                                           sapply(Leave1trtout, function(x) summary(x)$zval),  # extract the z value from all models
+                                           sapply(Leave1trtout, function(x) summary(x)$pval), # extract the p value from all models
+                                           sapply(Leave1trtout, function(x) summary(x)$ci.lb), # extract the lower confidence interval for all models
+                                           sapply(Leave1trtout, function(x) summary(x)$ci.ub))) # extract the upper confidence interval for all models
+
+colnames(results.Leave1trtout)=c("Estimate", "SE", "zval", "pval", "ci.lb", "ci.ub") # change column names 
+kable(results.Leave1trtout)%>% kable_styling("striped", position="left") %>% scroll_box(width="100%", height="500px") # Table of the results from all models
+
+ggplot(results.Leave1trtout)+stat_dots(aes(x=Estimate), alpha=0.8, dotsize=1.5, shape=16, show.legend=F, col="darkcyan") # Distribution of overall mean after removal of one independent comparison at a time
+
+results.Leave1trtout %>% 
+                          summarise(estimate= mean(Estimate), # calculate the mean coefficients across the models generated
+                                    se=mean(SE), 
+                                    zval=mean(zval), 
+                                    pval=mean(pval), 
+                                    ci.lb=mean(ci.lb), 
+                                    ci.ub=mean(ci.ub)) %>% 
+                                                          kable()%>% kable_styling("striped", position="left")
+```
+
+```{r, eval=F, include=F}
+save(results.Leave1trtout, file=here("RData","Leaveonetreatmentout.RData"))
+```
+
+
+```{r LOO_shared_trt_results, fig.height=8, fig.width=12, eval=F, include=F}
+load(here("Rdata", "Leaveonetreatmentout.RData")) # Load the output of the models to avoid running them 
+
+kable(results.Leave1trtout)%>% kable_styling("striped", position="left") %>% scroll_box(width="100%", height="500px") # Table of the results from all models
+
+ggplot(results.Leave1trtout)+stat_dots(aes(x=Estimate), alpha=0.8, dotsize=1.5, shape=16, show.legend=F, col="darkcyan") # Distribution of overall mean after removal of one independent comparison at a time
+
+results.Leave1trtout %>% 
+                          summarise(estimate= mean(Estimate), # calculate the mean coefficients across the models generated
+                                    se=mean(SE), 
+                                    zval=mean(zval), 
+                                    pval=mean(pval), 
+                                    ci.lb=mean(ci.lb), 
+                                    ci.ub=mean(ci.ub)) %>% 
+                                                          kable()%>% kable_styling("striped", position="left")
+```
+
+### 
+
+## *Analyses with acute designs only* {.tabset .tabset_fade .tabset_pills}
+
+### Habitat
+
+#### Individual coefficients 
+
+```{r, fig.height=10, fig.width=12}
+d.acute<-filter(d,brought_common_temp=="no")
+mod.acute_habitat<-run.model(d.acute, ~habitat-1)
+summary(mod.acute_habitat)
+mod_results(mod.acute_habitat, mod="habitat",data=d.acute, group="species_ID") 
+
+
+my.orchard(mod.acute_habitat, xlab="dARR", mod="habitat", alpha=0.1, data=d.acute, group="species_ID", whisker=0.07)
+```
+
+#### Heteroscedasticity check 
+
+```{r, fig.height=6, fig.width=12}
+qplot(y = sqrt(residuals(mod.acute_habitat)^2), x = fitted(mod.acute_habitat)) + 
+      geom_point() +
+      geom_smooth(method = "lm") + 
+      geom_hline(yintercept = 0, colour="red") 
+```
+
+#### Individual coefficients (with heteroscedasticity)
+
+```{r}
+VCV_acute<-make_VCV_matrix(d.acute, V="Var_dARR", cluster="shared_trt_ID", obs="es_ID")
+mod.acute_habitat_het <-  rma.mv(yi=dARR, 
+                           V=VCV_acute, 
+                           mods= ~habitat-1,
+                           method="REML",
+                           test="t",
+                           dfs="contain",
+                           random=list(~1|species_ID,
+                                       ~1|phylogeny,
+                                       ~habitat|es_ID), 
+                           struct="HCS", 
+                           rho=0, 
+                           R = list(phylogeny = phylo_matrix),
+                           data=d.acute,
+                           sparse=TRUE)
+AICc(mod.acute_habitat)
+AICc(mod.acute_habitat_het) 
+
+summary(mod.acute_habitat_het)
+mod_results(mod.acute_habitat_het, mod="habitat",data=d.acute, group="species_ID") 
+r2_ml(mod.acute_habitat_het) 
+
+my.orchard(mod.acute_habitat_het, mod="habitat", xlab="dARR", alpha=0.1, data=d.acute, group="species_ID", whisker=0.07) 
+```
+
+
+#### Mean acute effects with habitat weighted equally
+
+```{r, fig.width=12, fig.height=8}
+mod.adjusted_acute<-mod_results(model=mod.acute_habitat_het, data=d.acute, mod="1", weights="equal", group="species_ID")
+mod.adjusted_acute$mod_table
+
+my.orchard(mod.adjusted_acute, mod="1", xlab="dARR", alpha=0.1, data=d.acute, group="species_ID", whisker=0.04)
+```
+
+
+### Taxonomic groups
+
+#### Individual coefficients 
+
+```{r, fig.height=10, fig.width=12}
+mod.acute_taxa<-run.model(d.acute, ~taxonomic_group-1)
+summary(mod.acute_taxa)
+mod_results(mod.acute_taxa, mod="taxonomic_group",data=d.acute, group="species_ID") 
+
+my.orchard(mod.acute_taxa, xlab="dARR", mod="taxonomic_group", data=d.acute, alpha=0.1, group="species_ID", whisker=0.09)
+```
+
+#### Heteroscedasticity check 
+
+```{r, fig.height=6, fig.width=12}
+qplot(y = sqrt(residuals(mod.acute_taxa)^2), x = fitted(mod.acute_taxa)) + 
+      geom_point() +
+      geom_smooth(method = "lm") + 
+      geom_hline(yintercept = 0, colour="red") 
+```
+
+#### Individual coefficients (with heteroscedasticity)
+
+```{r, fig.height=10, fig.width=12}
+mod.acute_taxa_het <-  rma.mv(yi=dARR, 
+                           V=VCV_acute, 
+                           mods= ~taxonomic_group-1,
+                           method="REML",
+                           test="t",
+                           dfs="contain",
+                           random=list(~1|species_ID,
+                                       ~1|phylogeny,
+                                       ~taxonomic_group|es_ID), 
+                           struct="HCS", 
+                           rho=0, 
+                           R = list(phylogeny = phylo_matrix),
+                           data=d.acute,
+                           sparse=TRUE)
+AICc(mod.acute_taxa)
+AICc(mod.acute_taxa_het) 
+
+summary(mod.acute_taxa_het)
+mod_results(mod.acute_taxa_het, mod="taxonomic_group",data=d.acute, group="species_ID") 
+r2_ml(mod.acute_taxa_het) 
+
+my.orchard(mod.acute_taxa_het, mod="taxonomic_group", xlab="dARR", alpha=0.1, data=d.acute, group="species_ID", whisker=0.09) 
+```
+
+### Type of metric 
+
+#### Individual coefficients 
+```{r, fig.height=10, fig.width=12}
+mod.acute_metric<-run.model(d.acute, ~metric-1)
+summary(mod.acute_metric)
+mod_results(mod.acute_metric, mod="metric",data=d.acute, group="species_ID") 
+
+my.orchard(mod.acute_metric, xlab="dARR", mod="metric", alpha=0.1, data=d.acute, group="species_ID", whisker=0.07)
+```
+
+#### Heteroscedasticity check 
+
+```{r, fig.height=6, fig.width=12}
+qplot(y = sqrt(residuals(mod.acute_metric)^2), x = fitted(mod.acute_metric)) + 
+      geom_point() +
+      geom_smooth(method = "lm") + 
+      geom_hline(yintercept = 0, colour="red") 
+```
+
+#### Individual coefficients (with heteroscedasticity)
+
+```{r, fig.height=10, fig.width=12}
+mod.acute_metric_het <-  rma.mv(yi=dARR, 
+                           V=VCV_acute, 
+                           mods= ~metric-1,
+                           method="REML",
+                           test="t",
+                           dfs="contain",
+                           random=list(~1|species_ID,
+                                       ~1|phylogeny,
+                                       ~metric|es_ID), 
+                           struct="HCS", 
+                           rho=0, 
+                           R = list(phylogeny = phylo_matrix),
+                           data=d.acute,
+                           sparse=TRUE)
+AICc(mod.acute_metric)
+AICc(mod.acute_metric_het) 
+
+summary(mod.acute_metric_het)
+mod_results(mod.acute_metric_het, mod="metric",data=d.acute, group="species_ID") 
+r2_ml(mod.acute_metric_het) 
+
+my.orchard(mod.acute_metric_het, mod="metric", xlab="dARR", alpha=0.1, data=d.acute, group="species_ID", whisker=0.07) 
+```
+
+
+### Heating rate
+
+#### Run model and plot results
+
+```{r, fig.height=10, fig.width=12}
+mod.acute_ramping<-run.model(d.acute, ~scale(ramping, center=T, scale=F))
+summary(mod.acute_ramping)
+
+d.acute_ramping<-filter(d, ramping!="NA"&brought_common_temp=="no")
+plot_continuous(d.acute_ramping, mod.acute_ramping, d.acute_ramping$ramping, "Heating rate (degrees/min)")
+```
+
+```{r, eval=F, include=F}
+save(mod.acute_habitat, 
+     mod.acute_habitat_het,
+     mod.adjusted_acute,
+     mod.acute_taxa, 
+     mod.acute_taxa_het,
+     mod.acute_metric, 
+     mod.acute_metric_het,
+     mod.acute_ramping, 
+     
+     file=here("RData","Sens_acute_only.RData"))
+
+load(here("Rdata", "Sens_acute_only.RData")) 
+```
+
+###
+
+## *Analyses with persistent designs only* {.tabset .tabset_fade .tabset_pills}
+
+### Habitat
+
+#### Individual coefficients 
+
+```{r, fig.height=10, fig.width=12}
+d.persistent<-filter(d,brought_common_temp=="yes") # Only keep persistent data
+mod.persistent_habitat<-run.model(d.persistent, ~habitat-1)
+summary(mod.persistent_habitat)
+mod_results(mod.persistent_habitat, mod="habitat",data=d.persistent, group="species_ID") 
+
+my.orchard(mod.persistent_habitat, xlab="dARR", mod="habitat", alpha=0.1, data=d.persistent, group="species_ID", whisker=0.07)
+```
+
+#### Heteroscedasticity check 
+
+```{r, fig.height=6, fig.width=12}
+qplot(y = sqrt(residuals(mod.persistent_habitat)^2), x = fitted(mod.persistent_habitat)) + 
+      geom_point() +
+      geom_smooth(method = "lm") + 
+      geom_hline(yintercept = 0, colour="red") 
+```
+
+#### Individual coefficients (with heteroscedasticity)
+
+```{r, fig.height=10, fig.width=12}
+VCV_persistent<-make_VCV_matrix(d.persistent, V="Var_dARR", cluster="shared_trt_ID", obs="es_ID") # Re calculate VCV matrix with the new data
+mod.persistent_habitat_het <-  rma.mv(yi=dARR, 
+                           V=VCV_persistent, 
+                           mods= ~habitat-1,
+                           method="REML",
+                           test="t",
+                           dfs="contain",
+                           random=list(~1|species_ID,
+                                       ~1|phylogeny,
+                                       ~habitat|es_ID), 
+                           struct="HCS", 
+                           rho=0, 
+                           R = list(phylogeny = phylo_matrix),
+                           data=d.persistent,
+                           sparse=TRUE)
+AICc(mod.persistent_habitat)
+AICc(mod.persistent_habitat_het) 
+
+summary(mod.persistent_habitat_het)
+mod_results(mod.persistent_habitat_het, mod="habitat",data=d.persistent, group="species_ID") 
+r2_ml(mod.persistent_habitat_het) 
+
+my.orchard(mod.persistent_habitat_het, mod="habitat", xlab="dARR", alpha=0.1, data=d.persistent, group="species_ID", whisker=0.07) 
+```
+
+#### Mean persistent effects with habitat weighted equally
+
+```{r, fig.width=12, fig.height=8}
+mod.adjusted_persistent<-mod_results(model=mod.persistent_habitat_het, data=d.persistent, mod="1", weights="equal", group="species_ID")
+mod.adjusted_persistent$mod_table
+
+my.orchard(mod.adjusted_persistent, mod="1", xlab="dARR", alpha=0.1, data=d.persistent, group="species_ID", whisker=0.04)
+```
+
+
+### Taxonomic groups
+
+#### Individual coefficients 
+
+```{r, fig.height=10, fig.width=12}
+mod.persistent_taxa<-run.model(d.persistent, ~taxonomic_group-1)
+summary(mod.persistent_taxa)
+mod_results(mod.persistent_taxa, mod="taxonomic_group",data=d.persistent, group="species_ID") 
+
+my.orchard(mod.persistent_taxa, xlab="dARR", mod="taxonomic_group", alpha=0.1, data=d.persistent, group="species_ID", whisker=0.09)
+```
+
+
+#### Heteroscedasticity check 
+
+```{r, fig.height=6, fig.width=12}
+qplot(y = sqrt(residuals(mod.persistent_taxa)^2), x = fitted(mod.persistent_taxa)) + 
+      geom_point() +
+      geom_smooth(method = "lm") + 
+      geom_hline(yintercept = 0, colour="red") 
+```
+
+#### Individual coefficients (with heteroscedasticity)
+
+```{r, fig.height=10, fig.width=12}
+mod.persistent_taxa_het <-  rma.mv(yi=dARR, 
+                           V=VCV_persistent, 
+                           mods= ~taxonomic_group-1,
+                           method="REML",
+                           test="t",
+                           dfs="contain",
+                           random=list(~1|species_ID,
+                                       ~1|phylogeny,
+                                       ~taxonomic_group|es_ID), 
+                           struct="HCS", 
+                           rho=0, 
+                           R = list(phylogeny = phylo_matrix),
+                           data=d.persistent,
+                           sparse=TRUE)
+AICc(mod.persistent_taxa)
+AICc(mod.persistent_taxa_het) 
+
+summary(mod.persistent_taxa_het)
+mod_results(mod.persistent_taxa_het, mod="taxonomic_group",data=d.persistent, group="species_ID") 
+r2_ml(mod.persistent_taxa_het) 
+
+my.orchard(mod.persistent_taxa_het, mod="taxonomic_group", xlab="dARR", alpha=0.1, data=d.persistent, group="species_ID", whisker=0.09) 
+```
+
+### Type of metric 
+
+#### Individual coefficients 
+
+```{r, fig.height=10, fig.width=12}
+mod.persistent_metric<-run.model(d.persistent, ~metric-1)
+summary(mod.persistent_metric)
+mod_results(mod.persistent_metric, mod="metric",data=d.persistent, group="species_ID") 
+
+my.orchard(mod.persistent_metric, xlab="dARR", mod="metric", alpha=0.1, data=d.persistent, group="species_ID", whisker=0.07)
+```
+
+#### Heteroscedasticity check 
+
+```{r, fig.height=6, fig.width=12}
+qplot(y = sqrt(residuals(mod.persistent_metric)^2), x = fitted(mod.persistent_metric)) + 
+      geom_point() +
+      geom_smooth(method = "lm") + 
+      geom_hline(yintercept = 0, colour="red") 
+```
+
+#### Individual coefficients (with heteroscedasticity)
+
+```{r, fig.height=10, fig.width=12}
+mod.persistent_metric_het <-  rma.mv(yi=dARR, 
+                           V=VCV_persistent, 
+                           mods= ~metric-1,
+                           method="REML",
+                           test="t",
+                           dfs="contain",
+                           random=list(~1|species_ID,
+                                       ~1|phylogeny,
+                                       ~metric|es_ID), 
+                           struct="HCS", 
+                           rho=0, 
+                           R = list(phylogeny = phylo_matrix),
+                           data=d.persistent,
+                           sparse=TRUE)
+AICc(mod.persistent_metric)
+AICc(mod.persistent_metric_het) 
+
+summary(mod.persistent_metric_het)
+mod_results(mod.persistent_metric_het, mod="metric",data=d.persistent, group="species_ID") 
+r2_ml(mod.persistent_metric_het) 
+
+my.orchard(mod.persistent_metric_het, mod="metric", xlab="dARR", alpha=0.1, data=d.persistent, group="species_ID", whisker=0.07) 
+```
+
+
+### Heating rate
+
+#### Run model and plot results 
+
+```{r, fig.height=10, fig.width=12}
+mod.persistent_ramping<-run.model(filter(d,brought_common_temp=="yes"), ~scale(ramping, center=T, scale=F))
+summary(mod.persistent_ramping)
+
+r2_ml(mod.persistent_ramping)
+
+d.persistent_ramping<-filter(d, ramping!="NA"&brought_common_temp=="yes")
+plot_continuous(d.persistent_ramping, mod.persistent_ramping, d.persistent_ramping$ramping, "Heating rate (degrees/min)")
+```
+
+
+```{r, eval=F, include=F}
+save(mod.persistent_habitat, 
+     mod.persistent_habitat_het, 
+     mod.persistent_taxa, 
+     mod.persistent_taxa_het, 
+     mod.persistent_metric,
+     mod.persistent_metric_het,
+     mod.persistent_ramping, 
+     file=here("RData","Sens_persistent_only.RData"))
+
+load(here("Rdata", "Sens_persistent_only.RData")) 
+```
+
+###
+
+## *Risk of bias analysis* {.tabset .tabset_fade .tabset_pills}
+
+### Analysis without imputed values
+
+```{r, fig.height=8, fig.width=12}
+mod.imputed<-run.model(filter(d, imputed=="no"), ~1)
+summary(mod.imputed)
+mod_results(mod.imputed, mod="1",data=filter(d, imputed=="no"), group="species_ID") 
+
+
+my.orchard(mod.imputed, xlab="dARR", mod="1", alpha=0.1, data=d, group="species_ID", whisker=0.07)
+```
+
+### Analysis without concerning data 
+
+```{r, fig.height=8, fig.width=12}
+mod.concern<-run.model(filter(d, is_concern=="no"), ~1)
+summary(mod.concern)
+mod_results(mod.concern, mod="1",data=filter(d, is_concern=="no"), group="species_ID") 
+
+my.orchard(mod.concern, xlab="dARR", mod="1", alpha=0.1, data=d, group="species_ID", whisker=0.07)
+```
+
+### Analyses without extreme values of dARR
+
+Here, I performed we ran models after excluding values reaching arbitrary cutoffs: 
+a) all values above 1.25 and below -1.25
+b) All values under -0.5
+c) All values under -0.15 (as in Gunderson & Stillman 2015)
+d) With all negative values taken as 0 (as in Morley et al. 2019)
+
+While previous syntheses used such methods, it has been argued that negative responses can be biologically relevant (Terblanche & Hoffmann, 2020), and we believe it better captures the importance of measurement error, as well as potential "non-adaptive" responses ectotherms may express.
+
+
+```{r, fig.height=10, fig.width=12}
+# Removing values above 1.25 and below -1.25
+mod.extreme1.25<-run.model(filter(d, dARR>-1.25&dARR<1.25), ~1)
+summary(mod.extreme1.25)
+mod_results(mod.extreme1.25, mod="1",data=filter(d, dARR>-1.25&dARR<1.25), group="species_ID") 
+
+
+my.orchard(mod.extreme1.25, xlab="dARR", mod="1", alpha=0.1, data=d, group="species_ID", whisker=0.05)
+
+##  Removing values under -0.5
+mod.extreme0.5<-run.model(filter(d, dARR>-0.5), ~1) # Removed 34 effect sizes
+summary(mod.extreme0.5)
+mod_results(mod.extreme0.5, mod="1",data=filter(d, dARR>-0.5), group="species_ID") 
+
+my.orchard(mod.extreme0.5, xlab="dARR", mod="1", alpha=0.1, data=d, group="species_ID", whisker=0.05)
+
+## Removing values under -0.15 (as in Gunderson & Stillman 2015)
+mod.extreme0.15<-run.model(filter(d, dARR>-0.15), ~1) # Removed 97 effect sizes
+summary(mod.extreme0.15)
+mod_results(mod.extreme0.15, mod="1",data=filter(d, dARR>-0.15), group="species_ID") 
+
+my.orchard(mod.extreme0.15, xlab="dARR", mod="1", alpha=0.1, data=d, group="species_ID", whisker=0.05)
+
+## Quantifying negative dARR values as 0 (as in Morley et al. 2019)
+d <- d %>%  mutate(morley_dARR=ifelse(dARR<0, 0, dARR)) # Convert negative values to 0 
+sum(with(d, morley_dARR==0))   # 233 effect sizes concerned by this change
+
+mod.extreme0 <-  rma.mv(yi=morley_dARR, 
+                           V=VCV_dARR, 
+                           mods= ~ 1,
+                           method="REML",
+                           test="t",
+                           dfs="contain",
+                           random=list(~1|species_ID,
+                                       ~1|phylogeny,
+                                       ~1|es_ID),
+                           R = list(phylogeny = phylo_matrix),
+                           data=d,
+                           sparse=TRUE)
+summary(mod.extreme0)
+mod_results(mod.extreme0, mod="1",data=d, group="species_ID") 
+
+my.orchard(mod.extreme0, xlab="dARR", mod="1", alpha=0.1, data=d, group="species_ID", whisker=0.05)
+```
+
+```{r, eval=F, include=F}
+save(mod.imputed, 
+     mod.concern, 
+     mod.extreme1.25, 
+     mod.extreme0.5, 
+     mod.extreme0.15, 
+     mod.extreme0, 
+     file=here("RData","Sens_risk_bias.RData"))
+
+load(here("Rdata", "Sens_risk_bias.RData")) 
+```
+
+###
+
+
+## *Comparisons with the data from Morley et al. 2019. 10.1111/geb.12911*
+
+In our discussion, we discuss the overall levels of plasticity we report in developing ectotherms, and compare it with the results of previous syntheses. Here, we provide the code used to calculate the estimated ARR measured in Morley et al. 2019
+
+
+```{r}
+d.morley<-read_csv("data/data_Morley_et_al_2019.csv")
+
+# Quick processing
+d.morley<-mutate(d.morley, habitat=ifelse(Habitat=="marine"|Habitat=="freshwater", "aquatic", "terrestrial")) # merge freshwater and marine into "aquatic"
+
+d.morley<-filter(d.morley, life_history=="adult") # Only keep observations for adults for comparison
+
+n_distinct(d.morley$Species) # 278 species
+length(d.morley$ctmax_ARR[d.morley$habitat=="aquatic"]) # 183 effect sizes aquatic
+length(d.morley$ctmax_ARR[d.morley$habitat=="terrestrial"]) # 153 effect sizes terrestrial
+
+library(lme4)
+mod.morley<-lmerTest::lmer(ctmax_ARR ~ 1 + ( 1|Species) + (1|Source), data=d.morley)
+summary(mod.morley)
+
+
+
+# Remove observations classified as "zero"
+d.morley_nozero<-filter(d.morley, ctmax_ARR!="0") # Remove ARR values of zero; as they don't represent sampled data (all negative values were converted to 0)
+
+mod.morley_nozero<-lmerTest::lmer(ctmax_ARR ~ 1 + ( 1|Species) + (1|Source), data=d.morley_nozero)
+summary(mod.morley_nozero)
+```
+
+```{r, eval=F, include=F}
+save(mod.morley, 
+     mod.morley_nozero, 
+     file=here("RData","Morley_model.RData"))
+
+load(here("Rdata", "Morley_model.RData")) 
+
+```
+
+
+# **Figures for publication**
+
+Note that each figure underwent cosmetic changes in Powerpoint. 
+
+## Figure 2 (Design representation)
+
+```{r}
+d_acute<-data.frame(category=c("A", "B", "C"),
+                  count=c(700, 20, 146))
+d_acute$fraction = d_acute$count / sum(d_acute$count)
+d_acute$ymax = cumsum(d_acute$fraction)
+d_acute$ymin = c(0, head(d_acute$ymax, n=-1))
+
+
+ggplot(d_acute, aes(ymax=ymax, ymin=ymin, xmax=4, xmin=2.5, fill=category)) +
+     geom_rect(col="black") +
+     coord_polar(theta="y") + # Try to remove that to understand how the chart is built initially
+     xlim(c(1, 4))+theme_void()+scale_fill_manual(values=c("#7570B3", "#B370AC", "#CDCCE4"))+ 
+    theme(legend.background = element_rect(fill = "transparent"),
+        legend.box.background = element_rect(fill = "transparent"),
+        panel.background = element_rect(fill = "transparent"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        plot.background = element_rect(fill = "transparent", color = NA))
+ggsave("output/acute_effect_sizes.png", height=12, width=12, dpi=800, bg="transparent")
+
+
+
+d_persist<-data.frame(category=c("D", "E", "F"),
+                  count=c(92, 76, 55))
+d_persist$fraction = d_persist$count / sum(d_persist$count)
+d_persist$ymax = cumsum(d_persist$fraction)
+d_persist$ymin = c(0, head(d_persist$ymax, n=-1))
+
+
+ggplot(d_persist, aes(ymax=ymax, ymin=ymin, xmax=4, xmin=2.5, fill=category)) +
+     geom_rect(col="black") +
+     coord_polar(theta="y") + # Try to remove that to understand how the chart is built initially
+     xlim(c(1, 4))+theme_void()+scale_fill_manual(values=c("#1B9E77", "#87EBCD", "#1B829E"))+
+    theme(legend.background = element_rect(fill = "transparent"),
+        legend.box.background = element_rect(fill = "transparent"),
+        panel.background = element_rect(fill = "transparent"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        plot.background = element_rect(fill = "transparent", color = NA))
+ggsave("output/persistent_effect_sizes.png", height=12, width=12, dpi=800, bg="transparent")
+
+```
+
+
+## Figure 3 (Phylogeny)
+
+```{r, fig.width=15, fig.height=15}
+
+design_dat<-d.tree %>% group_by(tip.label) %>% summarise( 
+                                               acute=brought_common_temp=="no", 
+                                               persistent=brought_common_temp=="yes",
+                                               CTmax=metric=="CTmax",
+                                               LT50=metric=="LT50") # Summarise, for each species, whether they tested acute effects, persistent effects, CTmax, or LT50
+
+design_dat<-distinct(design_dat) # Only keep unique rows
+design_dat$acute=as.numeric(design_dat$acute) # convert TRUE/FALSE to binary values
+design_dat$persistent=as.numeric(design_dat$persistent) # convert TRUE/FALSE to binary values
+design_dat$CTmax=as.numeric(design_dat$CTmax)  #convert TRUE/FALSE to binary values
+design_dat$LT50=as.numeric(design_dat$LT50) #convert TRUE/FALSE to binary values
+
+design_dat<-design_dat %>% group_by(tip.label) %>% summarise(acute=sum(acute),        
+                                                             persistent=sum(persistent),
+                                                             CTmax=sum(CTmax),
+                                                             LT50=sum(LT50))# calculate the sum for each species (i.e. if 1, the species has the given design or metric)   
+
+# In some cases, values were repeated, so need to replace "2" values by "1"
+design_dat$acute[design_dat$acute=="2"] <- "1" 
+design_dat$persistent[design_dat$persistent=="2"] <- "1"
+design_dat$CTmax[design_dat$CTmax=="2"] <- "1"
+                                                               
+design_dat$acute=as.factor(design_dat$acute) # convert back to factor for the plot
+design_dat$persistent=as.factor(design_dat$persistent)
+design_dat$CTmax=as.factor(design_dat$CTmax)
+design_dat$LT50=as.factor(design_dat$LT50)
+
+
+design_dat <- mutate(design_dat, 
+                     acute_persistent = 
+                          ifelse(acute=="1"&persistent=="1", "both",
+                          ifelse(acute=="1"&persistent=="0", "acute", "persistent"))) # If both acute and persistent, indicate "both", if only acute, indicate "acute", otherwise indicate "persistent"
+
+design_dat<-mutate(design_dat, metric_type = 
+                     ifelse(CTmax=="1"&LT50=="1", "both", 
+                     ifelse(CTmax=="1"&LT50=="0", "CTmax", "LT50")))
+                                    
+d.tree_plot<-left_join(d.tree_plot, design_dat, by="tip.label")
+
+d.tree_plot$class <- gsub("Holuthuroidea", "Holothuroidea", d.tree_plot$class) # Fixed typo in the Class name
+
+
+p<-ggtree(tree_for_plot, layout="circular", lwd=0.75)
+p <- p %<+% d.tree_plot # link plot to data
+p2<- p+  geom_fruit(geom=geom_tile, mapping=aes(fill=metric_type), width=0.07, offset=0.085, col="black", size=0.3)+scale_fill_manual(values=c("gray70", "white","black"), name="Metric")+theme(legend.direction = "vertical")
+
+p3<- p2 + new_scale_fill()+ geom_fruit(geom=geom_tile, mapping=aes(fill=acute_persistent),offset=0.1,width=0.07, col="black", size=0.3)+scale_fill_manual(values=c("#9994EA","#EAD295","#95EA99"), name="Design")+theme(legend.direction = "vertical")
+
+d.tree_plot$n_es=as.numeric(d.tree_plot$n_es)
+
+p4<-p3 + new_scale_fill() + geom_fruit(geom=geom_bar, mapping=aes(x=n_es, fill=class), stat="identity", col="black",orientation="y", axis.params=list(axis="x", text.angle=-45, hjust=0, text.size=3),grid.params=list(alpha=0.45),offset=0.085, pwidth=0.55, alpha=0.8, size=0.3)+scale_fill_manual(values=c("#00BBDB", "darkslategray4", "darkorange", "chartreuse", "indianred2", "lightsteelblue2", "darkorchid", "darkseagreen1", "deeppink", "darkred", "forestgreen", "darkolivegreen2", "#39568CFF", "darkgoldenrod2"), name="Class") +
+  theme(legend.position="right", legend.spacing.y = unit(5, "pt"), legend.box="vertical", legend.box.just="left", legend.box.spacing = unit(-5, "pt"), legend.text=element_text(size=12), legend.title=element_text(size=14, face="bold"), legend.key.size = unit(20, "pt"))+
+  guides(fill = guide_legend(order=1))# Display number of effect sizes 
+
+p4
+
+#ggsave("output/phylo_tree_pub.svg", width=15, height=15, dpi=1500)
+```
+
+
+## Figure 4 (Meta-analytic mean)
+
+```{r, fig.width=11, fig.height=11}
+
+p1<-my.orchard(int_model, mod="1", xlab="dARR", alpha=0.075, data=d, group="species_ID", whisker=0.06)+
+     scale_fill_manual(values="#F3DF6B")+
+     annotate("text", size=6.5, y=1.75, x=1.075, label=paste("0.190 [0.015, 0.364]"))
+
+
+p2<-my.orchard(mod.adjusted_mean, mod="1", xlab="dARR", alpha=0.075, data=d, group="species_ID", whisker=0.06)+
+     scale_fill_manual(values="#EB7B12")+
+     annotate("text", size=6.5, y=1.75, x=1.075, label=paste("0.134 [0.002, 0.266]"))
+
+
+p1/p2
+
+
+#ggsave("output/meta-analysis_pub.svg", width=11, height=11, dpi=800)
+
+```
+
+
+
+## Figure 5 (Habitat variation)
+
+```{r, fig.width=12, fig.height=8}
+d$habitat=as.factor(d$habitat)
+d$habitat_reordered<-factor(d$habitat, c("terrestrial", "aquatic"))
+
+mod.habitat_het_reordered <-  rma.mv(yi=dARR, 
+                           V=VCV_dARR, 
+                           mods= ~habitat_reordered-1,
+                           method="REML",
+                           test="t",
+                           dfs="contain",
+                           random=list(~1|species_ID,
+                                       ~1|phylogeny,
+                                       ~habitat_reordered|es_ID),
+                           struct="HCS", 
+                           rho=0, 
+                           R = list(phylogeny = phylo_matrix),
+                           data=d,
+                           sparse=TRUE)
+summary(mod.habitat_het_reordered)
+
+
+
+my.orchard(mod.habitat_het_reordered, mod="habitat_reordered", xlab="dARR", alpha=0.1, data=d, group="species_ID", whisker=0.075)+
+     scale_fill_manual(values=c( "#996600", "#33CCCC"))+
+     annotate("text", size=6.5, y=1.75, x=1.08, label=paste("0.051 [-0.091, 0.210]"))+
+     annotate("text", size=6.5, y=1.75, x=2.08, label=paste("0.209 [0.079, 0.338]"))
+     
+
+#("output/habitat_metareg_pub.svg", width=12, height=8, dpi=800)
+
+```
+
+## Figure 6 (Taxonomic variation)
+
+```{r, fig.width=12, fig.height=12}
+# use the  plural for taxonomic groups
+d$taxonomic_group[d$taxonomic_group=="terrestrial invertebrate"] <- "Terrestrial invertebrates" 
+d$taxonomic_group[d$taxonomic_group=="reptile"] <- "Reptiles" 
+d$taxonomic_group[d$taxonomic_group=="amphibian"] <- "Amphibians" 
+d$taxonomic_group[d$taxonomic_group=="aquatic invertebrate"] <- "Aquatic invertebrates" 
+d$taxonomic_group[d$taxonomic_group=="fish"] <- "Fishes" 
+
+
+d$taxonomic_group=as.factor(d$taxonomic_group)
+d$taxonomic_group_reordered<-factor(d$taxonomic_group, c("Terrestrial invertebrates", "Reptiles", "Amphibians", "Aquatic invertebrates", "Fishes"))
+
+mod.taxa_het_reordered <-  rma.mv(yi=dARR, 
+                           V=VCV_dARR, 
+                           mods= ~taxonomic_group_reordered-1,
+                           method="REML",
+                           test="t",
+                           dfs="contain",
+                           random=list(~1|species_ID,
+                                       ~1|phylogeny,
+                                       ~taxonomic_group_reordered|es_ID),
+                           struct="HCS", 
+                           rho=0, 
+                           R = list(phylogeny = phylo_matrix),
+                           data=d,
+                           sparse=TRUE)
+summary(mod.taxa_het_reordered)
+
+
+
+my.orchard(mod.taxa_het_reordered, mod="taxonomic_group_reordered", xlab="dARR", alpha=0.15, data=d, group="species_ID", whisker=0.075)+ 
+     scale_fill_manual(values=c("#B39070", "#8CBC4E", "#9AFB70", "#79D9F1", "#8DECE4"))+
+     annotate("text", size=6, y=1.75, x=1.14, label=paste("0.049 [-0.230, 0.328]"))+
+     annotate("text", size=6, y=1.75, x=2.14, label=paste("0.070 [-0.273, 0.413]"))+
+     annotate("text", size=6, y=1.75, x=3.14, label=paste("0.197 [-0.152, 0.545]"))+
+     annotate("text", size=6, y=1.75, x=4.14, label=paste("0.199 [-0.055, 0.454]"))+
+     annotate("text", size=6, y=1.75, x=5.14, label=paste("0.254 [0.004, 0.504]"))
+
+#ggsave("output/taxa_metareg_pub.svg", width=12, height=12, dpi=800)
+
+
+```
+
+
+## Figure 7 (Life history variation and persistence)
+
+```{r, fig.width=14, fig.height=20}
+d$design_reordered<-factor(d$exp_design, c("F", "E", "D", "C", "B", "A"))
+mod.design_het_reordered <-  rma.mv(yi=dARR, 
+                           V=VCV_dARR, 
+                           mods= ~design_reordered-1,
+                           method="REML",
+                           test="t",
+                           dfs="contain",
+                           random=list(~1|species_ID,
+                                       ~1|phylogeny,
+                                       ~design_reordered|es_ID),
+                           struct="HCS", 
+                           rho=0, 
+                           R = list(phylogeny = phylo_matrix),
+                           data=d,
+                           sparse=TRUE)
+summary(mod.design_het_reordered)
+
+
+p1<-my.orchard(mod.design_het_reordered, mod="design_reordered", xlab="dARR", alpha=0.15, data=d, group="species_ID", whisker=0.1)+
+     scale_fill_manual(values=c("#1B829E","#87EBCD", "#1B9E77", "#CDCCE4", "#B370AC", "#9C98C9"))+
+     annotate("text", size=6, y=1.75, x=1.15, label=paste("0.102 [-0.052, 0.255]"))+ # F
+     annotate("text", size=6, y=1.75, x=2.15, label=paste("0.118 [-0.044, 0.280]"))+ # E
+     annotate("text", size=6, y=1.75, x=3.15, label=paste("-0.082 [-0.248, 0.085]"))+ # D
+     annotate("text", size=6, y=1.75, x=4.15, label=paste("0.250 [0.097, 0.404]"))+ # C
+     annotate("text", size=6, y=1.75, x=5.15, label=paste("0.098 [-0.210, 0.406]"))+ # B
+     annotate("text", size=6, y=1.75, x=6.15, label=paste("0.230 [0.085, 0.376]")) + # A
+     ylim(-2.5,3)
+
+#ggsave("output/design_metareg_pub.png", width=12, height=12, dpi=800)
+
+     
+p2<-my.orchard(mod.persist_het, mod="brought_common_temp", xlab="dARR", alpha=0.1, data=d, group="species_ID", whisker=0.075)+
+     scale_fill_manual(values=c("#7570B3", "#1B9E77"))+
+     annotate("text", size=6, y=1.75, x=1.1, label=paste("0.224 [0.086, 0.363]"))+
+     annotate("text", size=6, y=1.75, x=2.1, label=paste("0.048 [-0.095, 0.192]"))+
+     ylim(-2.5, 3)
+
+#ggsave("output/persist_metareg_pub.png", width=12, height=8, dpi=800)
+
+
+p1/p2 + plot_layout(heights=c(12,8))
+
+#ggsave("output/designs_persist.svg", width=14, height=20, dpi=1400)
+
+```
+
+
+
+
+# **Software and packages versions** 
+
+```{r}
+sessionInfo()
+```
+
+
