@@ -332,7 +332,7 @@ get_data_raw_cont <- function(model, mod, group, N = NULL, data, by){
   vi <- model$vi
   type <- attr(model$yi, "measure")
   # Get moderator
-  moderator <- data[ , mod][[1]] # Could default to base instead of tidy
+  moderator <- data[[mod]] # Could default to base instead of tidy
   #names(moderator) <  "moderator"
   if(is.null(by)){
   condition <- data[ , by]
@@ -370,7 +370,7 @@ get_data_raw_cont <- function(model, mod, group, N = NULL, data, by){
 firstup <- function(x, upper = TRUE) {
         if(upper){
         substr(x, 1, 1) <- toupper(substr(x, 1, 1))
-        x 
+        x
         } else{ x }
       }
 
