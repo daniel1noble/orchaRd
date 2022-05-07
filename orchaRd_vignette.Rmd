@@ -429,6 +429,31 @@ orchaRd::orchard_plot(HetModel2, xlab = "lnRR", data = warm_dat, angle = 45, g =
 
 Now, the orchard plot depicts the mean effect sizes (plus 95% CI and PI) for each trait category, at 5, 10 and 15 degrees Celsius when the treatment duration is 10 days. 
 
+
+#### Heterogeneous variance models at multiple levels
+
+```{r}
+pottier_data <- read.csv("./MS/misc/Processed_data.csv")
+```
+
+```{r}
+##### Heteroscedasticity modeled at the effect size level
+mod.habitat_het <-  rma.mv(yi=dARR, 
+                           V=VCV_dARR, # run the model, as described earlier
+                           mods= ~habitat-1,
+                           method="REML",
+                           test="t",
+                           dfs="contain",
+                           random=list(~1|species_ID,
+                                       ~1|phylogeny,
+                                       ~habitat|es_ID), # To model heteroscedasticity at the effect size level, for each habitat
+                           struct="HCS", # heteroscedastic compound symmetric structure
+                           rho=0, # Correlation of 0 for the HCS structure
+                           R = list(phylogeny = phylo_matrix),
+                           data=d,
+                           sparse=TRUE)
+```
+
 \newpage
 # References
 
