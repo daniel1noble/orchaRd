@@ -433,14 +433,15 @@ Now, the orchard plot depicts the mean effect sizes (plus 95% CI and PI) for eac
 #### Heterogeneous variance models at multiple levels
 
 ```{r}
-pottier_data <- read.csv("./MS/misc/Processed_data.csv")
+rm(list = ls())
+load("./MS/misc/processed_data.RData")
 ```
 
 ```{r}
 ##### Heteroscedasticity modeled at the effect size level
 mod.habitat_het <-  rma.mv(yi=dARR, 
                            V=VCV_dARR, # run the model, as described earlier
-                           mods= ~habitat-1,
+                           mods= ~habitat,
                            method="REML",
                            test="t",
                            dfs="contain",
@@ -450,8 +451,7 @@ mod.habitat_het <-  rma.mv(yi=dARR,
                            struct="HCS", # heteroscedastic compound symmetric structure
                            rho=0, # Correlation of 0 for the HCS structure
                            R = list(phylogeny = phylo_matrix),
-                           data=d,
-                           sparse=TRUE)
+                           data=d)
 ```
 
 \newpage
