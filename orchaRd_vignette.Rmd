@@ -11,6 +11,8 @@ output:
     toc: yes
     toc_depth: 6
     toc_float: yes
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
@@ -46,7 +48,7 @@ To install `orchaRd` use the following code in R:
 #install.packages("pacman")
 rm(list = ls())
 devtools::install_github("daniel1noble/orchaRd", force = TRUE)
-pacman::p_load(devtools, tidyverse, metafor, patchwork, R.rsp, orchaRd, emmeans)
+pacman::p_load(devtools, tidyverse, metafor, patchwork, R.rsp, orchaRd, emmeans, ape, phytools)
 ```
 
 Installation will make the primary functions accessible to users along with their help files. You will also need the `tidyverse` and `metafor` packages.
@@ -452,6 +454,8 @@ mod.habitat_het <-  rma.mv(yi=dARR,
                            rho=0, # Correlation of 0 for the HCS structure
                            R = list(phylogeny = phylo_matrix),
                            data=d)
+
+orchard_plot(mod.habitat_het, data = d, group = "species_ID", mod = "habitat", xlab = "dARR", angle = 45)
 ```
 
 \newpage
