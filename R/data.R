@@ -107,3 +107,133 @@ NULL
 #' @name fish
 #' @docType data
 NULL
+
+#' @title pottier
+#' @description Pottier et al. (2021) meta-analysis on sex-differences in acclimation
+#' @format A data frame :
+#' \describe{
+#'   \item{initials}{}
+#'   \item{es_ID}{}
+#'   \item{study_ID}{}
+#'   \item{species_ID}{}
+#'   \item{population_ID}{}
+#'   \item{family_ID}{}
+#'   \item{shared_trt_ID}{}
+#'   \item{cohort_ID}{}
+#'   \item{note_ID}{}
+#'   \item{data_source}{}
+#'   \item{data_url}{}
+#'   \item{fig_file_name}{}
+#'   \item{data_type}{}
+#'   \item{data_file_name}{}
+#'   \item{peer.reviewed}{}
+#'   \item{ref}{}
+#'   \item{title}{}
+#'   \item{pub_year}{}
+#'   \item{journal}{}
+#'   \item{thesis_chapter}{}
+#'   \item{doi}{}
+#'   \item{citation}{}
+#'   \item{phylum}{}
+#'   \item{class}{}
+#'   \item{order}{}
+#'   \item{family}{}
+#'   \item{genus}{}
+#'   \item{species}{}
+#'   \item{genus_species}{}
+#'   \item{habitat}{}
+#'   \item{taxonomic_group}{}
+#'   \item{reproduction_mode}{}
+#'   \item{life_stage_manip}{}
+#'   \item{life_stage_tested}{}
+#'   \item{brought_common_temp}{}
+#'   \item{mobility_life_stage_manip}{}
+#'   \item{time_common_temp}{}
+#'   \item{common_temp}{}
+#'   \item{exp_design}{}
+#'   \item{origin_hatching}{}
+#'   \item{latitude}{}
+#'   \item{longitude}{}
+#'   \item{elevation}{}
+#'   \item{season}{}
+#'   \item{year}{}
+#'   \item{body_length}{}
+#'   \item{body_mass}{}
+#'   \item{age_tested}{}
+#'   \item{sex}{}
+#'   \item{housing_temp}{}
+#'   \item{incubation_independent}{}
+#'   \item{metric}{}
+#'   \item{endpoint}{}
+#'   \item{acc_temp_low}{}
+#'   \item{acc_temp_high}{}
+#'   \item{acc_temp_var}{}
+#'   \item{is_acc_temp_fluctuating}{}
+#'   \item{acc_duration}{}
+#'   \item{ramping}{}
+#'   \item{set_time}{}
+#'   \item{n_test_temp}{}
+#'   \item{n_replicates_per_temp}{}
+#'   \item{n_animals_per_replicate}{}
+#'   \item{humidity}{}
+#'   \item{oxygen}{}
+#'   \item{salinity}{}
+#'   \item{pH}{}
+#'   \item{photoperiod}{}
+#'   \item{gravidity}{}
+#'   \item{starved}{}
+#'   \item{minor_concerns}{}
+#'   \item{major_concerns}{}
+#'   \item{notes_moderators}{}
+#'   \item{mean_HT_low}{}
+#'   \item{sd_HT_low}{}
+#'   \item{n_HT_low}{}
+#'   \item{mean_HT_high}{}
+#'   \item{sd_HT_high}{}
+#'   \item{n_HT_high}{}
+#'   \item{error_type}{}
+#'   \item{notes_es}{}
+#'   \item{exclude}{}
+#'   \item{n_trt}{}
+#'   \item{n_cohort}{}
+#'   \item{within_study_mean_low}{}
+#'   \item{within_study_mean_high}{}
+#'   \item{within_study_sd_low}{}
+#'   \item{within_study_sd_high}{}
+#'   \item{between_study_mean_low}{}
+#'   \item{between_study_mean_high}{}
+#'   \item{between_study_sd_low}{}
+#'   \item{between_study_sd_high}{}
+#'   \item{imputed}{}
+#'   \item{imputed_sd_low}{}
+#'   \item{imputed_sd_high}{}
+#'   \item{dARR}{}
+#'   \item{Var_dARR}{}
+#'   \item{precision}{}
+#'   \item{is_concern}{}
+#'   \item{search_string}{}
+#'   \item{unique_name}{}
+#'   \item{ott_id}{}
+#'   \item{phylogeny}{}
+#'   ...
+#' }
+#' @references Pottier et al. 2022. Functional Ecology
+#' @name pottier
+#' @docType data
+NULL
+
+#' @title phylo_matrix
+#' @description Phylogenetic matrix used in Pottier et al. (2021) meta-analysis on sex-differences in acclimation
+#' @format A phylogenetic correlation matrix :
+#' @references Pottier et al. 2022. Functional Ecology
+#' @name phylo_matrix
+#' @docType data
+NULL
+
+#' @title VCV_dARR
+#' @description Sampling error matrix used in Pottier et al. (2021) meta-analysis on sex-differences in acclimation
+#' @format A sampling variance matrix :
+#' @references Pottier et al. 2022. Functional Ecology
+#' @name VCV_dARR
+#' @docType data
+NULL
