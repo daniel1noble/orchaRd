@@ -48,7 +48,7 @@ To install `orchaRd` use the following code in R:
 #install.packages("pacman")
 rm(list = ls())
 devtools::install_github("daniel1noble/orchaRd", force = TRUE)
-pacman::p_load(devtools, tidyverse, metafor, patchwork, R.rsp, orchaRd, emmeans, ape, phytools)
+pacman::p_load(devtools, tidyverse, metafor, patchwork, R.rsp, orchaRd, emmeans, ape, phytools, flextable)
 ```
 
 Installation will make the primary functions accessible to users along with their help files. You will also need the `tidyverse` and `metafor` packages.
@@ -372,6 +372,48 @@ orchaRd::orchard_plot(het_model, xlab = "lnRR", data = warm_dat)
 
 We can now see from Figure \@ref(fig:figure12) that the variance in effects for the morphological and physiological trait categories are smaller than for life-history and behavioural trait categories; likely because of the very small sample sizes in the latter trait categories.
 
+As a second example, we can turn to Pottier et al. 2021 who did a meta-analysis comparing acclimation differences between males and females. Pottier et al. 2021 found that aquatic and terrestrial systems differed in their variability of effects. Here, we'll also show how phylogenetic correlation matrices can be incorporated wiithin the models and work with orchaRd.
+
+```{r, echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE, class.source='klippy'}
+# Clear working space
+rm(list = ls())
+
+# Load the data
+data("pottier")
+
+# Load the phylogenetic correlation matrix
+data("phylo_matrix")
+
+# Load the sampling variance matrix
+data("VCV_dARR")
+```
+
+Now that we have all the data and matrices loaded, we can fit the multi-level mete-regression model. 
+
+```{r, echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE, class.source='klippy'}
+##### Heteroscedasticity modeled at the effect size level
+mod.habitat_het <-  rma.mv(yi=dARR, 
+                           V=VCV_dARR, # run the model, as described earlier
+                           mods= ~habitat,
+                           method="REML",
+                           test="t",
+                           dfs="contain",
+                           random=list(~1|species_ID,
+                                       ~1|phylogeny,
+                                       ~habitat|es_ID), # To model heteroscedasticity at the effect size level, for each habitat
+                           struct="HCS", # heteroscedastic compound symmetric structure
+                           rho=0, # Correlation of 0 for the HCS structure
+                           R = list(phylogeny = phylo_matrix),
+                           data=pottier)
+mod.habitat_het
+```
+
+Now we can produce an `orchaRd` plot using this model to show the unequal variance in the two habitat types. 
+
+```{r, figsure13a fig.cap = "Orchard plot with heteroscedastic error for habitat type", echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE, class.source='klippy'}
+orchard_plot(mod.habitat_het, data = pottier, group = "species_ID", mod = "habitat", xlab = "dARR", angle = 45)
+flextable::flextable(mod_results(mod.habitat_het, data = pottier, group = "species_ID", mod = "habitat")$mod_table)
+```
 
 #### Example 5: Meta-regression and marginalised mean effect sizes
 
@@ -430,33 +472,6 @@ orchaRd::orchard_plot(HetModel2, xlab = "lnRR", data = warm_dat, angle = 45, g =
 ```
 
 Now, the orchard plot depicts the mean effect sizes (plus 95% CI and PI) for each trait category, at 5, 10 and 15 degrees Celsius when the treatment duration is 10 days. 
-
-
-#### Heterogeneous variance models at multiple levels
-
-```{r}
-rm(list = ls())
-load("./MS/misc/processed_data.RData")
-```
-
-```{r}
-##### Heteroscedasticity modeled at the effect size level
-mod.habitat_het <-  rma.mv(yi=dARR, 
-                           V=VCV_dARR, # run the model, as described earlier
-                           mods= ~habitat,
-                           method="REML",
-                           test="t",
-                           dfs="contain",
-                           random=list(~1|species_ID,
-                                       ~1|phylogeny,
-                                       ~habitat|es_ID), # To model heteroscedasticity at the effect size level, for each habitat
-                           struct="HCS", # heteroscedastic compound symmetric structure
-                           rho=0, # Correlation of 0 for the HCS structure
-                           R = list(phylogeny = phylo_matrix),
-                           data=d)
-
-orchard_plot(mod.habitat_het, data = d, group = "species_ID", mod = "habitat", xlab = "dARR", angle = 45)
-```
 
 \newpage
 # References
