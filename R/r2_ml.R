@@ -22,6 +22,8 @@ r2_ml <- function(model, data, boot = NULL) {
   R2 <- R2_calc(model)
 
   if(!is.null(boot)){
+
+    if(any(class(model) %in% c("robust.rma")) == TRUE){stop("Sorry, bootstrapping currently doesn't work for robust.rma objects. Please use rma.mv instead.")}
     # Simulate the vector of effect sizes
     sim <- metafor::simulate.rma(model, nsim=boot)
 
@@ -72,7 +74,7 @@ return(R2)
 #' @export
 
 R2_calc <- function(model){
-  if(all(class(model) %in% c("rma.mv", "rma")) == FALSE) {stop("Sorry, you need to fit a metafor model of class rma.mv or rma")}
+  if(all(class(model) %in% c("robust.rma", "rma.mv", "rma", "rma.uni")) == FALSE) {stop("Sorry, you need to fit a metafor model of class robust.rma, rma.mv, rma, rma.uni")}
   # fixed effect variance
   fix <- stats::var(as.numeric(as.vector(model$b) %*% t(as.matrix(model$X))))
 

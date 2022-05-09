@@ -126,7 +126,7 @@ i2_ml <- function(model, method = c("ratio", "matrix"), data, boot = NULL) {
 #' @export
 matrix_i2 <- function(model){
 
-  if(all(class(model) %in% c("rma.mv", "rma")) == FALSE) {stop("Sorry, you need to fit a metafor model of class rma.mv or rma")}
+  if(all(class(model) %in% c("robust.rma", "rma.mv", "rma", "rma.uni")) == FALSE) {stop("Sorry, you need to fit a metafor model of class robust.rma, rma.mv, rma, rma.uni")}
 
     W <- solve(model$V)
     X <- model.matrix(model)
@@ -158,7 +158,7 @@ matrix_i2 <- function(model){
 #' @export
 ratio_i2 <- function(model){
 
-  if(all(class(model) %in% c("rma.mv", "rma")) == FALSE) {stop("Sorry, you need to fit a metafor model of class rma.mv or rma")}
+  if(all(class(model) %in% c("robust.rma", "rma.mv", "rma", "rma.uni")) == FALSE) {stop("Sorry, you need to fit a metafor model of class robust.rma, rma.mv, rma, rma.uni")}
 
   # sigma2_v = typical sampling error variance
   sigma2_v <- sum(1 / model$vi) * (model$k - 1) /
