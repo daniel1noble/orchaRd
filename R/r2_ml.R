@@ -17,7 +17,7 @@
 #' @export
 r2_ml <- function(model, data, boot = NULL) {
 
-  if(all(class(model) %in% c("rma.mv", "rma")) == FALSE) {stop("Sorry, you need to fit a metafor model of class rma.mv or rma")}
+  if(all(class(model) %in% c("robust.rma", "rma.mv", "rma", "rma.uni")) == FALSE) {stop("Sorry, you need to fit a metafor model of class robust.rma, rma.mv, rma, rma.uni")}
 
   R2 <- R2_calc(model)
 
