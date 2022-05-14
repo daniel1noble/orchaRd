@@ -59,7 +59,7 @@ In this vignette we'll walk the reader through a number of case studies and show
 
 #### Example 1: Dietary Restriction and Lifespan
 
-English and Uller (2016) performed a systematic review and meta-analysis on the effects of early life dietary restriction (a reduction in a major component of the diet without malnutrition; e.g. caloric restriction) on average age at death, using the standardised mean difference (often called *d*). They found that, across the whole data set, there was little evidence for an effect of dietary restriction on mean age at death. Here we'll use the data set to first calculate the effect size measures and then fit an intercept only, meta-analytic model.
+@EnglishUller2016 performed a systematic review and meta-analysis on the effects of early life dietary restriction (a reduction in a major component of the diet without malnutrition; e.g. caloric restriction) on average age at death, using the standardised mean difference (often called *d*). They found that, across the whole data set, there was little evidence for an effect of dietary restriction on mean age at death. Here we'll use the data set to first calculate the effect size measures and then fit an intercept only, meta-analytic model.
 
 ```{r echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE, class.source='klippy'}
 
@@ -117,7 +117,7 @@ orchaRd::caterpillars(model_results, mod="Int", xlab = "Standardised mean differ
 
 It is now interesting to compare how the same data set can be visualised different by look at Figure \@ref(fig:Figure2) and Figure \@ref(fig:Figure3). It is good that the caterpillar plot can show CIs for each effect size. An equivalent function was done with the size of fruit in the orchard plot. 
 
-In a subsequent publication, Senior et al. (2017) analysed this data set for effects of dietary-restriction on among-individual variation in the age at death using the log coefficient of variation ratio. A major prediction in both English & Uller (2016) and Senior et al. (2017) was that the type of manipulation, whether the study manipulated quality of food versus the quantity of food would be important. As such, we can fit a meta-regression model to test whether the moderator "Manipulation Type" `ManipType` impacts our results on the mean and variance
+In a subsequent publication, @Senior2017 analysed this data set for effects of dietary-restriction on among-individual variation in the age at death using the log coefficient of variation ratio. A major prediction in both @EnglishUller2016 and @Senior2017 was that the type of manipulation, whether the study manipulated quality of food versus the quantity of food would be important. As such, we can fit a meta-regression model to test whether the moderator "Manipulation Type" `ManipType` impacts our results on the mean and variance
 
 ```{r Figure4, class.source='klippy', warning=FALSE, message=FALSE, fig.width = 6, fig.height = 8, fig.cap = "Orchard plot of diet qualities impact on SMD (top) and log coefficient of variation (bottom)"}
 # First we need to calculate the lnCVR
@@ -176,7 +176,7 @@ Now compare between Figure \@ref(fig:Figure4) and Figure \@ref(fig:Figure5). We 
 
 #### Example 2: Predation and Invertebrate Community
 
-Eklof et al. (2012) evaluated the effects of predation on benthic invertebrate communities. Using the log response ratio they quantified differences in abundance and/or biomass of gastropods and Amphipods in groups with and without predation in an experimental setting. 
+@Eklof2012 evaluated the effects of predation on benthic invertebrate communities. Using the log response ratio they quantified differences in abundance and/or biomass of gastropods and Amphipods in groups with and without predation in an experimental setting. 
 
 Here again, we can create orchard plots of the model results, but we'll show how a few simple things can be modified. Again, we can fit the meta-analytic model first: 
 
@@ -251,9 +251,9 @@ Like last time, we compare between Figure \@ref(fig:Figure7) and Figure \@ref(fi
 
 #### Example 3: Maternal-Offspring Morphological Correlations
 
-Finally, we also look at the case discussed by Lim et al. (2014), who meta-analysed the strength of correlation between maternal and offspring size within-species, across a very wide range of taxa. They found, that typically, there is a moderate positive correlation between maternal size and offspring size within species (i.e. larger mothers have larger offspring). However, they also found evidence for relatively strong phylogenetic effects suggesting that the strength of the association is dependent on evolutionary lineage.
+Finally, we also look at the case discussed by @Lim2014, who meta-analysed the strength of correlation between maternal and offspring size within-species, across a very wide range of taxa. They found, that typically, there is a moderate positive correlation between maternal size and offspring size within species (i.e. larger mothers have larger offspring). However, they also found evidence for relatively strong phylogenetic effects suggesting that the strength of the association is dependent on evolutionary lineage.
 
-Here we have used an orchard plot to represent the results obtained when meta-analysing the data from Lim et al. (2014) by taxonomic Phylum. 
+Here we have used an orchard plot to represent the results obtained when meta-analysing the data from @Lim2014 by taxonomic Phylum. 
 
 ```{r echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE, class.source='klippy'}
 	data(lim)
@@ -291,7 +291,7 @@ annotate(geom="text", x=0.8, y=0.7, label=paste0("italic(R)^{2} == ", round(R2[1
 
 ```
 
-As in Figure \@ref(fig:Figure10), new elements can be added to the `orchard_plot` to modify it as one sees fit. It will overwrite existing elements. From our orchard plots above, it is clear that the analysis is dominated by data from Chordates and Arthropods, with the other Phyla being much more poorly represented. Second, there is a difference between the strength of a typical correlation within these two well represented groups (the correlation is stronger in Chordates), which arguably would explain the phylogenetic signals detected by Lim et al. (2014). Lastly, although there are differences within the typical correlation between Chordates and Arthropods, there remains a large overlap in predicted range of individual effect sizes; individual species within Phyla are still highly variable.
+As in Figure \@ref(fig:Figure10), new elements can be added to the `orchard_plot` to modify it as one sees fit. It will overwrite existing elements. From our orchard plots above, it is clear that the analysis is dominated by data from Chordates and Arthropods, with the other Phyla being much more poorly represented. Second, there is a difference between the strength of a typical correlation within these two well represented groups (the correlation is stronger in Chordates), which arguably would explain the phylogenetic signals detected by @Lim2014. Lastly, although there are differences within the typical correlation between Chordates and Arthropods, there remains a large overlap in predicted range of individual effect sizes; individual species within Phyla are still highly variable.
 
 Finally, we make a comparable caterpillars plot.
 ```{r Figure11, echo = TRUE, eval = TRUE, class.source='klippy', warning=FALSE, message=FALSE, fig.width = 6, fig.height = 10, fig.cap = "Caterpillars plot of the the strength of correlation between maternal and offspring size within-species"}
