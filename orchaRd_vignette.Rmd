@@ -28,11 +28,11 @@ klippy::klippy(tooltip_message = 'Click to Copy Code', tooltip_success = 'Done',
 
 # Introduction
 
-`orchaRd` 2.0 allows users to create pretty orchard plots that contain both confidence intervals (CIs) and prediction intervals (PIs) around point estimates for different categorical moderators, plots the effect size distribution over top such estimates and weights effect sizes by their precision (1/standard error, SE) or sample size. `orchaRd` takes a `metafor` object of class `rma.mv` or `rma` (Viechtbauer, 2010) and plots the results for the meta-analytic or meta-regression model. 
+`orchaRd` 2.0 allows users to create pretty orchard plots that contain both confidence intervals (CIs) and prediction intervals (PIs) around point estimates for different categorical moderators, plots the effect size distribution over top such estimates and weights effect sizes by their precision (1/standard error, SE) or sample size. `orchaRd` takes a `metafor` object of class `rma.mv` or `rma` [@Viechtbauer2010] and plots the results for the meta-analytic or meta-regression model. 
 
-`orchaRd` 2.0 now allows users to take meta-regression models with a multitude of moderator variables that are categorical or continuous along with heterogeneous residual variance models. This is achieved by allowing the user to produce marginalised mean estimates using the `emmeans` package. For plotting, `orchaRd` uses `ggplot2` (Wickham, 2009), and as such, layers can be added directly to make plots customizable to the users needs. Also, the function `orchard_plot` uses the principles of bee swarm plots to visualise individual effect sizes (Elund 2012; also see Clarke & Sherrill-Mix 2012; Sherrill-Mix & Clarke 2012).
+`orchaRd` 2.0 now allows users to take meta-regression models with a multitude of moderator variables that are categorical or continuous along with heterogeneous residual variance models. This is achieved by allowing the user to produce marginalised mean estimates using the `emmeans` package. For plotting, `orchaRd` uses `ggplot2` [@Wickham2009], and as such, layers can be added directly to make plots customizable to the users needs. Also, the function `orchard_plot` uses the principles of bee swarm plots to visualise individual effect sizes [@Eklund2012; see also @Clarke2017; @Sherrill-Mix2017].
 
-In addition to orchard plots, we have another plotting function `caterpillars` to draw caterpillar(s) plots. Furthermore, the pacakge `orchaRd` comes with two functions that are useful for multilevel meta-analysis and meta-regression (i.e., `rma.mv`): 1) `i2_ml` to calculate the 'total' I^2^ along with I^2^ for each level (*sensu* Nakagawa & Santos 2012; see also ; Senior et al. 2016) and 2) `r2_ml` to calcuate marginal and conditional R^2^ for mixed models (*sensu* Nakagawa & Schielzeth 2013). 
+In addition to orchard plots, we have another plotting function `caterpillars` to draw caterpillar(s) plots. Furthermore, the package `orchaRd` comes with two functions that are useful for multilevel meta-analysis and meta-regression (i.e., `rma.mv`): 1) `i2_ml` to calculate the 'total' I^2^ along with I^2^ for each level [*sensu* @NakagawaSantos2012; see also @Senior2016] and 2) `r2_ml` to calculate marginal and conditional R^2^ for mixed models [*sensu* @Nakagawa2013].
 
 # Citing orchaRd
 
@@ -476,26 +476,4 @@ Now, the orchard plot depicts the mean effect sizes (plus 95% CI and PI) for eac
 \newpage
 # References
 
-Clarke E, Sherrill-Mix S. ggbeeswarm: categorical scatter (violin point) plots. 2017. *R package* version 0.6.0 
 
-Eklof J.S., Alsterberg C., Havenhand J.N., Sundback K., Wood H.L., Gamfeldt L. 2012. Experimental climate change weakens the insurance effect of biodiversity. *Ecology Letters*, 15:864-872.
-
-Eklund A. Beeswarm: the bee swarm plot, an alternative to stripchart. 2012. *R package* version 0.1. 
-
-English S, Uller T. 2016. Does early-life diet affect longevity? A meta-analysis across experimental studies. *Biology Letters*, 12: http://doi:10.1098/rsbl.2016.0291
-
-Lim J.N., Senior A.M., Nakagawa S. 2014. Heterogeneity in individual quality and reproductive trade-offs within species. *Evolution*. 68(8):2306-18. doi: 10.1111/evo.12446
-
-Nakagawa, S, and Santos, E.S.A. 2012. Methodological issues and advances in biological meta-analysis. *Evolutionary Ecology* 26(5): 1253-1274.
-
-Nakagawa, S, and Schielzeth, H. 2013. A general and simple method for obtaining R2 from generalized linear mixed‐effects models. *Methods in Ecology and Evolution* 4(2): 133-142.
-
-Sherrill-Mix S, Clarke E. Plot categorical data using quasirandom noise and density estimates. 2017. *R package* version 0.4.5. 
-
-Senior, A. M., Grueber, C. E., Kamiya, T., Lagisz, M., O’Dwyer, K., Santos, E. S. A. & Nakagawa S. 2016. Heterogeneity in ecological and evolutionary meta-analyses: its magnitudes and implications. *Ecology* 97(12): 3293-3299.
-
-Senior, A.M., Nakagawa, S., Simpson, S.J., Raubenheimer, D., Noble D.W.A. 2017. Dietary restriction increases variability in longevity. *Biology Letters*, 13: http://doi.org/10.1098/rsbl.2017.0057
-
-Viechtbauer W. 2010. Conducting meta-analyses in R with the metafor package. *Journal of Statistical Software*, 36(3):1-48.
-
-Wickham H. 2009. ggplot2: elegant graphics for data analysis. New York ; London: Springer.
