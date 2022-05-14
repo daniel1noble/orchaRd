@@ -4,6 +4,8 @@ author: "S. Nakagawa, M. Lagisz, R. E. O’Dea, J. Rutkowska, Y. Yang, D.W.A. No
 date: "`r Sys.Date()`"
 geometry: margin=1.5cm
 fontsize: 10pt
+bibliography: ./bib/refs.bib
+csl: ./bib/methods-in-ecology-and-evolution.csl
 output: 
   bookdown::html_document2:
     code_folding: hide
@@ -410,7 +412,7 @@ mod.habitat_het
 
 Now we can produce an `orchaRd` plot using this model to show the unequal variance in the two habitat types. 
 
-```{r, figsure13a fig.cap = "Orchard plot with heteroscedastic error for habitat type", echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE, class.source='klippy'}
+```{r, figsure13a, fig.cap = "Orchard plot with heteroscedastic error for habitat type", echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE, class.source='klippy'}
 orchard_plot(mod.habitat_het, data = pottier, group = "species_ID", mod = "habitat", xlab = "dARR", angle = 45)
 flextable::flextable(mod_results(mod.habitat_het, data = pottier, group = "species_ID", mod = "habitat")$mod_table)
 ```
