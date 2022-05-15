@@ -4,7 +4,7 @@ author: "S. Nakagawa, M. Lagisz, R. E. O’Dea, J. Rutkowska, Y. Yang, D.W.A. No
 date: "`r Sys.Date()`"
 geometry: margin=1.5cm
 fontsize: 10pt
-bibliography: ./bib/refs.bib
+bibliography: ./bib/ref.bib
 csl: ./bib/methods-in-ecology-and-evolution.csl
 output: 
   bookdown::html_document2:
@@ -331,7 +331,7 @@ In this section, we show users: 1) how to fit these models using `metafor` and 2
 
 Meta-regression models with single categorical moderators are extremely common. Meta-analyst's want to estimate the mean effect size within levels of a moderator and test whether these means are significantly different from each other. One inherent assumption to fitting these models is that we are assuming that the within study (or residual) variance within these groups is the same (i.e., "homogeneity of variance assumption"). This assumption will likely be violated in many situations in meta-regression models. Unless one conducts a sub-group analysis for each level of the moderator (although this is less powerful and makes it hard to test whether levels are significantly different) different residual variances need to be explicitly modeled in `metafor`. Fortunately, this can be done. `orchaRd` 2.0 now allows plotting of these models with their corresponding CI's and PI's.
 
-We'll work with a meta-analysis by O'Dea et al. 2019. In this meta-analysis, the authors were interested in testing whether developmental temperature in fish had an effect on mean and variance in a host of phenotypic traits. They used experimental studies manipulating developmental temperatures using the log response ratio (`lnrr`) and the log coefficient of variation (`lncvr`) as their effect sizes. We'll only focus on `lnrr` here for demonstration purposes. Importantly, they categorised effect sizes as having come from one of 4 trait categories: Behaviour, Life-history, Morphology and Physiology. They were interested in whether developmental temperature impact trait types differently. We'll first explore how to fit a meta-regression model that explicitly estimates residual variance in each of these trait levels. 
+We'll work with a meta-analysis by @ODea2019. In this meta-analysis, the authors were interested in testing whether developmental temperature in fish had an effect on mean and variance in a host of phenotypic traits. They used experimental studies manipulating developmental temperatures using the log response ratio (`lnrr`) and the log coefficient of variation (`lncvr`) as their effect sizes. We'll only focus on `lnrr` here for demonstration purposes. Importantly, they categorised effect sizes as having come from one of 4 trait categories: Behaviour, Life-history, Morphology and Physiology. They were interested in whether developmental temperature impact trait types differently. We'll first explore how to fit a meta-regression model that explicitly estimates residual variance in each of these trait levels. 
 
 First, load the data. 
 ```{r echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE, class.source='klippy'}
@@ -374,7 +374,7 @@ orchaRd::orchard_plot(het_model, xlab = "lnRR", data = warm_dat)
 
 We can now see from Figure \@ref(fig:figure12) that the variance in effects for the morphological and physiological trait categories are smaller than for life-history and behavioural trait categories; likely because of the very small sample sizes in the latter trait categories.
 
-As a second example, we can turn to Pottier et al. 2021 who did a meta-analysis comparing acclimation differences between males and females. Pottier et al. 2021 found that aquatic and terrestrial systems differed in their variability of effects. Here, we'll also show how phylogenetic correlation matrices can be incorporated wiithin the models and work with orchaRd.
+As a second example, we can turn to @Pottier2021 who did a meta-analysis comparing acclimation differences between males and females. @Pottier2021 found that aquatic and terrestrial systems differed in their variability of effects. Here, we'll also show how phylogenetic correlation matrices can be incorporated wiithin the models and work with orchaRd.
 
 ```{r, echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE, class.source='klippy'}
 # Clear working space
@@ -392,21 +392,10 @@ data("VCV_dARR")
 
 Now that we have all the data and matrices loaded, we can fit the multi-level mete-regression model. 
 
-```{r, echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE, class.source='klippy'}
+```{r, pot_model, echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE, class.source='klippy'}
 ##### Heteroscedasticity modeled at the effect size level
-mod.habitat_het <-  rma.mv(yi=dARR, 
-                           V=VCV_dARR, # run the model, as described earlier
-                           mods= ~habitat,
-                           method="REML",
-                           test="t",
-                           dfs="contain",
-                           random=list(~1|species_ID,
-                                       ~1|phylogeny,
-                                       ~habitat|es_ID), # To model heteroscedasticity at the effect size level, for each habitat
-                           struct="HCS", # heteroscedastic compound symmetric structure
-                           rho=0, # Correlation of 0 for the HCS structure
-                           R = list(phylogeny = phylo_matrix),
-                           data=pottier)
+mod.habitat_het <-  rma.mv(yi=dARR, V=VCV_dARR,mods= ~habitat,method="REML",test="t",dfs="contain",
+                           random=list(~1|species_ID,~1|phylogeny,~habitat|es_ID),struct="HCS", rho=0,R =list(phylogeny = phylo_matrix),data=pottier)
 mod.habitat_het
 ```
 
@@ -421,7 +410,7 @@ flextable::flextable(mod_results(mod.habitat_het, data = pottier, group = "speci
 
 We'll now demonstrate how multi-moderator meta-regression models can be used with `orchaRd` 2.0, by plotting marginalised mean effects within categories of a single moderator. Marginalised means are also extremely useful to improve interpretation of overall model results. 
 
-To demonstrate how to do this we'll again turn to O'Dea et al. 2019 as our example data set. We'll first load the data set, if you haven't already done so:
+To demonstrate how to do this we'll again turn to @ODea2019 as our example data set. We'll first load the data set, if you haven't already done so:
 
 ```{r echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE, class.source='klippy'}
 
