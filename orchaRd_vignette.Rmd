@@ -462,7 +462,7 @@ orchaRd::orchard_plot(HetModel2, xlab = "lnRR", data = warm_dat, angle = 45, g =
 
 ```
 
-Now, the orchard plot depicts the mean effect sizes (plus 95% CI and PI) for each trait category, at 5, 10 and 15 degrees Celsius when the treatment duration is 10 days. 
+Now the orchard plot depicts the mean effect sizes (plus 95% CI and PI) for each trait category, at 5, 10 and 15 $^{\circ}$C when the treatment duration is 10 days. 
 
 \newpage
 # References
