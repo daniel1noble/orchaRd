@@ -23,6 +23,7 @@ Imports:
     utils,
     purrr,
     metafor,
+    metadat,
     tibble,
     stringr,
     ggplot2,
