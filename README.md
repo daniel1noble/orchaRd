@@ -23,6 +23,13 @@ library(orchaRd)
 
 ```
 
+**IMPORTNAT NOTE**: Currently orchard only works with emmeans vers. 1.7.3 or lower. We are currently working with the updates in the emmeans package to rectify the issue, but if you need to use the package you can install past versions as follows:
+
+```
+devtools::install_version("emmeans", version = “1.7.3”)
+library(emmeans)
+```
+
 # How to use?
 We detail how to use `orchaRd` function in the vignette. You can open the vignette using the following code:
 
