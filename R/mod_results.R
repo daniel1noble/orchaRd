@@ -100,7 +100,7 @@ mod_results <- function(model, mod = "1", group, data, N = NULL,  weights = "pro
   }
 
   if(is.character(data[[mod]]) | is.factor(data[[mod]]) | is.null(data[[mod]])) {
-    grid <- emmeans::qdrg(object = model, at = at)
+    grid <- emmeans::qdrg(object = model, at = at) ## NOTE: Added data argument emmeans >vers 1.7.4
     mm <- emmeans::emmeans(grid, specs = mod, df = df_mod, by = by, weights = weights, ...)
 
     # getting prediction intervals
@@ -311,7 +311,6 @@ get_data_raw <- function(model, mod, group, N = NULL, data, at = NULL, subset = 
 #' @return Returns a data frame
 #' @export
 
-#TODO what if there is not "group"
 #TODO what if there is no "by"
 
 get_data_raw_cont <- function(model, mod, group, N = NULL, data, by){
