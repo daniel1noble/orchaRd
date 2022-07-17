@@ -135,7 +135,8 @@ mod_results <- function(model, mod = "1", group, data, N = NULL,  weights = "pro
   } else{
     at2 <- list(mod = seq(min(data[,mod], na.rm = TRUE), max(data[,mod], na.rm = TRUE), length.out = 100))
     names(at2) <- mod
-    grid <- emmeans::qdrg(object = model, at = c(at2, at))  # getting 100 points
+    grid <- emmeans::qdrg(formula = formula(model), data = model$data, coef = model$b,
+                          vcov = vcov(model), df = model$k-1, at = c(at2, at))  # getting 100 points. Fixing this to make it more general
     mm <- emmeans::emmeans(grid, specs = mod, by = c(mod, by), weights = weights, df = df_mod)
 
     # getting prediction intervals
