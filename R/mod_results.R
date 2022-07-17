@@ -100,7 +100,8 @@ mod_results <- function(model, mod = "1", group, data, N = NULL,  weights = "pro
   }
 
   if(is.character(data[[mod]]) | is.factor(data[[mod]]) | is.null(data[[mod]])) {
-    grid <- emmeans::qdrg(object = model, at = at) ## NOTE: Added data argument emmeans >vers 1.7.4
+    grid <- emmeans::qdrg(formula = formula(model), at = at, data = model$data, coef = model$b,
+                          vcov = vcov(model), df = model$k-1) ## NOTE: Added data argument emmeans >vers 1.7.4. Object is unstable so feeding in the relevant arguments from model object directly. Note, we should think about df!
     mm <- emmeans::emmeans(grid, specs = mod, df = df_mod, by = by, weights = weights, ...)
 
     # getting prediction intervals
