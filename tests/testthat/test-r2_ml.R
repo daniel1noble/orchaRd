@@ -11,11 +11,11 @@ english <- metafor::escalc(measure = "SMD", n1i = NStartControl, sd1i = SD_C, m1
 
 english_MA <- metafor::rma.mv(yi = SMD, V = vSMD, random = list( ~ 1 | StudyNo, ~ 1 | EffectID), data = english)
 
-english_MA_R2 <- r2_ml(english_MA, data = english)
+english_MA_R2 <- orchaRd::r2_ml(english_MA, data = english)
 
-english_MA_robust <- robust(english_MA, cluster = english$StudyNo)
+english_MA_robust <- metafor::robust(english_MA, cluster = english$StudyNo)
 
-english_MA_R2_robu <- r2_ml(english_MA_robust, data = english)
+english_MA_R2_robu <- orchaRd::r2_ml(english_MA_robust, data = english)
 
 testthat::test_that("Checking r2_ml function..", {
   testthat::expect_equal(length(english_MA_R2), 2,

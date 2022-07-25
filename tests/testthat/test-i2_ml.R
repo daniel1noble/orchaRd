@@ -1,11 +1,12 @@
 context("Checking i2_ml function..")
 
+options(warn = -1)
 data(lim)
 lim$vi<-(1/sqrt(lim$N - 3))^2
 lim_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~Phylum-1, random=list(~1|Article, ~1|Datapoint), data=lim)
-I2_lim_2 <- i2_ml(lim_MR, data=lim)
+I2_lim_2 <- orchaRd::i2_ml(lim_MR, data=lim)
 lim_MR_robust <- metafor::robust(lim_MR, cluster=lim$Article)
-I2_lim_robust <- i2_ml(lim_MR_robust, data=lim)
+I2_lim_robust <- orchaRd::i2_ml(lim_MR_robust, data=lim)
 
 testthat::test_that("Checking i2 has correct dimensions..", {
   testthat::expect_equal(

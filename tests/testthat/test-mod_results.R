@@ -132,16 +132,12 @@ testthat::test_that("Checking mod_results output for fish dataset ..", {
 })
 
 
-### calculate log risk ratios and corresponding sampling variances
-dat <- metafor::escalc(measure="RR", ai=tpos, bi=tneg, ci=cpos, di=cneg, data=dat.bcg)
+### random-effects model; note that this is obviously not the right model for the data, but it's just testing this class type
+mod_uni <- metafor::rma(lnrr, lnrr_vi, data=warm_dat, method="REML")
 
-### random-effects model, using log risk ratios and variances as input
-### note: method="REML" is the default, so one could leave this out
-mod_uni <- metafor::rma(yi, vi, data=dat, method="REML")
+mod_rs_uni <- orchaRd::mod_results(mod_uni, group = "group_ID", data=warm_dat)
 
-mod_rs_uni <- orchaRd::mod_results(mod_uni, group = "author", data=dat)
-
-plot_uni <- orchaRd::orchard_plot(mod_uni, group = "author", data=dat, xlab = "Effect Size")
+plot_uni <- orchaRd::orchard_plot(mod_uni, group = "group_ID", data=warm_dat, xlab = "Effect Size")
 
 testthat::test_that("Checking mod_results output for rma and rma.uni dataset ..", {
 
