@@ -86,7 +86,7 @@ mod_results <- function(model, mod = "1", group, data, N = NULL,  weights = "pro
 
   if(is.null(formula(model))){
     #model <- stats::update(model, "~1")
-    model$formula.mods <- ~1
+    model$formula.mods <- ~ 1
     dat_tmp <- data$`1` <- "Intrcpt"
     model$data <- dat_tmp
   } else{

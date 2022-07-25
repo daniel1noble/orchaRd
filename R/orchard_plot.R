@@ -102,6 +102,7 @@ orchard_plot <- function(object, mod = "1", group, data, xlab, N = NULL,
 	if(any(N != "none")){
 	  data_trim$scale <- data_trim$N
 		  legend <- paste0("Sample Size ($\\textit{N}$)") # we want to use italic
+		  #latex2exp::TeX()
 	}
 
 	if(transfm == "tanh"){
