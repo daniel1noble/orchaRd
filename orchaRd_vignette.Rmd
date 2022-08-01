@@ -341,7 +341,6 @@ First, load the data.
 
   # Subset data for demonstration purposes.
     warm_dat <- fish
-
 ```
 
 To fit a heterogeneous variance model in `metafor` we need to use some additional arguments and specify the random effect structure differently (i.e., specify inner argument). To do this, we need to add the `struc = HCS` to the argument list, which specifies the variance structure of an ~inner|outer formula of a particular random effect. In this case, we're assuming a heteroscedastic compound symmetry structure. To avoid estimating the correlation / covariance between levels we need to also add the `rho` argument and set this to 0. This will assume that the covariance between the levels is set to 0 (although it could be estimated). 
@@ -395,7 +394,7 @@ Now that we have all the data and matrices loaded, we can fit the multi-level me
 ```{r, pot_model, echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE, class.source='klippy'}
 ##### Heteroscedasticity modeled at the effect size level
 mod.habitat_het <-  rma.mv(yi=dARR, V=VCV_dARR,mods= ~habitat,method="REML",test="t",dfs="contain",
-                           random=list(~1|species_ID,~1|phylogeny,~habitat|es_ID),struct="HCS", rho=0,R =list(phylogeny = phylo_matrix),data=pottier)
+                           random=list(~1|species_ID,~1|phylogeny,~habitat|es_ID),struct="HCS", rho=0, R =list(phylogeny = phylo_matrix),data=pottier)
 mod.habitat_het
 ```
 
@@ -405,6 +404,26 @@ Now we can produce an `orchaRd` plot using this model to show the unequal varian
 orchard_plot(mod.habitat_het, data = pottier, group = "species_ID", mod = "habitat", xlab = "dARR", angle = 45)
 flextable::flextable(mod_results(mod.habitat_het, data = pottier, group = "species_ID", mod = "habitat")$mod_table)
 ```
+
+<!-- We can check calculation for, say,aquatic  is correct: 0.2087 + qt(0.975, 136)*sqrt(sum(0.0655^2 + 0.0716 + 0.0129 + 0.0090)) -->
+
+
+We might also think about heterogeneous variance existing at multiple random effect levels. These models require a lot of data, and need to be carefully thought about, but we `orchard` 2.0 can also handle these models. 
+
+```{r, pot_model2, echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE, class.source='klippy'}
+##### Heteroscedasticity modeled at the effect size level
+mod.habitat_het2 <-  rma.mv(yi=dARR, V=VCV_dARR,mods= ~habitat,method="REML",test="t",dfs="contain",
+                           random=list(~habitat|species_ID,~1|phylogeny,~habitat|es_ID),struct="HCS", rho=0, phi = 0, R =list(phylogeny = phylo_matrix),data=pottier)
+mod.habitat_het2
+
+```
+
+
+```{r, figsure14a, fig.cap = "Orchard plot with heteroscedastic error for habitat type at the residual and species level", echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE, class.source='klippy'}
+orchard_plot(mod.habitat_het2, data = pottier, group = "species_ID", mod = "habitat", xlab = "dARR", angle = 45)
+flextable::flextable(mod_results(mod.habitat_het2, data = pottier, group = "species_ID", mod = "habitat")$mod_table)
+```
+
 
 #### Example 5: Meta-regression and marginalised mean effect sizes
 
