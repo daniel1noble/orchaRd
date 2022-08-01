@@ -373,7 +373,7 @@ orchaRd::orchard_plot(het_model, xlab = "lnRR", data = warm_dat)
 
 We can now see from Figure \@ref(fig:figure12) that the variance in effects for the morphological and physiological trait categories are smaller than for life-history and behavioural trait categories; likely because of the very small sample sizes in the latter trait categories.
 
-As a second example, we can turn to @Pottier2021 who did a meta-analysis comparing acclimation differences between males and females. @Pottier2021 found that aquatic and terrestrial systems differed in their variability of effects. Here, we'll also show how phylogenetic correlation matrices can be incorporated wiithin the models and work with orchaRd.
+As a second example, we can turn to @Pottier2021 who did a meta-analysis comparing acclimation differences between males and females. @Pottier2021 found that aquatic and terrestrial systems differed in their variability of effects. Here, we'll also show how phylogenetic correlation matrices can be incorporated within the models and work with orchaRd.
 
 ```{r, echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE, class.source='klippy'}
 # Clear working space
