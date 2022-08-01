@@ -188,11 +188,6 @@ mod_results <- function(model, mod = "1", group, data, N = NULL,  weights = "pro
 #' @author Daniel Noble - daniel.noble@anu.edu.au
 #' @export
 
-# TODO I think we can make it general and get PI with hetero from predict function
-# TODO we want to add gamma too (ask Dan)
-# TODO - if we model Hetero for a particular categorical variable then, we do not want to
-# TODO - this is actually challenging to make it general (they can have tau and gamma but the moderator needs to be the same)
-# TODO - warning for just one kind of categorical variables for taus and gammas
 
 pred_interval_esmeans <- function(model, mm, mod, ...){
 
@@ -206,14 +201,17 @@ pred_interval_esmeans <- function(model, mm, mod, ...){
         } else {
             sigmas <- sum(model$sigma2)
             taus   <- model$tau2
-                 w <- model$g.levels.k
+             gammas <- model$gamma2
+                 w_tau <- model$g.levels.k
+                 w_gamma <- model$g.levels.k
 
             if(mod == "1"){
-              tau <- weighted_var(taus, weights = w)
-                     PI <- test.stat * sqrt(tmp$SE^2 + sigmas + tau)
+                tau <- weighted_var(taus, weights = w_tau)
+              gamma <- weighted_var(gamma, weights = w_gamma)
+                     PI <- test.stat * sqrt(tmp$SE^2 + sigmas + tau + gamma)
 
             } else {
-               PI <- test.stat * sqrt(tmp$SE^2 + sigmas + taus)
+               PI <- test.stat * sqrt(tmp$SE^2 + sigmas + taus + gammas)
             }
         }
 
