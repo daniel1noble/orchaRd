@@ -13,6 +13,10 @@ output:
     toc: yes
     toc_depth: 6
     toc_float: yes
+  vignette: >
+    %\VignetteIndexEntry{orchaRd_2.0}
+    %\VignetteEngine{knitr::rmarkdown}
+    %\VignetteEncoding{UTF-8}
 editor_options: 
   chunk_output_type: console
 ---
