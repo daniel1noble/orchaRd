@@ -233,7 +233,7 @@ The other thing we can change is the type of scaling we wish to use. Let's say w
 
 p5 <- orchaRd::orchard_plot(eklof_MR0, mod = "Grazer.type", data = eklof, group = "ExptID", xlab = "log(Response ratio) (lnRR)") 
 
-p6 <- orchaRd::orchard_plot(eklof_MR0, mod = "Grazer.type", data = eklof, group = "ExptID", xlab = "log(Response ratio) (lnRR)", angle = 45, N = eklof$N, g = FALSE) 
+p6 <- orchaRd::orchard_plot(eklof_MR0, mod = "Grazer.type", data = eklof, group = "ExptID", xlab = "log(Response ratio) (lnRR)", angle = 45, N = "N", g = FALSE) 
 
 p5/p6
 
@@ -275,7 +275,7 @@ Noe we can plot a default orchard plot, scaling each effect size by N. Also, bec
   
   #Plot the meta-regression model
   orchaRd::orchard_plot(lim_MR, mod = "Phylum", group = "Article", data = lim, xlab = "Correlation coefficient", 
-    alpha = 0.5, transfm = "tanh", angle = 45, N = lim$N, cb = FALSE)
+    alpha = 0.5, transfm = "tanh", angle = 45, N = "N", cb = FALSE)
 ```
 
 Now that we have Figure \@ref(fig:Figure9), we can do some small changes to make it pretty and add some more details, such as between study heterogeneity and R2 for phylum (we use ). Currently, the cb argument is "FALSE", we can change this to "TRUE" to use colour blind friendly colours. Additionally, because we are using `ggplot` we can add element to the figure to make it look pretty. 
@@ -286,7 +286,7 @@ Now that we have Figure \@ref(fig:Figure9), we can do some small changes to make
 
   # We can draw an orchard plot with R2
   orchaRd::orchard_plot(lim_MR, mod = "Phylum", group = "Article", data = lim, xlab = "Correlation coefficient (r)", 
-                        alpha = 0.5, transfm = "tanh", angle = 45, N = lim$N, cb = TRUE) +
+                        alpha = 0.5, transfm = "tanh", angle = 45, N = "N", cb = TRUE) +
 theme(legend.position= c(0.05, 0.99), legend.justification = c(0,1), legend.key.size = unit(1, "mm")) +
 theme(legend.direction="horizontal", legend.title = element_text(size =8),legend.text = element_text(size = 10)) + 
 annotate(geom="text", x=0.8, y=0.7, label=paste0("italic(R)^{2} == ", round(R2[1],4)*100), color="black", parse = TRUE, size = 4)
