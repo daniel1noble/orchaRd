@@ -18,14 +18,10 @@ To install `orchaRd` use the following code in R:
 install.packages("pacman")
 pacman::p_load(devtools, tidyverse, metafor, patchwork, R.rsp, emmeans)
 
-devtools::install_github("daniel1noble/orchaRd", force = TRUE, build_vignettes = TRUE)
+devtools::install_github("daniel1noble/orchaRd", force = TRUE)
 library(orchaRd)
 
 ```
 
 # How to use?
-We detail how to use `orchaRd` function in the vignette. You can open the vignette using the following code:
-
-```
-vignette(package = "orchaRd") # Currently doesn't work as vignette still needs setting up.
-```
+We detail how to use `orchaRd` function in the [vignette](https://daniel1noble.github.io/orchaRd/). 
