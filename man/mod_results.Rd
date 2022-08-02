@@ -33,13 +33,13 @@ mod_results(
 
 \item{by}{Character vector indicating the name that predictions should be conditioned on for the levels of the moderator.}
 
-\item{at}{List of levels one wishes to predict at for the corresponding varaibles in 'by'. Used when one wants marginalised means. This argument can also be used to supress levels of the modertator when argument 'subset = TRUE'. Provide a list as follows: list(mod = c("level1", "level2")).}
+\item{at}{List of levels one wishes to predict at for the corresponding variables in 'by'. Used when one wants marginalised means. This argument can also be used to suppress levels of the moderator when argument 'subset = TRUE'. Provide a list as follows: list(mod = c("level1", "level2")).}
 
 \item{subset}{Used when one wishes to only plot a subset of levels within the main moderator of interest defined by 'mod'. Default is FALSE, but use TRUE if you wish to subset levels of a moderator plotted (defined by 'mod') for plotting. Levels one wishes to plot are specified as a list with the level names as a character string in the 'at' argument. For subsetting to work, 'at' argument also needs to be specified so that 'mod_results' knows what levels one wishes to plot.}
 
 \item{upper}{logical indicating if the first letter of the character string for moderator should be capitalized.}
 
-\item{...}{Additonal arguments passed to emmeans::emmeans()}
+\item{...}{Additional arguments passed to emmeans::emmeans()}
 }
 \value{
 A data frame containing all the model results including mean effect size estimate, confidence and prediction intervals

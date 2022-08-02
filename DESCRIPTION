@@ -37,4 +37,3 @@ Suggests: R.rsp,
   testthat,
     knitr,
     rmarkdown
-VignetteBuilder: knitr
