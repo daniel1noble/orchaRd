@@ -8,7 +8,7 @@ bibliography: ./bib/ref.bib
 csl: ./bib/methods-in-ecology-and-evolution.csl
 output: 
   bookdown::html_document2:
-    code_folding: hide
+    code_folding: show
     number_sections: no
     toc: yes
     toc_depth: 6
