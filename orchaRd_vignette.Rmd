@@ -40,7 +40,7 @@ In addition to orchard plots, we have another plotting function `caterpillars` t
 
 To cite `orchaRd` in publications one can use the following reference:
 
-Nakagawa, S. et al. 2021. The Orchard Plot: Cultivatinng the Forest Plot for Use in Ecology, Evolution and Beyond. *Research Synthesis Methods*, 12, 4--12.
+Nakagawa, S. et al. 2021. The Orchard Plot: Cultivating the Forest Plot for Use in Ecology, Evolution and Beyond. *Research Synthesis Methods*, 12, 4--12.
 
 # Installation
 
