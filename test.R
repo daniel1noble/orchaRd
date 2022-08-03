@@ -38,10 +38,16 @@ model<-rma.mv(yi=yi, V=vi, mods= ~Environment*year, random=list(~1|Article,~1|Da
 #test <-emmeans(grid, specs = "year", by =  c("year", "Environment"))
 
 test <- mod_results(model, mod = "year", group = "Article", data = lim, weights = "prop", by = "Environment")
-bubble_plot(test, mod = "year", legend.pos = "top.left", g = T)
+bubble_plot(test, mod = "year", legend.pos = "top.left", g = T, data = lim)
 
 test2 <- mod_results(model, mod = "year", group = "Article", data = lim, weights = "prop")
-bubble_plot(test2, mod = "year", legend.pos = "top.left", g = T)
+bubble_plot(test2, mod = "year", legend.pos = "top.left", g = T, data = lim)
+
+
+# Data
+data(fish)
+warm_dat <- fish
+
 
 model2 <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 | es_ID), mods = ~ experimental_design + trait.type+deg_dif*treat_end_days, method = "REML", test = "t", data = warm_dat, control=list(optimizer="optim", optmethod="Nelder-Mead"))
 
