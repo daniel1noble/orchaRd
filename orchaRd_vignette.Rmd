@@ -282,7 +282,7 @@ Noe we can plot a default orchard plot, scaling each effect size by N. Also, bec
     alpha = 0.5, transfm = "tanh", angle = 45, N = "N", cb = FALSE)
 ```
 
-Now that we have Figure \@ref(fig:Figure9), we can do some small changes to make it pretty and add some more details, such as between study heterogeneity and R2 for phylum (we use ). Currently, the cb argument is "FALSE", we can change this to "TRUE" to use colour blind friendly colours. Additionally, because we are using `ggplot` we can add element to the figure to make it look pretty. 
+Now that we have Figure \@ref(fig:Figure9), we can do some small changes to make it pretty and add some more details, such as between study heterogeneity and R^2^ for phylum (we use ). Currently, the cb argument is "FALSE", we can change this to "TRUE" to use colour blind friendly colours. Additionally, because we are using `ggplot` we can add element to the figure to make it look pretty. 
 
 ```{r Figure10, echo = TRUE, eval = TRUE, class.source='klippy', warning=FALSE, message=FALSE, fig.width = 6.5, fig.height = 8, fig.cap = "Orchard plot of the the strength of correlation between maternal and offspring size within-species"}
   # Lets add the R2 on the figure as well as little modifications:
@@ -422,12 +422,12 @@ mod.habitat_het2
 
 ```
 
+Again, we can plot this new model normally.
 
 ```{r, figsure14a, fig.cap = "Orchard plot with heteroscedastic error for habitat type at the residual and species level", echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE, class.source='klippy'}
 orchard_plot(mod.habitat_het2, data = pottier, group = "species_ID", mod = "habitat", xlab = "dARR", angle = 45)
 flextable::flextable(mod_results(mod.habitat_het2, data = pottier, group = "species_ID", mod = "habitat")$mod_table)
 ```
-
 
 #### Example 5: Meta-regression and marginalised mean effect sizes
 
