@@ -121,13 +121,13 @@ bubble_plot <- function(object, mod, group = NULL, data,
   dat_text <- data.frame(K = effect_num, G = group_num)
 
   }else{
-  effect_num <- as.vector(by(data_trim, data_trim[,"condition"], function(x) length(x[,"yi"])))
+  effect_num <- as.vector(by(data_trim, data_trim[,"condition"], function(x) base::length(x[,"yi"])))
 
   # Add in total levels of a grouping variable (e.g., study ID) within each moderator level.
   #group_num <- c(2,4)
-  group_num <- as.vector(by(data_trim, data_trim[,"condition"], function(x) length(unique(x[,"stdy"]))))
+  group_num <- as.vector(by(data_trim, data_trim[,"condition"], function(x) base::length(base::unique(x[,"stdy"]))))
 
-  dat_text <- data.frame(K = effect_num, G = group_num, condition = as.vector(unique(data_trim$condition)))
+  dat_text <- data.frame(K = effect_num, G = group_num, condition = as.vector(base::unique(data_trim$condition)))
   }
   # the number of groups in a moderator & data points
   #group_no <- length(unique(mod_table[, "name"]))

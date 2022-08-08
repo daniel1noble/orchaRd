@@ -15,8 +15,7 @@ License: GPL (>=2)
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.2.1
-Imports: 
-    tidyverse,
+Imports: tidyverse,
     stats,
     Matrix,
     graphics,

@@ -84,7 +84,7 @@ mod_results <- function(model, mod = "1", group, data, N = NULL,  weights = "pro
     stop("Please specify the 'data' argument by providing the data used to fit the model. See ?mod_results")
   }
 
-  if(is.null(formula(model))){
+  if(is.null(stats::formula(model))){
     #model <- stats::update(model, "~1")
     model$formula.mods <- ~ 1
     dat_tmp <- data$`1` <- "Intrcpt"
@@ -100,8 +100,8 @@ mod_results <- function(model, mod = "1", group, data, N = NULL,  weights = "pro
   }
 
   if(is.character(data[[mod]]) | is.factor(data[[mod]]) | is.null(data[[mod]])) {
-    grid <- emmeans::qdrg(formula = formula(model), at = at, data = model$data, coef = model$b,
-                          vcov = vcov(model), df = model$k-1) ## NOTE: Added data argument emmeans >vers 1.7.4. Object is unstable so feeding in the relevant arguments from model object directly. Note, we should think about df!
+    grid <- emmeans::qdrg(formula = stats::formula(model), at = at, data = model$data, coef = model$b,
+                          vcov = stats::vcov(model), df = model$k-1) ## NOTE: Added data argument emmeans >vers 1.7.4. Object is unstable so feeding in the relevant arguments from model object directly. Note, we should think about df!
     mm <- emmeans::emmeans(grid, specs = mod, df = df_mod, by = by, weights = weights, ...)
 
     # getting prediction intervals
@@ -135,8 +135,8 @@ mod_results <- function(model, mod = "1", group, data, N = NULL,  weights = "pro
   } else{
     at2 <- list(mod = seq(min(data[,mod], na.rm = TRUE), max(data[,mod], na.rm = TRUE), length.out = 100))
     names(at2) <- mod
-    grid <- emmeans::qdrg(formula = formula(model), data = model$data, coef = model$b,
-                          vcov = vcov(model), df = model$k-1, at = c(at2, at))  # getting 100 points. Fixing this to make it more general
+    grid <- emmeans::qdrg(formula =  stats::formula(model), data = model$data, coef = model$b,
+                          vcov = stats::vcov(model), df = model$k-1, at = c(at2, at))  # getting 100 points. Fixing this to make it more general
     mm <- emmeans::emmeans(grid, specs = mod, by = c(mod, by), weights = weights, df = df_mod)
 
     # getting prediction intervals
