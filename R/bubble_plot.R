@@ -66,11 +66,15 @@ bubble_plot <- function(object, mod, group = NULL, data,
   #facet <- match.arg(NULL, choices = facet)
 
   if(missing(data)){
-         stop("Please specify the 'data' argument by providing the data used to fit the model. See ?mod_results")
-       }
+         stop("Please specify the 'data' argument by providing the data used to fit the model. See ?bubble_plot")
+  }
 
   if(any(grepl(mod, colnames(data))) == FALSE){
     error("The moderator specified is not found in your data. Did you transform the variable in the model and forget to add it to your dataframe?")
+  }
+
+  if(missing(group)){
+    stop("Please specify the 'group' argument by providing the name of the grouping variable. See ?bubble_plot")
   }
 
   if(any(class(object) %in% c("robust.rma", "rma.mv", "rma", "rma.uni"))){
