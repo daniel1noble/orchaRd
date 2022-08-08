@@ -429,6 +429,38 @@ orchard_plot(mod.habitat_het2, data = pottier, group = "species_ID", mod = "habi
 flextable::flextable(mod_results(mod.habitat_het2, data = pottier, group = "species_ID", mod = "habitat")$mod_table)
 ```
 
+## Example 6: Bubble plots 
+
+
+```{r, bubbles}
+
+data(lim)
+lim[, "year"] <- as.numeric(lim$year)
+lim$vi<- 1/(lim$N - 3)
+model<-metafor::rma.mv(yi=yi, V=vi, mods= ~Environment*year,
+                       random=list(~1|Article,~1|Datapoint), data=na.omit(lim))
+
+options(warn=0)
+test <- orchaRd::mod_results(model, mod = "year", group = "Article",
+                    data = lim, weights = "prop", by = "Environment")
+plot1 <- orchaRd::bubble_plot(test, data = lim, mod = "year", legend.pos = "top.left")
+plot2 <- orchaRd::bubble_plot(test, data = lim, mod = "year", xlab = "Year", legend.pos = "top.left")
+
+# extract complete cases
+      data(pottier)
+      
+      pottier2 <- pottier[complete.cases(pottier$body_mass),]
+
+mod.body_mass <-  rma.mv(yi = dARR, V = Var_dARR,mods= ~body_mass*habitat, method="REML", test="t", dfs="contain",
+                           random=list(~1|species_ID, ~1|es_ID), data = pottier2)
+
+test <- orchaRd::mod_results(mod.body_mass, mod = "body_mass", group = "species_ID", by = "habitat",data = pottier2)
+orchaRd::bubble_plot(test, mod = "body_mass", by = "habitat", legend.pos = "top.left", data = pottier2)
+
+orchaRd::bubble_plot(mod.body_mass, mod = "body_mass", by = "habitat", group = "species_ID", legend.pos = "top.left", data = pottier2)
+
+```
+
 #### Example 5: Meta-regression and marginalised mean effect sizes
 
 We'll now demonstrate how multi-moderator meta-regression models can be used with `orchaRd` 2.0, by plotting marginalised mean effects within categories of a single moderator. Marginalised means are also extremely useful to improve interpretation of overall model results. 
@@ -486,6 +518,7 @@ orchaRd::orchard_plot(HetModel2, xlab = "lnRR", data = warm_dat, angle = 45, g =
 ```
 
 Now the orchard plot depicts the mean effect sizes (plus 95% CI and PI) for each trait category, at 5, 10 and 15 $^{\circ}$C when the treatment duration is 10 days. 
+
 
 \newpage
 # References
