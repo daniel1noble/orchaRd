@@ -12,6 +12,7 @@ Authors@R:
 Description: This package takes meta-analytic and meta-regression models from metafor, generates prediction intervals and produced new orchard plots that depict effect sizes, means , confidence and prediction intervals.
 Depends: R (>= 4.2)
 URL: https://daniel1noble.github.io/orchaRd/
+BugReports: https://github.com/daniel1noble/orchaRd/issues
 License: GPL (>=2)
 Encoding: UTF-8
 LazyData: true
