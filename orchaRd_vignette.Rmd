@@ -1,6 +1,6 @@
 ---
 title: "orchaRd 2.0: An R package for drawing 'orchard' plots (and 'caterpillars' plots) from meta-analyses and meta-regressions"
-author: "S. Nakagawa, M. Lagisz, R. E. O’Dea, J. Rutkowska, Y. Yang, D.W.A. Noble, & A. M. Senior"
+author: "S. Nakagawa, M. Lagisz, R. E. O’Dea, J. Rutkowska, Y. Yang, A. M. Senior & D.W.A. Noble"
 date: "`r Sys.Date()`"
 geometry: margin=1.5cm
 fontsize: 10pt
