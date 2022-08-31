@@ -25,3 +25,6 @@ library(orchaRd)
 
 # How to use?
 We detail how to use `orchaRd` function in the [vignette](https://daniel1noble.github.io/orchaRd/). 
+
+# Issues with orchaRd 2.0?
+Please note that orchaRd 2.0 is still under active development and testing. If you use it, you should check that the results are what you expect. We do have a number of tests already in place, but there may still be situations where it fails. If you find a bug or a situation that doesn't match your expectations let us know by lodging an [issue](https://github.com/daniel1noble/orchaRd/issues) on GitHub. 
