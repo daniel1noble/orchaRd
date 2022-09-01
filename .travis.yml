@@ -1,10 +1,10 @@
 language: R
+r:
+  - release
+
 sudo: required
 
 warnings_are_errors: true
-
-apt_packages:
-  - libmagick++-dev
 
 r_packages:
   - covr
