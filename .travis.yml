@@ -1,6 +1,6 @@
 language: R
 r:
-  - release
+  - TRAVIS_R_VERSION=4.2
 
 sudo: required
 
