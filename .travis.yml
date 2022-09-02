@@ -1,9 +1,5 @@
 language: R
-
-env:
-  matrix:
-    - RVERSION=release
-    - RVERSION=devel
+  - 4.2.1
 
 sudo: required
 
