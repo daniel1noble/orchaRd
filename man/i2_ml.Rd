@@ -7,7 +7,7 @@
 i2_ml(model, method = c("ratio", "matrix"), data, boot = NULL)
 }
 \arguments{
-\item{model}{Model object of class 'rma.mv', 'rma'}
+\item{model}{Model object of class 'rma.mv', 'rma'. Currently only model objects using the 'mods' argument (e.g., mod = ~1) work.}
 
 \item{method}{Method used to calculate I2. Two options exist, a ratio base calculation proposed by Nakagawa & Santos ('ratio') or Wolfgang Viechtbauer's matrix method ("matrix").}
 

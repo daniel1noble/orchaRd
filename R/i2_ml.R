@@ -1,6 +1,6 @@
 #' @title i2_ml
 #' @description I2 (I-squared) for mulilevel meta-analytic models, based on Nakagawa & Santos (2012). Under multilevel models, we can have a multiple I2 (see also Senior et al. 2016). Alternatively, the method proposed by Wolfgang Viechtbauer can also be used.
-#' @param model Model object of class 'rma.mv', 'rma'
+#' @param model Model object of class 'rma.mv', 'rma'. Currently only model objects using the 'mods' argument (e.g., mod = ~1) work.
 #' @param method Method used to calculate I2. Two options exist, a ratio base calculation proposed by Nakagawa & Santos ('ratio') or Wolfgang Viechtbauer's matrix method ("matrix").
 #' @param data Data set used to fit the model.
 #' @param boot Number of simulations to run to produce 95\% CI's for I2. Default is NULL and only point estimate is provided.
