@@ -23,21 +23,66 @@ jobs:
     strategy:
       matrix:
         r-version: ['4.1.1']
+inputs:
+  args:
+    description: 'Arguments to pass to the `args` parameter of rcmdcheck. An R expression in single quotes.'
+    default: 'c("--no-manual", "--as-cran")'
+  build_args:
+    description: 'Arguments to pass to the `build_args` parameter of rcmdcheck. An R expression in single quotes.'
+    default: '"--no-manual"'
+  error-on:
+    description: 'What type of result should cause a build error? An R expression in single quotes.'
+    default: '"warning"'
+  check-dir:
+    description: 'Where should the check output go? An R expression in single quotes.'
+    default: '"check"'
+  working-directory:
+    description: 'Using the working-directory keyword, you can specify the working directory of where "rcmdcheck::rcmdcheck" is run.'
+    default: '.'
+  upload-snapshots:
+    description: 'Whether to upload all testthat snapshots as an artifact.'
+    default: false
+  upload-results:
+    description: 'Whether to upload check results for successful runs too.'
+    default: false
 
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up R ${{ matrix.r-version }}
-        uses: r-lib/actions/setup-r@f57f1301a053485946083d7a45022b278929a78a
-        with:
-          r-version: ${{ matrix.r-version }}
-      - name: Install dependencies
-        run: |
-          install.packages(c("remotes", "devtools", "rcmdcheck"))
-          remotes::install_deps(dependencies = TRUE)
-        shell: Rscript {0}
-      - name: Load package
-        run: devtools::loadall()
-        shell: Rscript {0}
-      - name: Check
-        run: devtools::check()
-        shell: Rscript {0}
+runs:
+  using: "composite"
+  steps:
+    - name: Check
+      id: rcmdcheck
+      env:
+        _R_CHECK_CRAN_INCOMING_: false
+      run: |
+        ## --------------------------------------------------------------------
+        options(crayon.enabled = TRUE)
+        if (Sys.getenv("_R_CHECK_FORCE_SUGGESTS_", "") == "") Sys.setenv("_R_CHECK_FORCE_SUGGESTS_" = "false")
+        cat("##[set-output name=check-dir-path;]", (${{ inputs.check-dir }}), "\n", sep = "")
+        check_results <- rcmdcheck::rcmdcheck(args = (${{ inputs.args }}), build_args = (${{ inputs.build_args }}), error_on = (${{ inputs.error-on }}), check_dir = (${{ inputs.check-dir }}))
+      shell: Rscript {0}
+      working-directory: ${{ inputs.working-directory }}
+
+    - name: Show testthat output
+      if: always()
+      run: |
+        ## --------------------------------------------------------------------
+        echo ::group::Show testthat output
+        find check -name 'testthat.Rout*' -exec cat '{}' \; || true
+        echo ::endgroup::
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+
+    - name: Upload check results
+      if: failure() || inputs.upload-results != 'false'
+      uses: actions/upload-artifact@main
+      with:
+        name: ${{ runner.os }}-r${{ matrix.config.r }}-results
+        path: ${{ steps.rcmdcheck.outputs.check-dir-path }}
+
+    - name: Upload snapshots
+      if: inputs.upload-snapshots != 'false'
+      uses: actions/upload-artifact@main
+      with:
+        name: ${{ runner.os }}-r${{ matrix.config.r }}-testthat-snapshots
+        path: ${{ steps.rcmdcheck.outputs.check-dir-path }}/**/tests*/testthat/_snaps
+        if-no-files-found: ignore
