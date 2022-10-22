@@ -33,6 +33,7 @@ jobs:
       - name: Install dependencies
         run: |
           install.packages(c("remotes", "devtools", "rcmdcheck"))
+          devtools::install_github("daniel1noble/orchaRd", force = TRUE)
           remotes::install_deps(dependencies = TRUE)
         shell: Rscript {0}
       - name: Check
