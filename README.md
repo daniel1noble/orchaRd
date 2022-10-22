@@ -1,5 +1,5 @@
 # Introducing the Orchard Plot for Meta-analysis
-[![R build status](https://github.com/daniel1noble/orchaRd/R-CMD-check/badge.svg)](https://github.com/daniel1noble/orchaRd/actions?workflow=R-CMD-check)
+[![R build status](https://github.com/daniel1noble/orchaRd/R-CMD-check/badge.svg)](https://github.com/daniel1noble/orchaRd/orchaRd=R-CMD-check)
 [![Build Status](https://app.travis-ci.com/daniel1noble/orchaRd.svg?branch=main)](https://app.travis-ci.com/daniel1noble/orchaRd.svg?branch=main) 
 [![codecov](https://codecov.io/gh/daniel1noble/orchaRd/branch/main/graph/badge.svg?token=KqQLvcGfLv)](https://codecov.io/gh/daniel1noble/orchaRd)
 [![Ask Us Anything\ !](https://img.shields.io/badge/Ask%20me-anything-1abc9c.svg)](https://github.com/daniel1noble/orchaRd/issues/new)
