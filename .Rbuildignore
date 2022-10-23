@@ -12,3 +12,4 @@ figures/
 bib/
 index.html
 .github/
+^\.github$
