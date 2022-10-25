@@ -1,7 +1,7 @@
 # Introducing the Orchard Plot for Meta-analysis
 [![R-CMD-check](https://github.com/daniel1noble/orchaRd/actions/workflows/check-standard.yaml/badge.svg)](https://github.com/daniel1noble/orchaRd/actions/workflows/check-standard.yaml)
-[![codecov](https://codecov.io/gh/daniel1noble/orchaRd/branch/main/graph/badge.svg?token=KqQLvcGfLv)](https://codecov.io/gh/daniel1noble/orchaRd)
 [![test-coverage](https://github.com/daniel1noble/orchaRd/actions/workflows/test-coverage.yaml/badge.svg)](https://github.com/daniel1noble/orchaRd/actions/workflows/test-coverage.yaml)
+[![codecov](https://codecov.io/gh/daniel1noble/orchaRd/branch/main/graph/badge.svg?token=KqQLvcGfLv)](https://codecov.io/gh/daniel1noble/orchaRd)
 [![Ask Us Anything\ !](https://img.shields.io/badge/Ask%20me-anything-1abc9c.svg)](https://github.com/daniel1noble/orchaRd/issues/new)
 ![Open Source Love](https://badges.frapsoft.com/os/v2/open-source.svg?v=103)
 
