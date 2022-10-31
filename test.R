@@ -330,6 +330,21 @@ model_het <- metafor::rma.mv(yi = lnrr, V = lnrr_vi,
                              test = "t", rho = 0, struc = "HCS", data = warm_dat,
                              control=list(optimizer="optim", optmethod="Nelder-Mead"))
 
+model_nohet <- metafor::rma.mv(yi = lnrr, V = lnrr_vi,
+                             random = list(~1 | group_ID, ~1 | es_ID),
+                             mods = ~ trait.type + deg_dif, method = "REML",
+                             test = "t", data = warm_dat,
+                             control=list(optimizer="optim", optmethod="Nelder-Mead"))
+
+### CHECK R2 and I2 with het models.
+orchaRd::r2_ml(model_nohet, data = warm_dat)
+orchaRd::r2_ml(model_het, data = warm_dat) # Works, but not correct
+orchaRd::r2_ml(model_het, data = warm_dat, boot = 100) # Works, but not correct
+
+orchaRd::i2_ml(model_nohet, data = warm_dat)
+orchaRd::i2_ml(model_het, data = warm_dat) # Works, but not correct
+orchaRd::i2_ml(model_het, data = warm_dat, boot = 100) # Works, but not correct
+
 # Two step process
 HetModel <- marginal_means(model_het,
                            group = "group_ID",
