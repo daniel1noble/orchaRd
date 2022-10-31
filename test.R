@@ -38,10 +38,10 @@ model<-rma.mv(yi=yi, V=vi, mods= ~Environment*year, random=list(~1|Article,~1|Da
 #test <-emmeans(grid, specs = "year", by =  c("year", "Environment"))
 
 test <- mod_results(model, mod = "year", group = "Article", data = lim, weights = "prop", by = "Environment")
-bubble_plot(test, mod = "year", legend.pos = "top.left", g = T, data = lim)
+bubble_plot(test, mod = "year", legend.pos = "top.left", group = "Article", g = T, data = lim)
 
 test2 <- mod_results(model, mod = "year", group = "Article", data = lim, weights = "prop")
-bubble_plot(test2, mod = "year", legend.pos = "top.left", g = T, data = lim)
+bubble_plot(test2, mod = "year", legend.pos = "top.left", group = "Article", g = T, data = lim)
 
 
 # Data
@@ -53,8 +53,7 @@ model2 <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~
 
 
 mod2_results <- mod_results(model2, mod = "deg_dif", group = "group_ID", data = warm_dat)
-bubble_plot(mod2_results, mod = "deg_dif",condition.nrow = 3, legend.pos = "bottom.left") +
-  ylim(-1.5,1.8)
+bubble_plot(mod2_results, mod = "deg_dif",condition.nrow = 3, group = "group_ID", legend.pos = "bottom.left", data = warm_dat) + ylim(-1.5,1.8)
 
 ### poly
 
