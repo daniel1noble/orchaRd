@@ -51,6 +51,8 @@ i2_ml <- function(model, method = c("ratio", "matrix"), data, boot = NULL) {
 
   if(all(class(model) %in% c("robust.rma", "rma.mv", "rma", "rma.uni")) == FALSE) {stop("Sorry, you need to fit a metafor model of class robust.rma, rma.mv, rma, rma.uni")}
 
+  if(any(model$tau2 > 0)) { stop("Sorry. At the moment i2_ml cannot take models with heterogeneous variance.")}
+
   ## evaluate choices
   method <- match.arg(method)
 
