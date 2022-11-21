@@ -371,17 +371,20 @@ R2_calc <- function(model){
   if(all(class(model) %in% c("robust.rma", "rma.mv", "rma", "rma.uni")) == FALSE) {stop("Sorry, you need to fit a metafor model of class robust.rma, rma.mv, rma, rma.uni")}
   model = model_het
   if(any(model$tau2 > 0)) {
-      g_sigma <- model$s.nlevels# extract sample size for each level
+    # extract number of levels
+      g_sigma <- model$s.nlevels
       g_tau   <- model$g.nlevels[2]
     g_gamma   <- model$h.nlevels[2]
 
     comp_group <- c(g_sigma, g_tau, g_gamma) #use this to get max g level
 
+   # Sample sizes for each level
       k_tau <- model$g.levels.k # extract sample size for each level
     k_gamma <- model$h.levels.k # extract sample size for each level
 
-      tau2 <- model$tau2
-    gamma2 <- model$gamma2
+    # Extract variances for each level.
+        tau2 <- model$tau2
+      gamma2 <- model$gamma2
 
     # Calculated the weighted variance, weighted on sample size
       tau_var <- orchaRd::weighted_var(tau2, weights = k_tau)
