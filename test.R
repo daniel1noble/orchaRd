@@ -43,6 +43,19 @@ bubble_plot(test, mod = "year", legend.pos = "top.left", group = "Article", g = 
 test2 <- mod_results(model, mod = "year", group = "Article", data = lim, weights = "prop")
 bubble_plot(test2, mod = "year", legend.pos = "top.left", group = "Article", g = T, data = lim)
 
+######################
+## Bubble plot and hetero
+data(lim)
+lim[, "year"] <- as.numeric(lim$year)
+lim$vi<- 1/(lim$N - 3)
+model<-metafor::rma.mv(yi=yi, V=vi, mods= ~Amniotes*year,
+                       random=list(~1|Article,~1+Amniotes|Datapoint), rho = 0, str="HCS", data=na.omit(lim))
+
+
+lim_bubble <- orchaRd::mod_results(model, mod = "year", group = "Article",
+                                   data = lim, weights = "prop", by = "Amniotes")
+
+orchaRd::bubble_plot(lim_bubble, data = lim, group = "Article", mod = "year", xlab = "Year", legend.pos = "top.left")
 
 # Data
 data(fish)
@@ -356,21 +369,22 @@ orchaRd::i2_ml(model_het, data = warm_dat, boot = 100) # Works, but not correct
 
 R2_calc <- function(model){
   if(all(class(model) %in% c("robust.rma", "rma.mv", "rma", "rma.uni")) == FALSE) {stop("Sorry, you need to fit a metafor model of class robust.rma, rma.mv, rma, rma.uni")}
-  model = model_nohet
+  model = model_het
   if(any(model$tau2 > 0)) {
-    g_sigma <- model$s.levels # extract sample size for each level
-    g_tau   <- model$g.levels.f[2]
-    g_gamma   <- model$h.levels.f[2]
+      g_sigma <- model$s.nlevels# extract sample size for each level
+      g_tau   <- model$g.nlevels[2]
+    g_gamma   <- model$h.nlevels[2]
 
     comp_group <- c(g_sigma, g_tau, g_gamma) #use this to get max g level
 
-    k_tau <- model$g.levels.k # extract sample size for each level
+      k_tau <- model$g.levels.k # extract sample size for each level
     k_gamma <- model$h.levels.k # extract sample size for each level
-    tau2 <- model$tau2
+
+      tau2 <- model$tau2
     gamma2 <- model$gamma2
 
     # Calculated the weighted variance, weighted on sample size
-    tau_var <- orchaRd::weighted_var(tau2, weights = k_tau)
+      tau_var <- orchaRd::weighted_var(tau2, weights = k_tau)
     gamma_var <- orchaRd::weighted_var(gamma2, weights = k_gamma)
 
     # Composite variance
