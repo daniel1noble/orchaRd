@@ -22,7 +22,7 @@
 #' @param ci.col Colour of the confidence interval.
 #' @param pi.col Colour of the prediction interval.
 #' @param condition.nrow Number of rows to plot condition variable.
-#' @param legend.pos Where to place the legend or not to put it ("none").
+#' @param legend.pos Where to place the legend, or not to include a legend ("none").
 #'
 #' @return Orchard plot
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
