@@ -19,6 +19,8 @@ r2_ml <- function(model, data, boot = NULL) {
 
   if(all(class(model) %in% c("robust.rma", "rma.mv", "rma", "rma.uni")) == FALSE) {stop("Sorry, you need to fit a metafor model of class robust.rma, rma.mv, rma, rma.uni")}
 
+  if(any(model$tau2 > 0)) { stop("Sorry. At the moment r2_ml cannot take models with heterogeneous variance.")}
+
   R2 <- R2_calc(model)
 
   if(!is.null(boot)){
@@ -81,8 +83,8 @@ R2_calc <- function(model){
   # marginal
   R2m <- fix / (fix + sum(model$sigma2))
 
-  # conditional
-  R2c <- (fix + sum(model$sigma2) - model$sigma2[length(model$sigma2)]) /
+  # conditional. Need to remove 'residual' variance; assume this is the sigma level with the largest k. Really the only way we can get that to work.
+  R2c <- (fix + sum(model$sigma2) - model$sigma2[which(model$s.nlevels.f == max(model$s.nlevels.f))]) /
     (fix + sum(model$sigma2))
 
   R2s <- c(R2_marginal = R2m, R2_conditional = R2c)

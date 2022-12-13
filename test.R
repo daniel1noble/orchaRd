@@ -43,6 +43,19 @@ bubble_plot(test, mod = "year", legend.pos = "top.left", group = "Article", g = 
 test2 <- mod_results(model, mod = "year", group = "Article", data = lim, weights = "prop")
 bubble_plot(test2, mod = "year", legend.pos = "top.left", group = "Article", g = T, data = lim)
 
+######################
+## Bubble plot and hetero
+data(lim)
+lim[, "year"] <- as.numeric(lim$year)
+lim$vi<- 1/(lim$N - 3)
+model<-metafor::rma.mv(yi=yi, V=vi, mods= ~Amniotes*year,
+                       random=list(~1|Article,~1+Amniotes|Datapoint), rho = 0, str="HCS", data=na.omit(lim))
+
+
+lim_bubble <- orchaRd::mod_results(model, mod = "year", group = "Article",
+                                   data = lim, weights = "prop", by = "Amniotes")
+
+orchaRd::bubble_plot(lim_bubble, data = lim, group = "Article", mod = "year", xlab = "Year", legend.pos = "top.left")
 
 # Data
 data(fish)
@@ -330,6 +343,98 @@ model_het <- metafor::rma.mv(yi = lnrr, V = lnrr_vi,
                              test = "t", rho = 0, struc = "HCS", data = warm_dat,
                              control=list(optimizer="optim", optmethod="Nelder-Mead"))
 
+filtered <- warm_dat %>% filter(trait.type %in% c("morphology", "physiology"))
+model_het_gamma <- metafor::rma.mv(yi = lnrr, V = lnrr_vi,
+                             random = list(~1 + trait.type | group_ID, ~1 + trait.type| es_ID),
+                             mods = ~ trait.type + deg_dif, method = "REML",
+                             test = "t", rho = 0, phi = 0, struc = "HCS", data = filtered,
+                             control=list(optimizer="optim", optmethod="Nelder-Mead"))
+
+model_nohet <- metafor::rma.mv(yi = lnrr, V = lnrr_vi,
+                             random = list(~1 | group_ID, ~1 | es_ID),
+                             mods = ~ trait.type + deg_dif, method = "REML",
+                             test = "t", data = warm_dat,
+                             control=list(optimizer="optim", optmethod="Nelder-Mead"))
+warm_dat %>% group_by(trait.type) %>% summarise(n = length(unique(group_ID)))
+
+### CHECK R2 and I2 with het models.
+orchaRd::r2_ml(model_nohet, data = warm_dat)
+orchaRd::r2_ml(model_het, data = warm_dat) # Works, but not correct
+orchaRd::r2_ml(model_het, data = warm_dat, boot = 100) # Works, but not correct
+
+orchaRd::i2_ml(model_nohet, data = warm_dat)
+orchaRd::i2_ml(model_het, data = warm_dat) # Works, but not correct
+orchaRd::i2_ml(model_het, data = warm_dat, boot = 100) # Works, but not correct
+
+
+R2_calc <- function(model){
+  if(all(class(model) %in% c("robust.rma", "rma.mv", "rma", "rma.uni")) == FALSE) {stop("Sorry, you need to fit a metafor model of class robust.rma, rma.mv, rma, rma.uni")}
+  model = model_het
+  if(any(model$tau2 > 0)) {
+    # extract number of levels
+      g_sigma <- model$s.nlevels
+      g_tau   <- model$g.nlevels[2]
+    g_gamma   <- model$h.nlevels[2]
+
+    comp_group <- c(g_sigma, g_tau, g_gamma) #use this to get max g level
+
+   # Sample sizes for each level
+      k_tau <- model$g.levels.k # extract sample size for each level
+    k_gamma <- model$h.levels.k # extract sample size for each level
+
+    # Extract variances for each level.
+        tau2 <- model$tau2
+      gamma2 <- model$gamma2
+
+    # Calculated the weighted variance, weighted on sample size
+      tau_var <- orchaRd::weighted_var(tau2, weights = k_tau)
+    gamma_var <- orchaRd::weighted_var(gamma2, weights = k_gamma)
+
+    # Composite variance
+    vars <- c(model$sigma2, tau_var, gamma_var)
+
+    # fixed effect variance
+    fix <- stats::var(as.numeric(as.vector(model$b) %*% t(as.matrix(model$X))))
+
+    # marginal
+    tot_res_var <- sum(vars)
+
+    R2m <- fix / (fix + tot_res_var)
+
+    # conditional
+    R2c <- (fix + (tot_res_var - tau_var)) /
+      (fix + tot_res_var)
+
+  } else{
+
+    # fixed effect variance
+    fix <- stats::var(as.numeric(as.vector(model$b) %*% t(as.matrix(model$X))))
+
+    # marginal
+    R2m <- fix / (fix + sum(model$sigma2))
+
+    # conditional
+    R2c <- (fix + sum(model$sigma2) - model$sigma2[which(model$s.nlevels.f == max(model$s.nlevels.f))]) /
+      (fix + sum(model$sigma2))
+  }
+
+  R2s <- c(R2_marginal = R2m, R2_conditional = R2c)
+  return(R2s)
+}
+
+
+
+
+###
+g.levels.k <- model_het$g.levels.k
+      tau2 <- model_het$tau2
+
+orchaRd::weighted_var(tau2, weights = g.levels.k)
+
+
+metafor::formula.rma(model_het, type = "mods")
+model_het$random
+##################################################
 # Two step process
 HetModel <- marginal_means(model_het,
                            group = "group_ID",
