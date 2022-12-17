@@ -9,6 +9,8 @@ orchaRd_vignette_files/
 _bookdown.yml
 inst/doc
 .DS_Store
-*.pdf
-*.pptx
-*.png
+figures/*.pdf
+figures/*.pptx
+figures/*.png
+figures/Table1.docx
+figures/orchard_fig.ai
