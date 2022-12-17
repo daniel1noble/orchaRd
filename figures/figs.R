@@ -69,11 +69,14 @@
 	 prop <- mod_results(mod.habitat_hom, data = pottier, group = "species_ID", weights = "prop")
 	equal <- mod_results(mod.habitat_hom, data = pottier, group = "species_ID", weights = "equal")
 
-	fig2a <- orchard_plot(mod.habitat_hom, data = pottier, group = "species_ID", xlab = "Developmental Acclimation Response Ratio (dARR)", angle = 45, weights = "prop") + ylim(c(-1,1)) + annotate("text", x = 1.2, y = 0, label = TeX(paste0("$\\mu$ = ", round(prop$mod_table[1,2], 2), ", 95% CI = ", round(prop$mod_table[1,3], 2), " to ", round(prop$mod_table[1,4], 2)))) + annotate("text", x = 1.5, y = 0, label = TeX("\\textbf{Proportional}")) + theme(axis.text.y = element_blank())
+	fig2a <- orchard_plot(mod.habitat_hom, data = pottier, group = "species_ID", xlab = "Developmental Acclimation Response Ratio (dARR)", angle = 45, weights = "prop") + ylim(c(-1,1)) + annotate("text", x = 1.5, y = 0, label = TeX(paste0("$\\mu$ = ", round(prop$mod_table[1,2], 2), ", 95% CI = ", round(prop$mod_table[1,3], 2), " to ", round(prop$mod_table[1,4], 2)))) + #annotate("text", x = 1.5, y = 0, label = TeX("\\textbf{Proportional}")) + 
+		ggtitle(TeX("\\textbf{Proportional}")) + 
+		theme(plot.title = element_text(hjust = 0.5), axis.text.y = element_blank())
 
 
-	fig2b <- orchard_plot(mod.habitat_hom, data = pottier, group = "species_ID", xlab = "Developmental Acclimation Response Ratio (dARR)", angle = 45, weights = "equal") + ylim(c(-1,1)) + annotate("text", x = 1.2, y = -0.1, label = TeX(paste0("$\\mu$ = ", round(equal$mod_table[1,2], 2), ", 95% CI = ", round(equal$mod_table[1,3], 2), " to ", round(equal$mod_table[1,4], 2)))) + annotate("text", x = 1.5, y = 0, label = TeX("\\textbf{Equal}")) + theme(axis.text.y = element_blank())
-
+	fig2b <- orchard_plot(mod.habitat_hom, data = pottier, group = "species_ID", xlab = "Developmental Acclimation Response Ratio (dARR)", angle = 45, weights = "equal") + ylim(c(-1,1)) + annotate("text", x = 1.5, y = -0.1, label = TeX(paste0("$\\mu$ = ", round(equal$mod_table[1,2], 2), ", 95% CI = ", round(equal$mod_table[1,3], 2), " to ", round(equal$mod_table[1,4], 2)))) + #annotate("text", x = 1.5, y = 0, label = TeX("\\textbf{Equal}")) 
+		ggtitle(TeX("\\textbf{Equal}")) + 
+		theme(plot.title = element_text(hjust = 0.5), axis.text.y = element_blank())
 
 	(fig2a | fig2b) + plot_annotation(tag_levels = "A", tag_suffix = ")") & theme(plot.tag = element_text(family = "Palatino", size = 24, face = "bold"))
 	ggsave(filename = "./figures/fig2.pdf", width = 8.839216, height = 3.929412)
