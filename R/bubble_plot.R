@@ -77,6 +77,11 @@ bubble_plot <- function(object, mod, group = NULL, data,
     stop("Please specify the 'group' argument by providing the name of the grouping variable. See ?bubble_plot")
   }
 
+  if(is.numeric(by)){
+   k = FALSE
+  }
+
+
   if(any(class(object) %in% c("robust.rma", "rma.mv", "rma", "rma.uni"))){
 
     if(mod != "1"){
