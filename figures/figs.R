@@ -5,10 +5,17 @@
 ###################
 	# Load packages
 
+	install.packages("pacman")
+pacman::p_load(devtools, tidyverse, metafor, patchwork, R.rsp, emmeans)
+
+devtools::install_github("daniel1noble/orchaRd", force = TRUE)
+library(orchaRd)
+
 		library(orchaRd)
 		library(metafor)
 		library(tidyverse)
 		library(latex2exp)
+		library(patchwork)
 
 	# Function for rounding  tables
 		round_df <- function(df, digits) {
@@ -106,6 +113,7 @@
 	data(lim)
 	lim[, "year"] <- as.numeric(lim$year)
 	lim$vi<- 1/(lim$N - 3)
+	lim$si <- sqrt(lim$vi)
 
 	model<-metafor::rma.mv(yi=yi, V=vi, mods= ~Environment*year,
 	                       random=list(~1|Article,~1|Datapoint), data=na.omit(lim))
@@ -116,16 +124,22 @@
 	model2<-metafor::rma.mv(yi=yi, V=vi, mods= ~rep_prop,
 	                       random=list(~1|Article,~1|Datapoint), data=na.omit(lim2))
 
-	model3<-metafor::rma.mv(yi=yi, V=vi, mods= ~vi*year,
+	model3<-metafor::rma.mv(yi=yi, V=vi, mods= ~si*year,
 	                       random=list(~1|Article,~1|Datapoint), data=na.omit(lim))
 
 
 	fig5a <- orchaRd::orchard_plot(model2, group = "Article", mod = "rep_prop", legend.pos = "top.left", xlab = "Fisher's Z-transformed Correlation Coefficient (Zr)", data = lim2, angle = 45)
-	ggsave(filename = "./figures/fig5a.pdf", width = 5.388235, height = 6.086274)
 
 
 	lim_bubble <- orchaRd::mod_results(model, mod = "year", group = "Article",
 	                    data = lim, weights = "prop", by = "Environment")
 
 	fig5b <- orchaRd::bubble_plot(lim_bubble, data = lim, group = "Article", mod = "year", xlab = "Year", legend.pos = "top.left", ylab = "Fisher's Z-transformed Correlation Coefficient (Zr)")
-	ggsave(filename = "./figures/fig5b.pdf", width = 5.168627, height = 5.647059)
+
+	lim_bubble2 <- orchaRd::mod_results(model3, mod = "si", group = "Article", at=list(year = c(1972, 2012)), data = lim, weights = "prop", by = "year")
+
+	fig5c <- orchaRd::bubble_plot(lim_bubble2, data = lim, group = "Article", mod = "vi", legend.pos = "top.left", ylab = "Fisher's Z-transformed Correlation Coefficient (Zr)", xlab = "Sampling Standard Error", k = FALSE, g = FALSE) #+ coord_fixed(ratio = 0.2)
+
+
+	(fig5a | fig5b | fig5c) + plot_layout(widths = unit(c(10,12,7), c("cm", "cm", "cm"))) + plot_annotation(tag_levels = "A", tag_suffix = ")") & theme(plot.tag = element_text(family = "Palatino", size = 24, face = "bold"))
+	ggsave(filename = "./figures/fig5.pdf", width = 15.968627, height = 6.509804)
