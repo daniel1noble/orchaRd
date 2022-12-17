@@ -79,6 +79,7 @@ bubble_plot <- function(object, mod, group = NULL, data,
 
   if(is.numeric(by)){
    k = FALSE
+   g = FALSE
   }
 
 
