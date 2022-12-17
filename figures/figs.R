@@ -75,28 +75,57 @@
 
 	ggsave(filename = "./figures/fig3b.pdf", width = 4.462745, height = 3.560784)
 
-
 ###################
 ## Figure 4
 ###################
 
-# Load the dataset that comes with orchaRd
-    data(fish)
+	# Load the dataset that comes with orchaRd
+	    data(fish)
 
-# Subset data for demonstration purposes.
-    warm_dat <- fish
+	# Subset data for demonstration purposes.
+	    warm_dat <- fish
 
- # Fit the metaregerssion model
-model_fish <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, 
-                         mods = ~ experimental_design + trait.type + deg_dif + treat_end_days,
-                         method = "REML", test = "t", 
-                         random = list(~1 | group_ID, ~1 + trait.type| es_ID), 
-                                rho = 0, struc = "HCS", 
-                         data = warm_dat, 
-                         control=list(optimizer="optim", optmethod="Nelder-Mead"))
+	 # Fit the metaregerssion model
+	model_fish <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, 
+	                         mods = ~ experimental_design + trait.type + deg_dif + treat_end_days,
+	                         method = "REML", test = "t", 
+	                         random = list(~1 | group_ID, ~1 + trait.type| es_ID), 
+	                                rho = 0, struc = "HCS", 
+	                         data = warm_dat, 
+	                         control=list(optimizer="optim", optmethod="Nelder-Mead"))
 
-orchaRd::orchard_plot(model_fish, group = "group_ID", mod = "trait.type", weights = "prop", data = warm_dat, xlab = "log Response Ratio (lnRR)", angle = 45, g = FALSE, legend.pos = "top.left", condition.lab = "Temperature Difference") + theme(legend.direction = "vertical", panel.grid = element_blank())
-ggsave(filename = "./figures/fig4a.pdf", width = 4.337255, height = 4.258823)
- 
-orchaRd::orchard_plot(model_fish, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif", weights = "prop", data = warm_dat, xlab = "log Response Ratio (lnRR)", angle = 45, g = FALSE, legend.pos = "top.left", condition.lab = "Temperature Difference") + theme(legend.direction = "vertical", panel.grid = element_blank())
-ggsave(filename = "./figures/fig4b.pdf", width = 4.337255, height = 4.258823)
+	orchaRd::orchard_plot(model_fish, group = "group_ID", mod = "trait.type", weights = "prop", data = warm_dat, xlab = "log Response Ratio (lnRR)", angle = 45, g = FALSE, legend.pos = "top.left", condition.lab = "Temperature Difference") + theme(legend.direction = "vertical", panel.grid = element_blank())
+	ggsave(filename = "./figures/fig4a.pdf", width = 4.337255, height = 4.258823)
+	 
+	orchaRd::orchard_plot(model_fish, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif", weights = "prop", data = warm_dat, xlab = "log Response Ratio (lnRR)", angle = 45, g = FALSE, legend.pos = "top.left", condition.lab = "Temperature Difference") + theme(legend.direction = "vertical", panel.grid = element_blank())
+	ggsave(filename = "./figures/fig4b.pdf", width = 4.337255, height = 4.258823)
+
+###################
+## Figure 5
+###################
+	data(lim)
+	lim[, "year"] <- as.numeric(lim$year)
+	lim$vi<- 1/(lim$N - 3)
+
+	model<-metafor::rma.mv(yi=yi, V=vi, mods= ~Environment*year,
+	                       random=list(~1|Article,~1|Datapoint), data=na.omit(lim))
+
+	lim2 <- lim %>% filter(!Reproduction == "?")
+	lim2 <- lim2 %>% mutate(rep_prop = paste(Environment, Propagule, sep = "."))
+
+	model2<-metafor::rma.mv(yi=yi, V=vi, mods= ~rep_prop,
+	                       random=list(~1|Article,~1|Datapoint), data=na.omit(lim2))
+
+	model3<-metafor::rma.mv(yi=yi, V=vi, mods= ~vi*year,
+	                       random=list(~1|Article,~1|Datapoint), data=na.omit(lim))
+
+
+	fig5a <- orchaRd::orchard_plot(model2, group = "Article", mod = "rep_prop", legend.pos = "top.left", xlab = "Fisher's Z-transformed Correlation Coefficient (Zr)", data = lim2, angle = 45)
+	ggsave(filename = "./figures/fig5a.pdf", width = 5.388235, height = 6.086274)
+
+
+	lim_bubble <- orchaRd::mod_results(model, mod = "year", group = "Article",
+	                    data = lim, weights = "prop", by = "Environment")
+
+	fig5b <- orchaRd::bubble_plot(lim_bubble, data = lim, group = "Article", mod = "year", xlab = "Year", legend.pos = "top.left", ylab = "Fisher's Z-transformed Correlation Coefficient (Zr)")
+	ggsave(filename = "./figures/fig5b.pdf", width = 5.168627, height = 5.647059)
