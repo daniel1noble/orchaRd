@@ -69,14 +69,20 @@
 	 prop <- mod_results(mod.habitat_hom, data = pottier, group = "species_ID", weights = "prop")
 	equal <- mod_results(mod.habitat_hom, data = pottier, group = "species_ID", weights = "equal")
 
+	   k <- dim(pottier)[1]
+	stdy <- pottier %>% summarise(stdy = length(unique(study_ID)))
+
+	anno <- annotate("text", x = 1.2, y = 0.75, label = TeX(paste0("\\textit{k} = ", k, " (", stdy, ")")))
+
+
 	fig2a <- orchard_plot(mod.habitat_hom, data = pottier, group = "species_ID", xlab = "Developmental Acclimation Response Ratio (dARR)", angle = 45, weights = "prop") + ylim(c(-1,1)) + annotate("text", x = 1.5, y = 0, label = TeX(paste0("$\\mu$ = ", round(prop$mod_table[1,2], 2), ", 95% CI = ", round(prop$mod_table[1,3], 2), " to ", round(prop$mod_table[1,4], 2)))) + #annotate("text", x = 1.5, y = 0, label = TeX("\\textbf{Proportional}")) +
 		ggtitle(TeX("\\textbf{Proportional}")) +
-		theme(plot.title = element_text(hjust = 0.5), axis.text.y = element_blank())
+		theme(plot.title = element_text(hjust = 0.5), axis.text.y = element_blank()) + anno
 
 
 	fig2b <- orchard_plot(mod.habitat_hom, data = pottier, group = "species_ID", xlab = "Developmental Acclimation Response Ratio (dARR)", angle = 45, weights = "equal") + ylim(c(-1,1)) + annotate("text", x = 1.5, y = -0.1, label = TeX(paste0("$\\mu$ = ", round(equal$mod_table[1,2], 2), ", 95% CI = ", round(equal$mod_table[1,3], 2), " to ", round(equal$mod_table[1,4], 2)))) + #annotate("text", x = 1.5, y = 0, label = TeX("\\textbf{Equal}"))
 		ggtitle(TeX("\\textbf{Equal}")) +
-		theme(plot.title = element_text(hjust = 0.5), axis.text.y = element_blank())
+		theme(plot.title = element_text(hjust = 0.5), axis.text.y = element_blank()) + anno
 
 	(fig2a | fig2b) + plot_annotation(tag_levels = "A", tag_suffix = ")") & theme(plot.tag = element_text(family = "Palatino", size = 24, face = "bold"))
 	ggsave(filename = "./figures/fig2.pdf", width = 8.839216, height = 3.929412)
@@ -100,10 +106,10 @@
 	                         data = warm_dat,
 	                         control=list(optimizer="optim", optmethod="Nelder-Mead"))
 
-	fig3a <- orchaRd::orchard_plot(model_fish, group = "group_ID", mod = "trait.type", weights = "prop", data = warm_dat, xlab = "log Response Ratio (lnRR)", angle = 45, g = FALSE, legend.pos = "top.left", condition.lab = "Temperature Difference") + theme(legend.direction = "vertical", panel.grid = element_blank())
+	fig3a <- orchaRd::orchard_plot(model_fish, group = "group_ID", mod = "trait.type", weights = "prop", data = warm_dat, xlab = "log Response Ratio (lnRR)", angle = 45, g = TRUE, legend.pos = "top.left", condition.lab = "Temperature Difference") + theme(legend.direction = "vertical", panel.grid = element_blank())
 	#ggsave(filename = "./figures/fig4a.pdf", width = 4.337255, height = 4.258823)
 
-	fig3b <- orchaRd::orchard_plot(model_fish, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif", weights = "prop", data = warm_dat, xlab = "log Response Ratio (lnRR)", angle = 45, g = FALSE, legend.pos = "top.left", condition.lab = "Temperature Difference") + theme(legend.direction = "vertical", panel.grid = element_blank(), axis.text.y = element_blank())
+	fig3b <- orchaRd::orchard_plot(model_fish, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif", weights = "prop", data = warm_dat, xlab = "log Response Ratio (lnRR)", angle = 45, g = TRUE, legend.pos = "top.left", condition.lab = "Temperature Difference") + theme(legend.direction = "vertical", panel.grid = element_blank(), axis.text.y = element_blank())
 	#ggsave(filename = "./figures/fig4b.pdf", width = 4.337255, height = 4.258823)
 
 	(fig3a | fig3b)  + plot_annotation(tag_levels = "A", tag_suffix = ")") & theme(plot.tag = element_text(family = "Palatino", size = 24, face = "bold"))
