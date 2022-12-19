@@ -1,9 +1,9 @@
 #' @title r2_ml
-#' @description R2 (R-squared) for mixed (mulitlevel) models, based on Nakagawa & Schielzeth (2013)
-#' @param model Model object of class 'rma.mv', 'rma'
-#' @param data Dataframe used to fit the 'rma.mv' or 'rma' model object
-#' @param boot The number of paramateric bootstrap iterations. Setting to 1000 is desired as minimal number.
-#' @return A data frame containing all the model results including mean effect size estimate, confidence and prediction intervals with estimates converted back to r
+#' @description R2 (R-squared) for mixed (mulitlevel) models, based on Nakagawa & Schielzeth (2013).
+#' @param model Model object of class \code{rma.mv} or \code{rma}.
+#' @param data Data frame used to fit the \code{rma.mv} or \code{rma} model object
+#' @param boot The number of parametric bootstrap iterations, if desired. Defaults to \code{NULL}. A setting of 1000 is recommended as a minimum number of iterations.
+#' @return A data frame containing all model results, including: mean effect size estimate, confidence and prediction intervals, with estimates converted back to r.
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
 #' @references Nakagawa, S, and Schielzeth, H. 2013. A general and simple method for obtaining R2 from generalized linear mixed‐effects models. *Methods in Ecology and Evolution* 4(2): 133-142.
@@ -61,8 +61,8 @@ return(R2)
 }
 
 #' @title R2_calc
-#' @description Calculated R2 (R-squared) for mixed (mulitlevel) models, based on Nakagawa & Schielzeth (2013)
-#' @param model Model object of class 'rma.mv', 'rma'
+#' @description Calculated R2 (R-squared) for mixed (mulitlevel) models, based on Nakagawa & Schielzeth (2013).
+#' @param model Model object of class \code{rma.mv} or \code{rma}.
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
 #' @examples

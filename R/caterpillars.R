@@ -1,17 +1,17 @@
 #' @title caterpillars
-#' @description Using a metafor model object of class rma or rma.mv or a results table of class orchard, it creates a an caterpillars plot from mean effect size estimates for all levels of a given categorical moderator, their corresponding confidence intervals and prediction intervals
-#' @param object Model object of class 'rma.mv', 'rma' or 'orchard' table of model results
-#' @param mod The name of a moderator. Otherwise, "1" for intercept only model.
-#' @param group The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes.
-#' @param data The data frame used to fit the rma.mv model object
+#' @description Using a \pkg{metafor} model object of class \code{rma} or \code{rma.mv} or a results table of class \code{orchard}, this function produces a caterpillar plot from mean effect size estimates for all levels of a given categorical moderator, their corresponding confidence intervals, and prediction intervals.
+#' @param object Model object of class \code{rma.mv}, \code{rma} or \code{orchard} table of model results
+#' @param mod The name of a moderator variable. Otherwise, "1" for an intercept-only model.
+#' @param group The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species, or whatever other grouping variable one wishes to present sample sizes for.
+#' @param data The data frame used to fit the \code{rma.mv} model object.
 #' @param xlab The effect size measure label.
-#' @param overall Logical indicating whether to relabel "Intrcpt" (the default label from rma or rma.mv intercept only models or meta-analyses) to "Overall".
-#' @param transfm If set to "tanh", a tanh transformation will be applied to effect sizes, converting Zr will to a correlation or pulling in extreme, values for other effect sizes (lnRR, lnCVR, SMD). If "none" is chosen then it will default.
-#' @param k If TRUE, it displays k (number of effect sizes) on the plot
-#' @param g If TRUE, it displays g (number of grouping levels for each level of the moderator) on the plot
-#' @param by Used when one wants marginalised means. The 'condition' variable that one wishes to have the mean for the moderator vary.
-#' @param at Used when one wants marginalised means. The 'condition' that one wishes to calculate the means at, but is not presented in output
-#' @param weights Used when one wants marginalised means. How to marginalize categorical variables. The default is weights = "prop", which wights means for moderator levels based on their proportional representation in the data. For example, if "sex" is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal. IN the case if sex, for example, males and females are roughly equally prevalent in a population. As such, you can give the moderator levels equal weight using weights = "equal".
+#' @param overall Logical, indicating whether to re-label "Intrcpt" (the default label from \code{rma} or \code{rma.mv} intercept only models or meta-analyses) to "Overall". Defaults to \code{TRUE}.
+#' @param transfm If set to \code{"tanh"}, a tanh transformation will be applied to effect sizes, converting Zr to a correlation or pulling in extreme values for other effect sizes (lnRR, lnCVR, SMD). Defaults to \code{"none"}.
+#' @param k If \code{TRUE}, it displays k (number of effect sizes) on the plot.
+#' @param g If \code{TRUE}, it displays g (number of grouping levels for each level of the moderator) on the plot.
+#' @param by Used when one wants marginalised means. Character vector indicating the name that predictions should be conditioned on for the levels of the moderator.
+#' @param at Used when one wants marginalised means. List of levels one wishes to predict at for the corresponding variables in \code{by}, but is not presented in output. Provide a list as follows: \code{list(mod = c("level1", "level2"))}.
+#' @param weights Used when one wants marginalised means. How to marginalize categorical variables. The default is \code{weights = "prop"}, which weights means for moderator levels based on their proportional representation in the data. For example, if "sex" is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal. In the case of sex, for example, males and females are roughly equally prevalent in a population. As such, you can give the moderator levels equal weight using \code{weights = "equal"}.
 #' @return Caterpillars plot
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
@@ -57,7 +57,7 @@ caterpillars <- function(object, mod = "1", data, group, xlab, overall = TRUE, t
   if (any(class(object) %in% c("orchard"))) {results <- object}
 
        ## evaluate choices
-  transfm <- match.arg(transfm) # if not sepcificed it takes the first choice
+  transfm <- match.arg(transfm) # if not specified it takes the first choice
 
   # meta-analytic results
   mod_table <- results$mod_table

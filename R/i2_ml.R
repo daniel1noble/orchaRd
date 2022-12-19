@@ -1,10 +1,10 @@
 #' @title i2_ml
-#' @description I2 (I-squared) for mulilevel meta-analytic models, based on Nakagawa & Santos (2012). Under multilevel models, we can have a multiple I2 (see also Senior et al. 2016). Alternatively, the method proposed by Wolfgang Viechtbauer can also be used.
-#' @param model Model object of class 'rma.mv', 'rma'. Currently only model objects using the 'mods' argument (e.g., mod = ~1) work.
-#' @param method Method used to calculate I2. Two options exist, a ratio base calculation proposed by Nakagawa & Santos ('ratio') or Wolfgang Viechtbauer's matrix method ("matrix").
-#' @param data Data set used to fit the model.
-#' @param boot Number of simulations to run to produce 95\% CI's for I2. Default is NULL and only point estimate is provided.
-#' @return A data frame containing all the model results including mean effect size estimate, confidence and prediction intervals
+#' @description I2 (I-squared) for mulilevel meta-analytic models, based on Nakagawa & Santos (2012). Under multilevel models, we can have multiple I2 (see also Senior et al. 2016). Alternatively, the method proposed by Wolfgang Viechtbauer can also be used.
+#' @param model Model object of class \code{rma.mv} or \code{rma}. Currently only model objects using the \code{mods} argument work (e.g., \code{mod = ~1}).
+#' @param method Method used to calculate I2. Two options exist: a ratio-based calculation proposed by Nakagawa & Santos (\code{"ratio"}), or Wolfgang Viechtbauer's matrix method (\code{"matrix"}).
+#' @param data Data frame used to fit the model.
+#' @param boot Number of simulations to run to produce 95% confidence intervals for I2. Default is \code{NULL}, where only the point estimate is provided.
+#' @return A data frame containing all the model results including mean effect size estimate, confidence, and prediction intervals
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
 #' @examples
@@ -107,7 +107,7 @@ i2_ml <- function(model, method = c("ratio", "matrix"), data, boot = NULL) {
 
 #' @title matrix_i2
 #' @description Calculated I2 (I-squared) for mulilevel meta-analytic models, based on a matrix method proposed by Wolfgang Viechtbauer.
-#' @param model Model object of class 'rma.mv', 'rma'
+#' @param model Model object of class \code{rma.mv} or \code{rma}.
 #' @examples
 #' \dontrun{
 #' # English example
@@ -144,7 +144,7 @@ matrix_i2 <- function(model){
 
 #' @title ratio_i2
 #' @description I2 (I-squared) for mulilevel meta-analytic models based on Nakagawa & Santos (2012). Under multilevel models, we can have a multiple I2 (see also Senior et al. 2016).
-#' @param model Model object of class 'rma.mv', 'rma'
+#' @param model Model object of class \code{rma.mv} or \code{rma}.
 #' @examples
 #' \dontrun{
 #' # English example

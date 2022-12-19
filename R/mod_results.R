@@ -1,18 +1,18 @@
 ############# Key functions #############
 
 #' @title mod_results
-#' @description Using a metafor model object of class rma or rma.mv it creates a table of model results containing the mean effect size estimates for all levels of a given categorical moderator, their corresponding confidence intervals and prediction intervals. Function can calculate marginal means from meta-regression models with single or multiple moderator variables that are both continuous or categorical.
-#' @param model rma.mv model object
-#' @param mod Moderator variable of interest that one wants marginal means for. Defaults to intercept "1".
-#' @param group The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes.
+#' @description Using a \pkg{metafor} model object of class \code{rma} or \code{rma.mv}, this function creates a table of model results containing the mean effect size estimates for all levels of a given categorical moderator, and their corresponding confidence and prediction intervals. The function is capable of calculating marginal means from meta-regression models, including those with multiple moderator variables of mixed types (i.e. continuous and categorical variables).
+#' @param model \code{rma.mv} model object
+#' @param mod Moderator variable of interest that one wants marginal means for. Defaults to the intercept, i.e. \code{"1"}.
+#' @param group The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species, or any grouping variable one wishes to present sample sizes for.
 #' @param by Character vector indicating the name that predictions should be conditioned on for the levels of the moderator.
-#' @param at List of levels one wishes to predict at for the corresponding variables in 'by'. Used when one wants marginalised means. This argument can also be used to suppress levels of the moderator when argument 'subset = TRUE'. Provide a list as follows: list(mod = c("level1", "level2")).
-#' @param data The data frame used to fit the rma.mv model object
-#' @param weights how to marginalize categorical variables. The default is weights = "prop", which wights means for moderator levels based on their proportional representation in the data. For example, if "sex" is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal. In the case of sex, for example, males and females are roughly equally prevalent in a population. As such, you can give the moderator levels equal weight using weights = "equal".
-#' @param subset Used when one wishes to only plot a subset of levels within the main moderator of interest defined by 'mod'. Default is FALSE, but use TRUE if you wish to subset levels of a moderator plotted (defined by 'mod') for plotting. Levels one wishes to plot are specified as a list with the level names as a character string in the 'at' argument. For subsetting to work, 'at' argument also needs to be specified so that 'mod_results' knows what levels one wishes to plot.
-#' @param N  The name of the column in the data specifying the sample size, N. Defaults to NULL and precision is plotted instead of sample size.
-#' @param upper logical indicating if the first letter of the character string for moderator should be capitalized.
-#' @param ... Additional arguments passed to emmeans::emmeans()
+#' @param at List of levels one wishes to predict at for the corresponding variables in \code{by}. Used when one wants marginalised means. This argument can also be used to suppress levels of the moderator when argument \code{subset = TRUE}. Provide a list as follows: \code{list(mod = c("level1", "level2"))}.
+#' @param data The data frame used to fit the \code{rma.mv} model object.
+#' @param weights How to marginalize categorical variables. The default is \code{weights = "prop"}, which weights moderator level means based on their proportional representation in the data. For example, if "sex" is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal. In the case of sex, for example, males and females are roughly equally prevalent in a population. As such, you can give the moderator levels equal weight using \code{weights = "equal"}.
+#' @param subset Used when one wishes to only plot a subset of levels within the main moderator of interest defined by \code{mod}. Default is \code{FALSE}, but use \code{TRUE} if you wish to subset levels of a moderator plotted (defined by \code{mod}) for plotting. Levels one wishes to plot are specified as a list, with the level names as a character string in the \code{at} argument. For subsetting to work, the \code{at} argument also needs to be specified so that the \code{mod_results} function knows what levels one wishes to plot.
+#' @param N The name of the column in the data specifying the sample size, N. Defaults to \code{NULL}, so that precision is plotted instead of sample size.
+#' @param upper Logical, defaults to \code{TRUE}, indicating that the first letter of the character string for the moderator variable should be capitalized.
+#' @param ... Additional arguments passed to \code{emmeans::emmeans()}.
 #' @return A data frame containing all the model results including mean effect size estimate, confidence and prediction intervals
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
@@ -179,11 +179,11 @@ mod_results <- function(model, mod = "1", group, data, N = NULL,  weights = "pro
 ############# Key Sub-functions #############
 
 #' @title pred_interval_esmeans
-#' @description Function to get prediction intervals (credibility intervals) from esmeans objects (metafor)
-#' @param model rma.mv object
-#' @param mm result from emmeans::emmeans object'
-#' @param mod Moderator of interest
-#' @param ... other arguments passed to function
+#' @description Function to get prediction intervals (credibility intervals) from \code{esmeans} objects (\pkg{metafor}).
+#' @param model \code{rma.mv} object.
+#' @param mm result from \code{emmeans::emmeans} object.
+#' @param mod Moderator of interest.
+#' @param ... other arguments passed to function.
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
 #' @export
@@ -225,14 +225,14 @@ return(tmp)
 }
 
 #' @title get_data_raw
-#' @description Collects and builds the data used to fit the rma.mv or rma model in metafor
-#' @param model rma.mv object
-#' @param mod the moderator variable
-#' @param group The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes.
-#' @param data The data frame used to fit the rma.mv model object
-#' @param N  The name of the column in the data specifying the sample size, N. Defaults to NULL and precision is plotted instead of sample size.
-#' @param  at List of moderators. If `at` is equal to `mod` then levels specified within at will be used to subset levels when 'subset = TRUE'. Otherwise, it will marginalise over the moderators at the specified levels.
-#' @param subset Whether or not to subset levels within the 'mod' argument. Default = FALSE.
+#' @description Collects and builds the data used to fit the \code{rma.mv} or \code{rma} model in \pkg{metafor}.
+#' @param model \code{rma.mv} object.
+#' @param mod the moderator variable.
+#' @param group The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species, or whatever other grouping variable one wishes to present sample sizes.
+#' @param data The data frame used to fit the \code{rma.mv} model object.
+#' @param N The name of the column in the data specifying the sample size, N. Defaults to \code{NULL}, so precision is plotted instead of sample size.
+#' @param at List of moderators. If \code{at} is equal to \code{mod} then levels specified within \code{at} will be used to subset levels when \code{subset = TRUE}. Otherwise, it will marginalise over the moderators at the specified levels.
+#' @param subset Whether or not to subset levels within the \code{mod} argument. Defaults to \code{FALSE}.
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
 #' @return Returns a data frame
@@ -299,12 +299,12 @@ get_data_raw <- function(model, mod, group, N = NULL, data, at = NULL, subset = 
 }
 
 #' @title get_data_raw_cont
-#' @description Collects and builds the data used to fit the rma.mv or rma model in metafor when a continuous variable fit within a model object
-#' @param model rma.mv object
-#' @param mod the moderator variable
+#' @description Collects and builds the data used to fit the \code{rma.mv} or \code{rma} model in \pkg{metafor} when a continuous variable is fit within a model object.
+#' @param model \code{rma.mv} object.
+#' @param mod the moderator variable.
 #' @param group The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes.
-#' @param N  The name of the column in the data specifying the sample size, N. Defaults to NULL and precision is plotted instead of sample size.
-#' @param data The data frame used to fit the rma.mv model object
+#' @param N  The name of the column in the data specifying the sample size, N. Defaults to \code{NULL} so that precision is plotted instead of sample size.
+#' @param data The data frame used to fit the \code{rma.mv} model object.
 #' @param by Character name(s) of the 'condition' variables to use for grouping into separate tables.
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
@@ -405,13 +405,13 @@ weighted_var <- function(x, weights){
 
 
 #' @title num_studies
-#' @description Computes how many studies are in each level of categorical moderators of a rma.mv model object.
+#' @description Computes how many studies are in each level of categorical moderators of a \code{rma.mv} model object.
 #' @param mod Character string describing the moderator of interest.
 #' @param data Raw data from object of class "orchard"
 #' @param group A character string specifying the column name of the study ID grouping variable.
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
-#' @return Returns a table with the number of studies in each level of all parameters within a rma.mv or rma object.
+#' @return Returns a table with the number of studies in each level of all parameters within a \code{rma.mv} or \code{rma} object.
 #' @export
 #' @examples
 #' \dontrun{data(fish)
