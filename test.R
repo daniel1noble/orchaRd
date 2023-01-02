@@ -11,6 +11,7 @@ install.packages("R.rsp")
 remotes::install_github("daniel1noble/orchaRd", force = TRUE)
 remotes::install_github("rvlenth/emmeans", dependencies = TRUE, build_opts = "")
 
+
 library(orchaRd)
 library(metafor)
 library(emmeans)
@@ -51,11 +52,28 @@ lim$vi<- 1/(lim$N - 3)
 model<-metafor::rma.mv(yi=yi, V=vi, mods= ~Amniotes*year,
                        random=list(~1|Article,~1+Amniotes|Datapoint), rho = 0, str="HCS", data=na.omit(lim))
 
+model<-metafor::rma.mv(yi~Amniotes*year, V=vi,
+                       random=list(~1|Article,~1+Amniotes|Datapoint), rho = 0, str="HCS", data=na.omit(lim))
 
 lim_bubble <- orchaRd::mod_results(model, mod = "year", group = "Article",
                                    data = lim, weights = "prop", by = "Amniotes")
 
 orchaRd::bubble_plot(lim_bubble, data = lim, group = "Article", mod = "year", xlab = "Year", legend.pos = "top.left")
+
+## Testing if categorical interactions are a problem. Note here that we get Warning message:
+# Redundant predictors dropped from the model. And then this fails. So, I think emmeans just can't have a situation where levels of one variable are dropped because they don't fit in the model. Should be easy to fix this by creating a interaction between two variables and fitting the model differently
+
+modelLim1<-metafor::rma.mv(yi~RU*Order, V=vi,
+                       random=list(~1|Article,~1+Amniotes|Datapoint), rho = 0, str="HCS", data=na.omit(lim))
+
+orchard_plot(modelLim1, mod = "year", group = "Article", data = lim, xlab = "Zr") # FAILS
+
+lim$new_fac <- with(lim, as.character(interaction(Order, RU))) # Try as character to make sure that when something is dropped the level doesn't remain if a factor.
+modelLim2<-metafor::rma.mv(yi~new_fac, V=vi,
+                           random=list(~1|Article,~1+new_fac|Datapoint), rho = 0, str="HCS", data=na.omit(lim))
+
+orchard_plot(modelLim2, mod = "new_fac", group = "Article", data = lim, xlab = "Zr") # FAILS, but again, here we have "Redundant predictors dropped from the model. " warning. We need to make sure that this doesn't happen in model fitting.
+
 
 # Data
 data(fish)
