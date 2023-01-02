@@ -142,11 +142,11 @@
 	lim_bubble <- orchaRd::mod_results(model, mod = "year", group = "Article",
 	                    data = lim, weights = "prop", by = "Environment")
 
-	fig4b <- orchaRd::bubble_plot(lim_bubble, data = lim, group = "Article", mod = "year", xlab = "Year", legend.pos = "top.left", ylab = "Fisher's Z-transformed Correlation Coefficient (Zr)", g = TRUE) + ggtitle(TeX("\\textbf{Continuious x Categorical}")) + theme(plot.title = element_text(hjust = 0.5))
+	fig4b <- orchaRd::bubble_plot(lim_bubble, data = lim, group = "Article", mod = "year", xlab = "Year", legend.pos = "top.left", ylab = "Fisher's Z-transformed Correlation Coefficient (Zr)", g = TRUE) + ggtitle(TeX("\\textbf{Continuous x Categorical}")) + theme(plot.title = element_text(hjust = 0.5))
 
 	lim_bubble2 <- orchaRd::mod_results(model3, mod = "si", group = "Article", at=list(year = c(1972, 2012)), data = lim, weights = "prop", by = "year")
 
-	fig4c <- orchaRd::bubble_plot(lim_bubble2, data = lim, group = "Article", mod = "vi", legend.pos = "top.left", ylab = "Fisher's Z-transformed Correlation Coefficient (Zr)", xlab = "Sampling Standard Error", k = FALSE, g = FALSE) + ggtitle(TeX("\\textbf{Continuious x Continuious}")) + theme(plot.title = element_text(hjust = 0.5))
+	fig4c <- orchaRd::bubble_plot(lim_bubble2, data = lim, group = "Article", mod = "vi", legend.pos = "top.left", ylab = "Fisher's Z-transformed Correlation Coefficient (Zr)", xlab = "Sampling Standard Error", k = FALSE, g = FALSE) + ggtitle(TeX("\\textbf{Continuous x Continuous}")) + theme(plot.title = element_text(hjust = 0.5))
 
 
 	(fig4a | fig4b | fig4c) + plot_layout(widths = unit(c(10,12,7), c("cm", "cm", "cm"))) + plot_annotation(tag_levels = "A", tag_suffix = ")") & theme(plot.tag = element_text(family = "Palatino", size = 24, face = "bold"))
