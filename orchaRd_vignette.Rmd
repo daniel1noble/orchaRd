@@ -118,7 +118,7 @@ We can now draw a comparable caterpillar plot by using the function `caterpillar
 ```{r Figure3, echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE, class.source='klippy', fig.width = 6, fig.height = 6, fig.cap = "Catterpilar plot of the impact caloric restriction using standardised mean difference", messages = FALSE, warnings = FALSE}
 
 # a caterpillar plot (not a caterpillars plot)
-orchaRd::caterpillars(model_results, mod="Int", xlab = "Standardised mean difference") 
+orchaRd::caterpillars(model_results, mod="1", xlab = "Standardised mean difference") 
 ```
 
 It is now interesting to compare how the same data set can be visualised different by look at Figure \@ref(fig:Figure2) and Figure \@ref(fig:Figure3). It is good that the caterpillar plot can show CIs for each effect size. An equivalent function was done with the size of fruit in the orchard plot. 
