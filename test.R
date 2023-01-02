@@ -66,13 +66,13 @@ orchaRd::bubble_plot(lim_bubble, data = lim, group = "Article", mod = "year", xl
 modelLim1<-metafor::rma.mv(yi~RU*Order, V=vi,
                        random=list(~1|Article,~1+Amniotes|Datapoint), rho = 0, str="HCS", data=na.omit(lim))
 
-orchard_plot(modelLim1, mod = "year", group = "Article", data = lim, xlab = "Zr") # FAILS
+orchard_plot(modelLim1, mod = "year", group = "Article", data = na.omit(lim), xlab = "Zr") # FAILS
 
 lim$new_fac <- with(lim, as.character(interaction(Order, RU))) # Try as character to make sure that when something is dropped the level doesn't remain if a factor.
 modelLim2<-metafor::rma.mv(yi~new_fac, V=vi,
                            random=list(~1|Article,~1+new_fac|Datapoint), rho = 0, str="HCS", data=na.omit(lim))
 
-orchard_plot(modelLim2, mod = "new_fac", group = "Article", data = lim, xlab = "Zr") # FAILS, but again, here we have "Redundant predictors dropped from the model. " warning. We need to make sure that this doesn't happen in model fitting.
+orchard_plot(modelLim2, mod = "new_fac", group = "Article", data = na.omit(lim), xlab = "Zr", cb = FALSE) # WORKS
 
 
 # Data
@@ -284,17 +284,13 @@ get_data_raw2 <- function(model, mod, group, data){
 #########
 # Example 1: Overall marginal means for each level of experimental design
   # Two step with marginal means
-  overall <- marginal_means(model, mod = "experimental_design", group = "group_ID",
-                            data = warm_dat)
-  orchard_plot(overall, xlab = "lnRR", trunk.size = 2, branch.size = 2, twig.size = 0.5,
-               angle = 45)
 
   # Directly with model
-  orchard_plot(model, xlab = "lnRR", data = warm_dat, mod = "experimental_design", group = "group_ID", trunk.size = 2, branch.size = 2, twig.size = 0.5, angle = 45, marginal = TRUE)
+  orchard_plot(model, xlab = "lnRR", data = warm_dat, mod = "experimental_design", group = "group_ID", trunk.size = 2, branch.size = 2, twig.size = 0.5, angle = 45)
 
 # Example 2: Overall marginal mean across all designs
   # Two step with marginal means
-  overall1.1 <- marginal_means(model, group = "group_ID", data = warm_dat)
+
   orchard_plot(overall1.1, xlab = "lnRR", trunk.size = 2, branch.size = 1.2, twig.size = 2)
 
   # Directly with model
