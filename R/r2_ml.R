@@ -37,13 +37,13 @@ r2_ml <- function(model, data, boot = NULL) {
     pb <- progress::progress_bar$new(total = boot,
                                      format = "Bootstrapping [:bar] :percent ETA: :eta",
                                      show_after = 0)
-    # Paramatric bootsrap
+    # Parametric bootstrap
     R2 <- sapply(sim, function(ysim) {
       # The model
-      tmp <- metafor::rma.mv( ysim, vi,
+      tmp <- tryCatch(metafor::rma.mv( ysim, vi,
                      mods = mods_formula,
                      random = random_formula,
-                     data = data)
+                     data = data))
       R2s <- R2_calc(tmp)
       pb$tick()
       Sys.sleep(1 / boot)

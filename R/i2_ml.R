@@ -73,7 +73,7 @@ i2_ml <- function(model, method = c("ratio", "matrix"), data, boot = NULL) {
       mods_formula <- metafor::formula.rma(model, type = "mods") #in case moderators
                 vi <- model$vi
 
-    # Paramatric bootsrap
+    # Parametric bootstrap
                 pb <- progress::progress_bar$new(total = boot,
                                                  format = "Bootstrapping [:bar] :percent ETA: :eta",
                                                  show_after = 0)
@@ -81,10 +81,10 @@ i2_ml <- function(model, method = c("ratio", "matrix"), data, boot = NULL) {
      I2_each <- sapply(sim, function(ysim) {
 
               # The model
-             tmp <- metafor::rma.mv( ysim, vi,
+             tmp <- tryCatch(metafor::rma.mv( ysim, vi,
                              mods = mods_formula,
                            random = random_formula,
-                             data = data)
+                             data = data))
              pb$tick()
              Sys.sleep(1 / boot)
 
