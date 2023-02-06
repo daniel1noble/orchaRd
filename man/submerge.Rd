@@ -7,16 +7,16 @@
 submerge(object1, object2, ..., mix = FALSE)
 }
 \arguments{
-\item{object1}{object of class orchard}
+\item{object1}{object of class \code{orchard}.}
 
-\item{object2}{object of class orchard}
+\item{object2}{object of class \code{orchard}.}
 
-\item{...}{Other arguments passed to submerge}
+\item{...}{Other arguments passed to submerge.}
 
-\item{mix}{If TRUE, it will add the number to the moderator name}
+\item{mix}{If \code{TRUE}, it will add the number to the moderator name.}
 }
 \value{
-Returns a data frame
+Returns a data frame.
 }
 \description{
 Merge two model results tables (orchard objects).

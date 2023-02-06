@@ -7,7 +7,7 @@
 ratio_i2(model)
 }
 \arguments{
-\item{model}{Model object of class 'rma.mv', 'rma'}
+\item{model}{Model object of class \code{rma.mv} or \code{rma}.}
 }
 \description{
 I2 (I-squared) for mulilevel meta-analytic models based on Nakagawa & Santos (2012). Under multilevel models, we can have a multiple I2 (see also Senior et al. 2016).

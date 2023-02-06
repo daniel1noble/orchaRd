@@ -11,14 +11,14 @@ A data frame :
   \item{EffectID}{Effect size ID}
   \item{Author}{First author of study}
 	  \item{Year}{Year of study publication}
-   \item{Journal}{Research journal study was published}
+   \item{Journal}{Research journal where study was published}
 	  \item{Species}{Common name of species}
    \item{Phylum}{Phylum of species}
    \item{ExptLifeStage}{Life stage when manipulation was undertaken}
 		\item{ManipType}{Type of food manipulation}
 		\item{CatchUp}{Whether species exhibits catchup growth}
 		\item{Sex}{Sex of organisms in sample}
-		\item{AdultDiet}{Diet adults were provided and whether it was restricted or control}
+		\item{AdultDiet}{Diet adults were provided and whether it was restricted (treatment) or the control}
 		\item{NStartControl}{Sample size of the control group}
 		\item{NStartExpt}{Sample size of the treatment group}
 		\item{MeanC}{Mean of the control group}
@@ -29,7 +29,7 @@ A data frame :
 }
 }
 \description{
-English and Uller (2016) performed a systematic review and meta-analysis on the effects of early life dietary restriction (a reduction in a major component of the diet without malnutrition; e.g. caloric restriction) on average at death, using the standardised mean difference (often called *d*). In a subsequent publication, Senior et al. (2017) analysed this dataset for effects of dietary-restriction on among-individual variation in the age at death using the log coefficient of variation ratio. A major prediction in both English & Uller (2016) and Senior et al. (2017) was that the type pf manipulation, whether the study manipulated quality of food versus the quantity of food would be important.
+English and Uller (2016) performed a meta-analysis on the effects of early life dietary restriction (a reduction in a major component of the diet without malnutrition; e.g. caloric restriction) on average age at death, using the standardised mean difference (often called *d*). In a subsequent publication, Senior et al. (2017) analysed this dataset for effects of dietary-restriction on among-individual variation in the age at death using the log coefficient of variation ratio. A major prediction in both English & Uller (2016) and Senior et al. (2017) was that the type of manipulation, whether the study manipulated quality of food versus the quantity of food, would be important.
 }
 \references{
 English S, Uller T. 2016. Does early-life diet affect longevity? A meta-analysis across experimental studies. Biology Letters, 12: http://doi:10.1098/rsbl.2016.0291

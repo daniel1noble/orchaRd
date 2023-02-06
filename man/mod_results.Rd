@@ -19,33 +19,33 @@ mod_results(
 )
 }
 \arguments{
-\item{model}{rma.mv model object}
+\item{model}{\code{rma.mv} model object}
 
-\item{mod}{Moderator variable of interest that one wants marginal means for. Defaults to intercept "1".}
+\item{mod}{Moderator variable of interest that one wants marginal means for. Defaults to the intercept, i.e. \code{"1"}.}
 
-\item{group}{The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes.}
+\item{group}{The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species, or any grouping variable one wishes to present sample sizes for.}
 
-\item{data}{The data frame used to fit the rma.mv model object}
+\item{data}{The data frame used to fit the \code{rma.mv} model object.}
 
-\item{N}{The name of the column in the data specifying the sample size, N. Defaults to NULL and precision is plotted instead of sample size.}
+\item{N}{The name of the column in the data specifying the sample size, N. Defaults to \code{NULL}, so that precision is plotted instead of sample size.}
 
-\item{weights}{how to marginalize categorical variables. The default is weights = "prop", which wights means for moderator levels based on their proportional representation in the data. For example, if "sex" is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal. In the case of sex, for example, males and females are roughly equally prevalent in a population. As such, you can give the moderator levels equal weight using weights = "equal".}
+\item{weights}{How to marginalize categorical variables. The default is \code{weights = "prop"}, which weights moderator level means based on their proportional representation in the data. For example, if "sex" is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal. In the case of sex, for example, males and females are roughly equally prevalent in a population. As such, you can give the moderator levels equal weight using \code{weights = "equal"}.}
 
 \item{by}{Character vector indicating the name that predictions should be conditioned on for the levels of the moderator.}
 
-\item{at}{List of levels one wishes to predict at for the corresponding variables in 'by'. Used when one wants marginalised means. This argument can also be used to suppress levels of the moderator when argument 'subset = TRUE'. Provide a list as follows: list(mod = c("level1", "level2")).}
+\item{at}{List of levels one wishes to predict at for the corresponding variables in \code{by}. Used when one wants marginalised means. This argument can also be used to suppress levels of the moderator when argument \code{subset = TRUE}. Provide a list as follows: \code{list(mod = c("level1", "level2"))}.}
 
-\item{subset}{Used when one wishes to only plot a subset of levels within the main moderator of interest defined by 'mod'. Default is FALSE, but use TRUE if you wish to subset levels of a moderator plotted (defined by 'mod') for plotting. Levels one wishes to plot are specified as a list with the level names as a character string in the 'at' argument. For subsetting to work, 'at' argument also needs to be specified so that 'mod_results' knows what levels one wishes to plot.}
+\item{subset}{Used when one wishes to only plot a subset of levels within the main moderator of interest defined by \code{mod}. Default is \code{FALSE}, but use \code{TRUE} if you wish to subset levels of a moderator plotted (defined by \code{mod}) for plotting. Levels one wishes to plot are specified as a list, with the level names as a character string in the \code{at} argument. For subsetting to work, the \code{at} argument also needs to be specified so that the \code{mod_results} function knows what levels one wishes to plot.}
 
-\item{upper}{logical indicating if the first letter of the character string for moderator should be capitalized.}
+\item{upper}{Logical, defaults to \code{TRUE}, indicating that the first letter of the character string for the moderator variable should be capitalized.}
 
-\item{...}{Additional arguments passed to emmeans::emmeans()}
+\item{...}{Additional arguments passed to \code{emmeans::emmeans()}.}
 }
 \value{
 A data frame containing all the model results including mean effect size estimate, confidence and prediction intervals
 }
 \description{
-Using a metafor model object of class rma or rma.mv it creates a table of model results containing the mean effect size estimates for all levels of a given categorical moderator, their corresponding confidence intervals and prediction intervals. Function can calculate marginal means from meta-regression models with single or multiple moderator variables that are both continuous or categorical.
+Using a \pkg{metafor} model object of class \code{rma} or \code{rma.mv}, this function creates a table of model results containing the mean effect size estimates for all levels of a given categorical moderator, and their corresponding confidence and prediction intervals. The function is capable of calculating marginal means from meta-regression models, including those with multiple moderator variables of mixed types (i.e. continuous and categorical variables).
 }
 \examples{
 \dontrun{

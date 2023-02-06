@@ -32,57 +32,57 @@ bubble_plot(
 )
 }
 \arguments{
-\item{object}{model object of class 'rma.mv', 'rma' or 'orchard' table of model results}
+\item{object}{Model object of class \code{rma}, \code{rma.mv}, or \code{orchard} table of model results}
 
-\item{mod}{the name of a continuous moderator.}
+\item{mod}{The name of a continuous moderator, to be plotted on the x-axis of the bubble plot.}
 
-\item{group}{The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes. Not needed of a orchard_plot is provided with a mod_results object of class 'orchard'.}
+\item{group}{The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species, or any grouping variable one wishes to present sample sizes for. Not needed if an \code{orchard_plot} is provided with a \code{mod_results} object of class \code{orchard}.}
 
-\item{data}{The data frame used to fit the rma.mv model object. Not needed of a orchard_plot is provided with a mod_results object of class 'orchard'.}
+\item{data}{The data frame used to fit the \code{rma.mv} model object. Not needed if an \code{orchard_plot} is provided with a \code{mod_results} object of class \code{orchard}.}
 
 \item{xlab}{Moderator label.}
 
 \item{ylab}{Effect size measure label.}
 
-\item{N}{The vector of sample size which an effect size is based on. If default, we use precision (the inverse of sampling standard error)}
+\item{N}{The vector of sample size which an effect size is based on. Defaults to precision (the inverse of sampling standard error).}
 
-\item{alpha}{The level of transparency for pieces of fruit (effect size)}
+\item{alpha}{The level of transparency for pieces of fruit (effect size).}
 
-\item{cb}{If TRUE, it uses 20 colour blind friendly colors (do not make this TRUE, when colour = TRUE)}
+\item{cb}{If \code{TRUE}, it uses a colourblind-friendly palette of 20 colours (do not make this \code{TRUE}, when colour = \code{TRUE}).}
 
-\item{k}{If TRUE, it displays k (number of effect sizes) on the plot}
+\item{k}{If \code{TRUE}, it displays k (number of effect sizes) on the plot.}
 
-\item{g}{If TRUE, it displays g (number of grouping levels for each level of the moderator) on the plot}
+\item{g}{If \code{TRUE}, it displays g (number of grouping levels for each level of the moderator) on the plot.}
 
-\item{est.lwd}{Size of the point estimate}
+\item{est.lwd}{Size of the point estimate.}
 
-\item{ci.lwd}{Size of the confidence interval}
+\item{ci.lwd}{Size of the confidence interval.}
 
-\item{pi.lwd}{Size of the prediction interval}
+\item{pi.lwd}{Size of the prediction interval.}
 
-\item{est.col}{Colour of the point estimate}
+\item{est.col}{Colour of the point estimate.}
 
-\item{ci.col}{Colour of the confidence interval}
+\item{ci.col}{Colour of the confidence interval.}
 
-\item{pi.col}{Colour of the prediction interval}
+\item{pi.col}{Colour of the prediction interval.}
 
-\item{legend.pos}{Where to place the legend or not to put it ("none")}
+\item{legend.pos}{Where to place the legend, or not to include a legend ("none").}
 
 \item{k.pos}{The position of effect size number, k.}
 
 \item{condition.nrow}{Number of rows to plot condition variable.}
 
-\item{weights}{Used when one wants marginalised means. How to marginalize categorical variables. The default is weights = "prop", which wights means for moderator levels based on their proportional representation in the data. For example, if "sex" is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal. IN the case if sex, for example, males and females are roughly equally prevalent in a population. As such, you can give the moderator levels equal weight using weights = "equal".}
+\item{weights}{How to marginalize categorical variables; used when one wants marginalised means. The default is \code{weights = "prop"}, which weights means for moderator levels based on their proportional representation in the data. For example, if \code{"sex"} is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal when, for example, males and females are typically roughly equally prevalent in a population. In cases such as these, you can give the moderator levels equal weight using \code{weights = "equal"}.}
 
 \item{by}{Character vector indicating the name that predictions should be conditioned on for the levels of the moderator.}
 
-\item{at}{List of levels one wishes to predict at for the corresponding variables in 'by'. Used when one wants marginalised means. This argument can also be used to supress levels of the modertator when argument 'subset = TRUE'. Provide a list as follows: list(mod = c("level1", "level2")).}
+\item{at}{List of levels one wishes to predict at for the corresponding variables in \code{by}. Used when one wants marginalised means. This argument can also be used to suppress levels of the moderator when argument \code{subset = TRUE}. Provide a list as follows: \code{list(mod = c("level1", "level2"))}.}
 }
 \value{
 Orchard plot
 }
 \description{
-Using a metafor model object of class rma or rma.mv or a results table of class orchard, it creates a bubble plot from slope estimates or panels of bubble plots in cases when a model includes interaction terms.
+Using a \pkg{metafor} model object of class \code{rma} or \code{rma.mv}, or a results table of class \code{orchard}, the \code{bubble_plot} function creates a bubble plot from slope estimates. In cases when a model includes interaction terms, this function creates panels of bubble plots.
 }
 \examples{
 \dontrun{

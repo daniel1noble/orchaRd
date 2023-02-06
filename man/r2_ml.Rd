@@ -7,17 +7,17 @@
 r2_ml(model, data, boot = NULL)
 }
 \arguments{
-\item{model}{Model object of class 'rma.mv', 'rma'}
+\item{model}{Model object of class \code{rma.mv} or \code{rma}.}
 
-\item{data}{Dataframe used to fit the 'rma.mv' or 'rma' model object}
+\item{data}{Data frame used to fit the \code{rma.mv} or \code{rma} model object}
 
-\item{boot}{The number of paramateric bootstrap iterations. Setting to 1000 is desired as minimal number.}
+\item{boot}{The number of parametric bootstrap iterations, if desired. Defaults to \code{NULL}. A setting of 1000 is recommended as a minimum number of iterations.}
 }
 \value{
-A data frame containing all the model results including mean effect size estimate, confidence and prediction intervals with estimates converted back to r
+A data frame containing all model results, including: mean effect size estimate, confidence and prediction intervals, with estimates converted back to r.
 }
 \description{
-R2 (R-squared) for mixed (mulitlevel) models, based on Nakagawa & Schielzeth (2013)
+R2 (R-squared) for mixed (mulitlevel) models, based on Nakagawa & Schielzeth (2013).
 }
 \examples{
 \dontrun{

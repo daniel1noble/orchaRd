@@ -7,25 +7,25 @@
 get_data_raw(model, mod, group, N = NULL, data, at = NULL, subset = TRUE)
 }
 \arguments{
-\item{model}{rma.mv object}
+\item{model}{\code{rma.mv} object.}
 
-\item{mod}{the moderator variable}
+\item{mod}{the moderator variable.}
 
-\item{group}{The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes.}
+\item{group}{The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species, or whatever other grouping variable one wishes to present sample sizes.}
 
-\item{N}{The name of the column in the data specifying the sample size, N. Defaults to NULL and precision is plotted instead of sample size.}
+\item{N}{The name of the column in the data specifying the sample size, N. Defaults to \code{NULL}, so precision is plotted instead of sample size.}
 
-\item{data}{The data frame used to fit the rma.mv model object}
+\item{data}{The data frame used to fit the \code{rma.mv} model object.}
 
-\item{at}{List of moderators. If `at` is equal to `mod` then levels specified within at will be used to subset levels when 'subset = TRUE'. Otherwise, it will marginalise over the moderators at the specified levels.}
+\item{at}{List of moderators. If \code{at} is equal to \code{mod} then levels specified within \code{at} will be used to subset levels when \code{subset = TRUE}. Otherwise, it will marginalise over the moderators at the specified levels.}
 
-\item{subset}{Whether or not to subset levels within the 'mod' argument. Default = FALSE.}
+\item{subset}{Whether or not to subset levels within the \code{mod} argument. Defaults to \code{FALSE}.}
 }
 \value{
 Returns a data frame
 }
 \description{
-Collects and builds the data used to fit the rma.mv or rma model in metafor
+Collects and builds the data used to fit the \code{rma.mv} or \code{rma} model in \pkg{metafor}.
 }
 \examples{
 \dontrun{

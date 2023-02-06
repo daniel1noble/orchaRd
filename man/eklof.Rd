@@ -12,7 +12,7 @@ A data frame :
 	 \item{Publication.year}{Year of publication}
 	 \item{Journal}{Journal published within}
 	 \item{Research.group}{Research group that data arose from}
-	 \item{Grazer.type}{Type pf grazer}
+	 \item{Grazer.type}{Type of grazer}
 	 \item{mean_treatment}{Mean abundance/biomass of invertebrates in treatment group}
 	 \item{SD_treatment}{Standard deviation in abundance/biomass of invertebrates in treatment group}
 	 \item{N_treatment}{Sample size of invertebrate sample in treatment group}

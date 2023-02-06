@@ -7,19 +7,19 @@
 i2_ml(model, method = c("ratio", "matrix"), data, boot = NULL)
 }
 \arguments{
-\item{model}{Model object of class 'rma.mv', 'rma'. Currently only model objects using the 'mods' argument (e.g., mod = ~1) work.}
+\item{model}{Model object of class \code{rma.mv} or \code{rma}. Currently only model objects using the \code{mods} argument work (e.g., \code{mod = ~1}).}
 
-\item{method}{Method used to calculate I2. Two options exist, a ratio base calculation proposed by Nakagawa & Santos ('ratio') or Wolfgang Viechtbauer's matrix method ("matrix").}
+\item{method}{Method used to calculate I2. Two options exist: a ratio-based calculation proposed by Nakagawa & Santos (\code{"ratio"}), or Wolfgang Viechtbauer's matrix method (\code{"matrix"}).}
 
-\item{data}{Data set used to fit the model.}
+\item{data}{Data frame used to fit the model.}
 
-\item{boot}{Number of simulations to run to produce 95\% CI's for I2. Default is NULL and only point estimate is provided.}
+\item{boot}{Number of simulations to run to produce 95% confidence intervals for I2. Default is \code{NULL}, where only the point estimate is provided.}
 }
 \value{
-A data frame containing all the model results including mean effect size estimate, confidence and prediction intervals
+A data frame containing all the model results including mean effect size estimate, confidence, and prediction intervals
 }
 \description{
-I2 (I-squared) for mulilevel meta-analytic models, based on Nakagawa & Santos (2012). Under multilevel models, we can have a multiple I2 (see also Senior et al. 2016). Alternatively, the method proposed by Wolfgang Viechtbauer can also be used.
+I2 (I-squared) for mulilevel meta-analytic models, based on Nakagawa & Santos (2012). Under multilevel models, we can have multiple I2 (see also Senior et al. 2016). Alternatively, the method proposed by Wolfgang Viechtbauer can also be used.
 }
 \examples{
 \dontrun{

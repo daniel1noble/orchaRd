@@ -7,7 +7,7 @@
 matrix_i2(model)
 }
 \arguments{
-\item{model}{Model object of class 'rma.mv', 'rma'}
+\item{model}{Model object of class \code{rma.mv} or \code{rma}.}
 }
 \description{
 Calculated I2 (I-squared) for mulilevel meta-analytic models, based on a matrix method proposed by Wolfgang Viechtbauer.

@@ -7,10 +7,10 @@
 R2_calc(model)
 }
 \arguments{
-\item{model}{Model object of class 'rma.mv', 'rma'}
+\item{model}{Model object of class \code{rma.mv} or \code{rma}.}
 }
 \description{
-Calculated R2 (R-squared) for mixed (mulitlevel) models, based on Nakagawa & Schielzeth (2013)
+Calculated R2 (R-squared) for mixed (mulitlevel) models, based on Nakagawa & Schielzeth (2013).
 }
 \examples{
 \dontrun{

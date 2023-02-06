@@ -7,15 +7,15 @@
 get_data_raw_cont(model, mod, group, N = NULL, data, by)
 }
 \arguments{
-\item{model}{rma.mv object}
+\item{model}{\code{rma.mv} object.}
 
-\item{mod}{the moderator variable}
+\item{mod}{the moderator variable.}
 
 \item{group}{The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes.}
 
-\item{N}{The name of the column in the data specifying the sample size, N. Defaults to NULL and precision is plotted instead of sample size.}
+\item{N}{The name of the column in the data specifying the sample size, N. Defaults to \code{NULL} so that precision is plotted instead of sample size.}
 
-\item{data}{The data frame used to fit the rma.mv model object}
+\item{data}{The data frame used to fit the \code{rma.mv} model object.}
 
 \item{by}{Character name(s) of the 'condition' variables to use for grouping into separate tables.}
 }
@@ -23,7 +23,7 @@ get_data_raw_cont(model, mod, group, N = NULL, data, by)
 Returns a data frame
 }
 \description{
-Collects and builds the data used to fit the rma.mv or rma model in metafor when a continuous variable fit within a model object
+Collects and builds the data used to fit the \code{rma.mv} or \code{rma} model in \pkg{metafor} when a continuous variable is fit within a model object.
 }
 \author{
 Shinichi Nakagawa - s.nakagawa@unsw.edu.au

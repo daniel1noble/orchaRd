@@ -33,59 +33,59 @@ orchard_plot(
 )
 }
 \arguments{
-\item{object}{model object of class 'rma.mv', 'rma' or 'orchard' table of model results}
+\item{object}{model object of class \code{rma.mv}, \code{rma}, or \code{orchard} table of model results.}
 
-\item{mod}{the name of a moderator. Otherwise, "1" for intercept only model. Not needed of a orchard_plot is provided with a mod_results object of class 'orchard'.}
+\item{mod}{the name of a moderator. Defaults to \code{"1"} for an intercept-only model. Not needed if an \code{orchard_plot} is provided with a \code{mod_results} object of class \code{orchard}.}
 
-\item{group}{The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes. Not needed of a orchard_plot is provided with a mod_results object of class 'orchard'.}
+\item{group}{The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species, or any grouping variable one wishes to present sample sizes for. Not needed if an \code{orchard_plot} is provided with a \code{mod_results} object of class \code{orchard}.}
 
-\item{data}{The data frame used to fit the rma.mv model object. Not needed of a orchard_plot is provided with a mod_results object of class 'orchard'.}
+\item{data}{The data frame used to fit the \code{rma.mv} model object.  Not needed if an \code{orchard_plot} is provided with a \code{mod_results} object of class \code{orchard}.}
 
 \item{xlab}{The effect size measure label.}
 
-\item{N}{The name of the column in the data specifying the sample size, N. Defaults to NULL and precision is plotted instead of sample size.}
+\item{N}{The name of the column in the data specifying the sample size, N. Defaults to \code{NULL}, so that precision is plotted instead of sample size.}
 
-\item{alpha}{The level of transparency for pieces of fruit (effect size)}
+\item{alpha}{The level of transparency for effect sizes represented in the orchard plot.}
 
-\item{angle}{The angle of y labels. The default is 90 degrees}
+\item{angle}{The angle of y labels. The default is 90 degrees.}
 
-\item{cb}{If TRUE, it uses 20 colour blind friendly colors}
+\item{cb}{If \code{TRUE}, it uses 20 colour blind friendly colors.}
 
-\item{k}{If TRUE, it displays k (number of effect sizes) on the plot}
+\item{k}{If \code{TRUE}, it displays k (number of effect sizes) on the plot.}
 
-\item{g}{If TRUE, it displays g (number of grouping levels for each level of the moderator) on the plot}
+\item{g}{If \code{TRUE}, it displays g (number of grouping levels for each level of the moderator) on the plot.}
 
 \item{trunk.size}{Size of the mean, or central point.}
 
-\item{branch.size}{Size of the confidence intervals}
+\item{branch.size}{Size of the confidence intervals.}
 
-\item{twig.size}{Size of the prediction intervals}
+\item{twig.size}{Size of the prediction intervals.}
 
-\item{transfm}{If set to "tanh", a tanh transformation will be applied to effect sizes, converting Zr will to a correlation or pulling in extreme values for other effect sizes (lnRR, lnCVR, SMD). If "none" is chosen then it will default to}
+\item{transfm}{If set to \code{"tanh"}, a tanh transformation will be applied to effect sizes, converting Zr to a correlation or pulling in extreme values for other effect sizes (lnRR, lnCVR, SMD). Defaults to \code{"none"}.}
 
 \item{condition.lab}{Label for the condition being marginalized over.}
 
-\item{legend.pos}{Where to place the legend or not to put it ("none")}
+\item{legend.pos}{Where to place the legend. To remove the legend, use \code{legend.pos = "none"}.}
 
-\item{k.pos}{Where to put k (number of effect sizes) on the plot}
+\item{k.pos}{Where to put k (number of effect sizes) on the plot.}
 
-\item{colour}{Colour of fruit. By default, fruit is colored according to the mod argument. If TRUE, it is colored according to the grouping variable}
+\item{colour}{Colour of effect size shapes. By default, effect sizes are colored according to the \code{mod} argument. If \code{TRUE}, they are colored according to the grouping variable}
 
-\item{fill}{If TRUE, fruit will be filled with colours. If FALSE, fruit will not be filled with colours.}
+\item{fill}{If \code{TRUE}, effect sizes will be filled with colours. If \code{FALSE}, they will not be filled with colours.}
 
-\item{weights}{Used when one wants marginalised means. How to marginalize categorical variables. The default is weights = "prop", which wights means for moderator levels based on their proportional representation in the data. For example, if "sex" is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal. IN the case if sex, for example, males and females are roughly equally prevalent in a population. As such, you can give the moderator levels equal weight using weights = "equal".}
+\item{weights}{Used when one wants marginalised means. How to marginalize categorical variables. The default is \code{weights = "prop"}, which weights moderator level means based on their proportional representation in the data. For example, if "sex" is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal. In the case of sex, for example, males and females are roughly equally prevalent in a population. As such, you can give the moderator levels equal weight using \code{weights = "equal"}.}
 
 \item{by}{Character vector indicating the name that predictions should be conditioned on for the levels of the moderator.}
 
-\item{at}{List of levels one wishes to predict at for the corresponding varaibles in 'by'. Used when one wants marginalised means. This argument can also be used to supress levels of the modertator when argument 'subset = TRUE'. Provide a list as follows: list(mod = c("level1", "level2")).}
+\item{at}{List of levels one wishes to predict at for the corresponding varaibles in 'by'. Used when one wants marginalised means. This argument can also be used to suppress levels of the moderator when argument \code{subset = TRUE}. Provide a list as follows: \code{list(mod = c("level1", "level2"))}.}
 
-\item{upper}{logical indicating if the first letter of the character string for moderator should be capitalized.}
+\item{upper}{Logical, defaults to \code{TRUE}, indicating that the first letter of the character string for the moderator variable should be capitalized.}
 }
 \value{
 Orchard plot
 }
 \description{
-Using a metafor model object of class rma or rma.mv or a results table of class orchard, it creates a an orchard plot from mean effect size estimates for all levels of a given categorical moderator, their corresponding confidence intervals and prediction intervals
+Using a \pkg{metafor} model object of class \code{rma} or \code{rma.mv}, or a results table of class \code{orchard}, it creates an orchard plot from mean effect size estimates for all levels of a given categorical moderator, and their corresponding confidence and prediction intervals.
 }
 \examples{
 \dontrun{

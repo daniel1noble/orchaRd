@@ -14,10 +14,10 @@ num_studies(data, mod, group)
 \item{group}{A character string specifying the column name of the study ID grouping variable.}
 }
 \value{
-Returns a table with the number of studies in each level of all parameters within a rma.mv or rma object.
+Returns a table with the number of studies in each level of all parameters within a \code{rma.mv} or \code{rma} object.
 }
 \description{
-Computes how many studies are in each level of categorical moderators of a rma.mv model object.
+Computes how many studies are in each level of categorical moderators of a \code{rma.mv} model object.
 }
 \examples{
 \dontrun{data(fish)
