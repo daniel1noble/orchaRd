@@ -13,7 +13,7 @@ i2_ml(model, method = c("ratio", "matrix"), data, boot = NULL)
 
 \item{data}{Data frame used to fit the model.}
 
-\item{boot}{Number of simulations to run to produce 95% confidence intervals for I2. Default is \code{NULL}, where only the point estimate is provided.}
+\item{boot}{Number of simulations to run to produce 95 percent confidence intervals for I2. Default is \code{NULL}, where only the point estimate is provided.}
 }
 \value{
 A data frame containing all the model results including mean effect size estimate, confidence, and prediction intervals

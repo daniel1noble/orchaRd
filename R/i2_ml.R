@@ -3,7 +3,7 @@
 #' @param model Model object of class \code{rma.mv} or \code{rma}. Currently only model objects using the \code{mods} argument work (e.g., \code{mod = ~1}).
 #' @param method Method used to calculate I2. Two options exist: a ratio-based calculation proposed by Nakagawa & Santos (\code{"ratio"}), or Wolfgang Viechtbauer's matrix method (\code{"matrix"}).
 #' @param data Data frame used to fit the model.
-#' @param boot Number of simulations to run to produce 95% confidence intervals for I2. Default is \code{NULL}, where only the point estimate is provided.
+#' @param boot Number of simulations to run to produce 95 percent confidence intervals for I2. Default is \code{NULL}, where only the point estimate is provided.
 #' @return A data frame containing all the model results including mean effect size estimate, confidence, and prediction intervals
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
