@@ -92,9 +92,9 @@ lim$vi<- 1/(lim$N - 3)
 model<-metafor::rma.mv(yi=yi, V=vi, mods= ~Environment*year,
 random=list(~1|Article,~1|Datapoint), data=na.omit(lim))
 test <- orchaRd::mod_results(model, mod = "year", group = "Article", data = lim, weights = "prop", by = "Environment")
-orchaRd::bubble_plot(test, mod = "year", data = lim, legend.pos = "top.left")
+orchaRd::bubble_plot(test, mod = "year", data = lim, group = "Article",legend.pos = "top.left")
 # Or just using model directly
-orchaRd::bubble_plot(model, mod = "year", legend.pos = "top.left", data = lim, weights = "prop", by = "Environment")
+orchaRd::bubble_plot(model, mod = "year", legend.pos = "top.left", data = lim, group = "Article", weights = "prop", by = "Environment")
 
 }
 }
