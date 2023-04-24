@@ -7,10 +7,10 @@ english <- metafor::escalc(measure = "SMD", n1i = NStartControl, sd1i = SD_C, m1
                   var.names=c("SMD","vSMD"),
                   data = english)
 
-english_MA <- metafor::rma.mv(yi = SMD, V = vSMD, random = list( ~ 1 | StudyNo, ~ 1 | EffectID), data = english)
+english_MA <- metafor::rma.mv(yi = SMD, V = vSMD, random = list( ~ 1 | StudyNo, ~ 1 | EffectID),data = english)
 
 
-english_test1 <- orchaRd::get_data_raw(english_MA, mod = "1", group = "StudyNo", data = english)
+english_test1 <- orchaRd::get_data_raw(english_MA, mod = "1", group = "StudyNo")
 
 testthat::test_that("Checking get_raw_data output for english dataset ..", {
 
