@@ -77,7 +77,21 @@ i2_ml <- function(model, method = c("ratio", "matrix"), data, boot = NULL) {
                 pb <- progress::progress_bar$new(total = boot,
                                                  format = "Bootstrapping [:bar] :percent ETA: :eta",
                                                  show_after = 0)
-
+    if(is.null(mods_formula)){
+      I2_each <- sapply(sim, function(ysim) {
+        tmp <- tryCatch(metafor::rma.mv(ysim, vi,
+                                        random = random_formula, data = data))
+        pb$tick()
+        Sys.sleep(1/boot)
+        if (method == "matrix") {
+          I2 <- matrix_i2(tmp)
+        }
+        else {
+          I2 <- ratio_i2(tmp)
+        }
+        return(I2)
+      })
+    } else{
      I2_each <- sapply(sim, function(ysim) {
 
               # The model
@@ -95,7 +109,7 @@ i2_ml <- function(model, method = c("ratio", "matrix"), data, boot = NULL) {
             }
 
              return(I2) })
-
+    }
       # Summarise the bootstrapped distribution.
        I2s_each_95 <- data.frame(t(apply(I2_each, 1, stats::quantile, probs=c(0.5, .025, .975))))
                I2s <-  round(I2s_each_95, digits = 3)
