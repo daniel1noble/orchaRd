@@ -10,7 +10,7 @@ eklof$Datapoint<-as.factor(seq(1, dim(eklof)[1], 1))
 # fit a MLMR - accouting for some non-independence
 eklof_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~ Grazer.type, random=list(~1|ExptID,
 ~1|Datapoint), data=eklof)
-results <- orchaRd::mod_results(eklof_MR, mod = "Grazer.type", group = "ExptID", data=eklof)
+results <- orchaRd::mod_results(eklof_MR, mod = "Grazer.type", group = "ExptID")
 
 testthat::test_that("Checking mod_results output for eklof dataset ..", {
 
@@ -33,27 +33,27 @@ model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi,random = list(~1 | group_ID, ~1 
 mods = ~ experimental_design + trait.type + deg_dif + treat_end_days, method = "REML", test = "t", data = warm_dat, control=list(optimizer="optim", optmethod="Nelder-Mead"))
 
 # Intercept only
- overall <- orchaRd::mod_results(model, group = "group_ID", data = warm_dat)
+ overall <- orchaRd::mod_results(model, group = "group_ID")
 
 # Moderators
  #Trait type
-across_trait <- orchaRd::mod_results(model, group = "group_ID", mod = "trait.type", data = warm_dat)
+across_trait <- orchaRd::mod_results(model, group = "group_ID", mod = "trait.type")
 
 # Trait by degrees
 across_trait_by_degree_diff <- orchaRd::mod_results(model, group = "group_ID",
-mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif", data = warm_dat)
+mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif")
 
 # trait by condition
 across_trait_by_treat_end_days10And50 <- orchaRd::mod_results(model, group = "group_ID",
 mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)),
-by = "treat_end_days", data = warm_dat)
+by = "treat_end_days")
 
 
 # Fish data example with a heteroscedastic error
   model_het <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 + trait.type| es_ID), mods = ~ trait.type + deg_dif, method = "REML", test = "t", rho = 0, struc = "HCS", data = warm_dat, control=list(optimizer="optim", optmethod="Nelder-Mead"))
 
-  HetModel <- orchaRd::mod_results(model_het, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif", weights = "prop", data = warm_dat)
-  orchard_plot(HetModel, xlab = "lnRR", data = warm_dat)
+  HetModel <- orchaRd::mod_results(model_het, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif", weights = "prop")
+  orchard_plot(HetModel, xlab = "lnRR")
 
 
   ## English example
@@ -77,10 +77,10 @@ by = "treat_end_days", data = warm_dat)
                                  data = english)
 
   # Again, we can create a table of results
-  res2 <- orchaRd::mod_results(english_MR0, mod = "ManipType", data = english, group = "StudyNo")
+  res2 <- orchaRd::mod_results(english_MR0, mod = "ManipType", group = "StudyNo")
 
-  # Check supressing level works
-  res3 <- orchaRd::mod_results(english_MR0, mod = "ManipType", data = english, group = "StudyNo",
+  # Check suppressing level works
+  res3 <- orchaRd::mod_results(english_MR0, mod = "ManipType", group = "StudyNo",
                                at = list(ManipType = "Quality"), subset = TRUE)
 
 # tests for fish
@@ -135,9 +135,9 @@ testthat::test_that("Checking mod_results output for fish dataset ..", {
 ### random-effects model; note that this is obviously not the right model for the data, but it's just testing this class type
 mod_uni <- metafor::rma(lnrr, lnrr_vi, data=warm_dat, method="REML")
 
-mod_rs_uni <- orchaRd::mod_results(mod_uni, group = "group_ID", data=warm_dat)
+mod_rs_uni <- orchaRd::mod_results(mod_uni, group = "group_ID")
 
-plot_uni <- orchaRd::orchard_plot(mod_uni, group = "group_ID", data=warm_dat, xlab = "Effect Size")
+plot_uni <- orchaRd::orchard_plot(mod_uni, group = "group_ID", xlab = "Effect Size")
 
 testthat::test_that("Checking mod_results output for rma and rma.uni dataset ..", {
 

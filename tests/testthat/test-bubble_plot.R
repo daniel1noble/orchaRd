@@ -9,9 +9,9 @@ model<-metafor::rma.mv(yi=yi, V=vi, mods= ~Environment*year,
 
 options(warn=0)
 test <- orchaRd::mod_results(model, mod = "year", group = "Article",
-                    data = lim, weights = "prop", by = "Environment")
-plot1 <- orchaRd::bubble_plot(test, data = lim, group = "Article", mod = "year", legend.pos = "top.left")
-plot2 <- orchaRd::bubble_plot(test, data = lim, group = "Article", mod = "year", xlab = "Year", legend.pos = "top.left")
+                     weights = "prop", by = "Environment")
+plot1 <- orchaRd::bubble_plot(test,  group = "Article", mod = "year", legend.pos = "top.left")
+plot2 <- orchaRd::bubble_plot(test,  group = "Article", mod = "year", xlab = "Year", legend.pos = "top.left")
 
 
 testthat::test_that("Checking bubble_plot output ...", {

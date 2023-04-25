@@ -33,8 +33,6 @@ testthat::test_that("Checking orchard_plot output ...", {
     plot2$theme$axis.text.y$angle, 45,
     info = "Check that angle for eklof is changes to 45 when done...")
 
-  testthat::expect_error(orchard_plot(eklof_MR, xlab = "Grazing", group = "Grazer.type"))
-
   testthat::expect_error(orchard_plot(eklof_MR, xlab = "Grazing", data=eklof))
 
 })
