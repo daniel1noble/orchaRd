@@ -10,7 +10,7 @@ eklof$Datapoint<-as.factor(seq(1, dim(eklof)[1], 1))
 eklof_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~ Grazer.type, random=list(~1|ExptID,
                                                                        ~1|Datapoint), data=eklof)
 
-plot1 <- caterpillars(eklof_MR, xlab = "Grazing", group = "Grazer.type", data=eklof)
+plot1 <- caterpillars(eklof_MR, xlab = "Grazing", group = "Grazer.type")
 
 
 testthat::test_that("Checking caterpillars output ...", {
@@ -23,11 +23,9 @@ testthat::test_that("Checking caterpillars output ...", {
     plot1$labels$size, NULL,
     info = "Check precision label doesn't exist in caterpillars plot...")
 
-  testthat::expect_error(caterpillars(eklof_MR, xlab = "Grazing", group = "Grazer.type", data=eklof, angle = 45))
+  testthat::expect_error(caterpillars(eklof_MR, xlab = "Grazing", group = "Grazer.type", angle = 45))
 
-  testthat::expect_error(caterpillars(eklof_MR, xlab = "Grazing", group = "Grazer.type"))
-
-  testthat::expect_error(caterpillars(eklof_MR, xlab = "Grazing", data=eklof))
+  testthat::expect_error(caterpillars(eklof_MR, xlab = "Grazing"))
 
 })
 

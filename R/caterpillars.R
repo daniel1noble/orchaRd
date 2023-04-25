@@ -3,7 +3,6 @@
 #' @param object Model object of class \code{rma.mv}, \code{rma} or \code{orchard} table of model results
 #' @param mod The name of a moderator variable. Otherwise, "1" for an intercept-only model.
 #' @param group The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species, or whatever other grouping variable one wishes to present sample sizes for.
-#' @param data The data frame used to fit the \code{rma.mv} model object.
 #' @param xlab The effect size measure label.
 #' @param overall Logical, indicating whether to re-label "Intrcpt" (the default label from \code{rma} or \code{rma.mv} intercept only models or meta-analyses) to "Overall". Defaults to \code{TRUE}.
 #' @param transfm If set to \code{"tanh"}, a tanh transformation will be applied to effect sizes, converting Zr to a correlation or pulling in extreme values for other effect sizes (lnRR, lnCVR, SMD). Defaults to \code{"none"}.
@@ -26,8 +25,8 @@
 #' # fit a MLMR - accouting for some non-independence
 #' eklof_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~ Grazer.type-1, random=list(~1|ExptID,
 #' ~1|Datapoint), data=eklof)
-#' results <- mod_results(eklof_MR, mod = "Grazer.type", data = eklof, group = "First.author")
-#' caterpillars(results, mod = "Grazer.type", data = eklof,
+#' results <- mod_results(eklof_MR, mod = "Grazer.type",  group = "First.author")
+#' caterpillars(results, mod = "Grazer.type",
 #' group = "First.author", xlab = "log(Response ratio) (lnRR)", g = FALSE)
 #'
 #' # Example 2
@@ -35,21 +34,21 @@
 #' lim$vi<- 1/(lim$N - 3)
 #' lim_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~Phylum-1, random=list(~1|Article,
 #' ~1|Datapoint), data=lim)
-#' results_lim <- mod_results(lim_MR, mod = "Phylum", data = lim, group = "Article")
-#' caterpillars(results_lim, mod = "Phylum", data = lim,
-#' group = "Article", xlab = "Correlaiton coefficent", transfm = "tanh")
+#' results_lim <- mod_results(lim_MR, mod = "Phylum", group = "Article")
+#' caterpillars(results_lim, mod = "Phylum",
+#' group = "Article", xlab = "Correlation coefficient", transfm = "tanh")
 #' }
 #' @export
 
-caterpillars <- function(object, mod = "1", data, group, xlab, overall = TRUE, transfm = c("none", "tanh"), k = TRUE, g = TRUE, at = NULL, by = NULL, weights = "prop") {
+caterpillars <- function(object, mod = "1",  group, xlab, overall = TRUE, transfm = c("none", "tanh"), k = TRUE, g = TRUE, at = NULL, by = NULL, weights = "prop") {
 
   if(any(class(object) %in% c("rma.mv", "rma"))){
 
     if(mod != "1"){
-      results <-  orchaRd::mod_results(object, mod, group, data,
+      results <-  orchaRd::mod_results(object, mod, group,
                                        by = by, at = at, weights = weights)
     } else {
-      results <-  orchaRd::mod_results(object, mod = "1", group, data,
+      results <-  orchaRd::mod_results(object, mod = "1", group,
                                        by = by, at = at, weights = weights)
     }
   }
