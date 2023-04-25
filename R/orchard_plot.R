@@ -3,7 +3,6 @@
 #' @param object model object of class \code{rma.mv}, \code{rma}, or \code{orchard} table of model results.
 #' @param mod the name of a moderator. Defaults to \code{"1"} for an intercept-only model. Not needed if an \code{orchard_plot} is provided with a \code{mod_results} object of class \code{orchard}.
 #' @param group The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species, or any grouping variable one wishes to present sample sizes for. Not needed if an \code{orchard_plot} is provided with a \code{mod_results} object of class \code{orchard}.
-#' @param data The data frame used to fit the \code{rma.mv} model object.  Not needed if an \code{orchard_plot} is provided with a \code{mod_results} object of class \code{orchard}.
 #' @param by Character vector indicating the name that predictions should be conditioned on for the levels of the moderator.
 #' @param at List of levels one wishes to predict at for the corresponding varaibles in 'by'. Used when one wants marginalised means. This argument can also be used to suppress levels of the moderator when argument \code{subset = TRUE}. Provide a list as follows: \code{list(mod = c("level1", "level2"))}.
 #' @param weights Used when one wants marginalised means. How to marginalize categorical variables. The default is \code{weights = "prop"}, which weights moderator level means based on their proportional representation in the data. For example, if "sex" is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal. In the case of sex, for example, males and females are roughly equally prevalent in a population. As such, you can give the moderator levels equal weight using \code{weights = "equal"}.
@@ -39,12 +38,12 @@
 #' # fit a MLMR - accounting for some non-independence
 #' eklof_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~ Grazer.type-1,
 #' random=list(~1|ExptID, ~1|Datapoint), data=eklof)
-#' results <- mod_results(eklof_MR, mod = "Grazer.type", group = "ExptID", data = eklof)
+#' results <- mod_results(eklof_MR, mod = "Grazer.type", group = "ExptID")
 #' orchard_plot(results, mod = "Grazer.type",
 #' group = "ExptID", xlab = "log(Response ratio) (lnRR)")
 #' # or
 #' orchard_plot(eklof_MR, mod = "Grazer.type", group = "ExptID",
-#' xlab = "log(Response ratio) (lnRR)", data = eklof)
+#' xlab = "log(Response ratio) (lnRR)")
 #'
 #' # Example 2
 #' data(lim)
@@ -52,11 +51,11 @@
 #' lim_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~Phylum-1, random=list(~1|Article,
 #' ~1|Datapoint), data=lim)
 #' orchard_plot(lim_MR, mod = "Phylum", group = "Article",
-#' xlab = "Correlation coefficient", transfm = "tanh", N = lim$N, data = lim)
+#' xlab = "Correlation coefficient", transfm = "tanh", N = lim$N)
 #' }
 #' @export
 
-orchard_plot <- function(object, mod = "1", group, data, xlab, N = NULL,
+orchard_plot <- function(object, mod = "1", group, xlab, N = NULL,
                          alpha = 0.5, angle = 90, cb = TRUE, k = TRUE, g = TRUE,
                          trunk.size = 3, branch.size = 1.2, twig.size = 0.5,
                          transfm = c("none", "tanh"), condition.lab = "Condition",
@@ -77,10 +76,10 @@ orchard_plot <- function(object, mod = "1", group, data, xlab, N = NULL,
 	if(any(class(object) %in% c("robust.rma", "rma.mv", "rma", "rma.uni"))){
 
 	    if(mod != "1"){
-	    results <-  orchaRd::mod_results(object, mod, group, data, N,
+	    results <-  orchaRd::mod_results(object, mod, group,  N,
 	                                        by = by, at = at, weights = weights, upper = upper)
 	  } else {
-	    results <-  orchaRd::mod_results(object, mod = "1", group, data, N,
+	    results <-  orchaRd::mod_results(object, mod = "1", group,  N,
 	                                        by = by, at = at, weights = weights, upper = upper)
 	    }
 	  }

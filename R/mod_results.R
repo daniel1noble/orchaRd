@@ -19,12 +19,12 @@
 #' # Simple eklof data
 #' data(eklof)
 #' eklof<-metafor::escalc(measure="ROM", n1i=N_control, sd1i=SD_control,
-#' m1i=mean_control, n2i=N_treatment, sd2i=SD_treatment, m2i=mean_treatment)
+#' m1i=mean_control, n2i=N_treatment, sd2i=SD_treatment, m2i=mean_treatment, data = eklof)
 #' # Add the unit level predictor
 #' eklof$Datapoint<-as.factor(seq(1, dim(eklof)[1], 1))
 #' # fit a MLMR - accouting for some non-independence
 #' eklof_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~ Grazer.type, random=list(~1|ExptID,
-#' ~1|Datapoint))
+#' ~1|Datapoint), data = eklof)
 #' results <- mod_results(eklof_MR, mod = "Grazer.type", group = "ExptID")
 #'
 #' # Fish example demonstrating marginalised means
@@ -34,7 +34,7 @@
 #' random = list(~1 | group_ID, ~1 | es_ID),
 #' mods = ~ experimental_design + trait.type + deg_dif + treat_end_days,
 #' method = "REML", test = "t",
-#' control=list(optimizer="optim", optmethod="Nelder-Mead"))
+#' control=list(optimizer="optim", optmethod="Nelder-Mead"), data = warm_dat)
 #'   overall <- mod_results(model, group = "group_ID")
 #' across_trait <- mod_results(model, group = "group_ID", mod = "trait.type")
 #' across_trait_by_degree_diff <- mod_results(model, group = "group_ID",
@@ -53,7 +53,7 @@
 #' by = "treat_end_days", weights = "prop")
 #'
 #' # Fish data example with a heteroscedastic error
-#' model_het <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 + trait.type| es_ID), mods = ~ trait.type + deg_dif, method = "REML", test = "t", rho = 0, struc = "HCS", control=list(optimizer="optim", optmethod="Nelder-Mead"))
+#' model_het <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 + trait.type| es_ID), mods = ~ trait.type + deg_dif, method = "REML", test = "t", rho = 0, struc = "HCS", control=list(optimizer="optim", optmethod="Nelder-Mead"), data = warm_dat)
 #' HetModel <- mod_results(model_het, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif", weights = "prop")
 #' orchard_plot(HetModel, xlab = "lnRR")
 #' }
@@ -78,14 +78,15 @@ mod_results <- function(model, mod = "1", group,  N = NULL,  weights = "prop", b
     stop("Please specify the 'group' argument by providing the name of the grouping variable. See ?mod_results")
   }
 
-  if(is.null(stats::formula(model))){
+
+  if(is.null(stats::formula(model))){ ##**NOTE** Not sure we need this bit of code anymore. Left here for now
     #model <- stats::update(model, "~1")
     model$formula.mods <- ~ 1
-    dat_tmp <- model$data$`1` <- "Intrcpt"
-    model$data <- dat_tmp
+    #dat_tmp <- model$data$`1` <- "Intrcpt"
+    #model$data <- dat_tmp
   }
 
-  if(model$test == "t"){
+   if(model$test == "t"){
     df_mod = as.numeric(model$ddf[[1]])
   } else{
     df_mod = 1.0e6 # almost identical to z value
@@ -232,7 +233,7 @@ return(tmp)
 #' warm_dat <- fish
 #' model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 | es_ID), mods = ~ experimental_design + trait.type + deg_dif + treat_end_days, method = "REML", test = "t", data = warm_dat, control=list(optimizer="optim", optmethod="Nelder-Mead"))
 #'  test <- get_data_raw(model, mod = "trait.type", group = "group_ID", at = list(trait.type = c("physiology", "morphology")))
-#'  test2 <- get_data_raw(model, mod = "1", group = "group_ID", data = warm_dat)
+#'  test2 <- get_data_raw(model, mod = "1", group = "group_ID")
 #'
 #'  data(english)
 #'  # We need to calculate the effect sizes, in this case d
@@ -297,7 +298,7 @@ get_data_raw <- function(model, mod, group, N = NULL, at = NULL, subset = TRUE){
 
 #TODO what if there is no "by"
 
-get_data_raw_cont <- function(model, mod, group, N = NULL, data, by){
+get_data_raw_cont <- function(model, mod, group, N = NULL, by){
   if(missing(group)){
     stop("Please specify the 'group' argument by providing the name of the grouping variable. See ?mod_results")
   }

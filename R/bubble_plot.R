@@ -3,7 +3,6 @@
 #' @param object Model object of class \code{rma}, \code{rma.mv}, or \code{orchard} table of model results
 #' @param mod The name of a continuous moderator, to be plotted on the x-axis of the bubble plot.
 #' @param group The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species, or any grouping variable one wishes to present sample sizes for. Not needed if an \code{orchard_plot} is provided with a \code{mod_results} object of class \code{orchard}.
-#' @param data The data frame used to fit the \code{rma.mv} model object. Not needed if an \code{orchard_plot} is provided with a \code{mod_results} object of class \code{orchard}.
 #' @param by Character vector indicating the name that predictions should be conditioned on for the levels of the moderator.
 #' @param at List of levels one wishes to predict at for the corresponding variables in \code{by}. Used when one wants marginalised means. This argument can also be used to suppress levels of the moderator when argument \code{subset = TRUE}. Provide a list as follows: \code{list(mod = c("level1", "level2"))}.
 #' @param weights How to marginalize categorical variables; used when one wants marginalised means. The default is \code{weights = "prop"}, which weights means for moderator levels based on their proportional representation in the data. For example, if \code{"sex"} is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal when, for example, males and females are typically roughly equally prevalent in a population. In cases such as these, you can give the moderator levels equal weight using \code{weights = "equal"}.
@@ -45,8 +44,7 @@
 # TODO - make poly works for bubble???
 # TODO - write to https://github.com/rvlenth/emmeans/issues (missing combinations or interaction not allowed)
 
-bubble_plot <- function(object, mod, group = NULL, data,
-                        xlab = "Moderator", ylab = "Effect size", N = "none",
+bubble_plot <- function(object, mod, group = NULL, xlab = "Moderator", ylab = "Effect size", N = "none",
                         alpha = 0.5, cb = TRUE, k = TRUE, g = FALSE,
                         est.lwd = 1, ci.lwd = 0.5, pi.lwd = 0.5,
                         est.col = "black", ci.col = "black", pi.col = "black",
@@ -65,10 +63,6 @@ bubble_plot <- function(object, mod, group = NULL, data,
   k.pos <- match.arg(NULL, choices = k.pos)
   #facet <- match.arg(NULL, choices = facet)
 
-  if(missing(data)){
-         stop("Please specify the 'data' argument by providing the data used to fit the model. See ?bubble_plot")
-  }
-
   if(any(grepl(mod, colnames(data))) == FALSE){
     error("The moderator specified is not found in your data. Did you transform the variable in the model and forget to add it to your dataframe?")
   }
@@ -86,10 +80,10 @@ bubble_plot <- function(object, mod, group = NULL, data,
   if(any(class(object) %in% c("robust.rma", "rma.mv", "rma", "rma.uni"))){
 
     if(mod != "1"){
-      results <-  orchaRd::mod_results(object, mod, group, data,
+      results <-  orchaRd::mod_results(object, mod, group,
                                        by = by, at = at, weights = weights)
     } else {
-      results <-  orchaRd::mod_results(object, mod = "1", group, data,
+      results <-  orchaRd::mod_results(object, mod = "1", group,
                                        by = by, at = at, weights = weights)
     }
   }
