@@ -9,7 +9,7 @@ english <- metafor::escalc(measure = "SMD", n1i = NStartControl, sd1i = SD_C, m1
 
 english_MA <- metafor::rma.mv(yi = SMD, V = vSMD, random = list( ~ 1 | StudyNo, ~ 1 | EffectID), data = english)
 
-english_ModRes <- orchaRd::mod_results(english_MA, data = english, group = "StudyNo")
+english_ModRes <- orchaRd::mod_results(english_MA, group = "StudyNo")
 
 overall_english <- orchaRd::num_studies(english_ModRes$data, mod = moderator, group = stdy)
 

@@ -10,9 +10,9 @@ eklof$Datapoint<-as.factor(seq(1, dim(eklof)[1], 1))
 eklof_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~ Grazer.type, random=list(~1|ExptID,
                                                                        ~1|Datapoint), data=eklof)
 
-plot1 <- orchard_plot(eklof_MR, xlab = "Grazing", group = "Grazer.type", data=eklof)
+plot1 <- orchard_plot(eklof_MR, xlab = "Grazing", group = "Grazer.type")
 
-plot2 <- orchard_plot(eklof_MR, xlab = "Grazing", group = "Grazer.type", data=eklof, angle = 45)
+plot2 <- orchard_plot(eklof_MR, xlab = "Grazing", group = "Grazer.type", angle = 45)
 
 
 testthat::test_that("Checking orchard_plot output ...", {
