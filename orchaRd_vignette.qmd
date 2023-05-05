@@ -7,6 +7,7 @@ format:
     toc: true
     toc-location: left
     toc-depth: 3
+    toc-title: "**Table of Contents**"
     output-file: "index.html"
     theme: simplex
     embed-resources: true
@@ -51,10 +52,24 @@ Nakagawa, S. et al. 2021. The Orchard Plot: Cultivating the Forest Plot for Use 
 
 To install `orchaRd` use the following code in R:
 
+
+:::{.column-margin}
+:::{.callout-note}
+If you want to download the development branch, which contains newer features you can execute the following code:
+
+```{r}
+rm(list = ls())
+devtools::install_github("daniel1noble/orchaRd", ref = "dev", force = TRUE)
+pacman::p_load(devtools, tidyverse, metafor, patchwork, R.rsp, orchaRd, emmeans, ape, phytools, flextable)
+```
+
+:::
+:::
+
 ```{r echo = TRUE, eval = TRUE, results = 'hide', warning=FALSE, message=FALSE,  class.source='klippy'}
 #install.packages("pacman")
 rm(list = ls())
-devtools::install_github("daniel1noble/orchaRd", force = TRUE)
+devtools::install_github("daniel1noble/orchaRd", ref = "dev", force = TRUE)
 pacman::p_load(devtools, tidyverse, metafor, patchwork, R.rsp, orchaRd, emmeans, ape, phytools, flextable)
 ```
 
@@ -85,7 +100,7 @@ We have fit a meta-analytic model and thus the only estimate we see is the overa
 
 ```{r echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE}
 
-model_results <- mod_results(english_MA, mod = "1", at = NULL, data = english, group = "StudyNo")
+model_results <- mod_results(english_MA, mod = "1", at = NULL,  group = "StudyNo")
 model_results
  
 ```
@@ -93,18 +108,18 @@ model_results
 If we instead want to create an orchard plot and visualise the results we can do so quite simply as:
 
 ```{r, echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE}
-#| label: Figure1
+#| label: fig-Figure1
 #| fig-width: 6
 #| fig-height: 4
 #| fig-cap: "Orchard plot of the impact caloric restriction using standardised mean difference"
-orchaRd::orchard_plot(english_MA, mod="1", data = english, group = "StudyNo", xlab = "Standardised mean difference", 
+orchaRd::orchard_plot(english_MA, mod="1", group = "StudyNo", xlab = "Standardised mean difference", 
   transfm = "none") 
 ```
 
-In @Figure1, we simply add in the metafor model and it will create a default orchard plot. Alternatively, we could also add in the table of results. Also. some people may wish to present the heterogeneity index, I^2^ and, at the same time, change the colours of the 'trunk and fruit' by adding a few arguments.
+In @fig-Figure1, we simply add in the metafor model and it will create a default orchard plot. Alternatively, we could also add in the table of results. Also. some people may wish to present the heterogeneity index, I^2^ and, at the same time, change the colours of the 'trunk and fruit' by adding a few arguments.
 
 ```{r , echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE}
-#| label: Figure2
+#| label: fig-Figure2
 #| fig-cap: "Orchard plot of the impact caloric restriction using standardised mean difference but instead of using the metafor model, using the model results table"
 #| fig-width: 6
 #| fig-height: 4
@@ -114,18 +129,18 @@ In @Figure1, we simply add in the metafor model and it will create a default orc
 I2 <- orchaRd::i2_ml(english_MA)
 
 orchaRd::orchard_plot(model_results, mod="1", xlab = "Standardised mean difference") + 
-  annotate(geom="text", x= 0.80, y= 1, label= paste0("italic(I)^{2} == ", round(I2[1],4)), # I want to use % but cannot do should come back
+  annotate(geom="text", x= 0.80, y= 1, label= paste0("italic(I)^{2} == ", round(I2[1],4)), 
               color="black", parse = TRUE, size = 5) +
   scale_fill_manual(values="grey") +
   scale_colour_manual(values="grey")
 ```
 
-Figure @Figure2 and @Figure1 above show that overall estimate from a random-effects meta-analysis of 77 effect sizes is centered on zero, with a 95% CI that spans the line of no-effect. The prediction intervals clearly demonstrate the high level of heterogeneity (over 75%), with effects size less than -0.5 and greater than 0.5 predicted to be observed. 
+Figure @fig-Figure2 and @fig-Figure1 above show that overall estimate from a random-effects meta-analysis of 77 effect sizes is centered on zero, with a 95% CI that spans the line of no-effect. The prediction intervals clearly demonstrate the high level of heterogeneity (over 75%), with effects size less than -0.5 and greater than 0.5 predicted to be observed. 
 
 We can now draw a comparable caterpillar plot by using the function `caterpillars`.
 
 ```{r, echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE}
-#| label: Figure3
+#| label: fig-Figure3
 #| fig-cap: "Catterpilar plot of the impact caloric restriction using standardised mean difference"
 #| fig-width: 6
 #| fig-height: 4
@@ -134,12 +149,12 @@ We can now draw a comparable caterpillar plot by using the function `caterpillar
 orchaRd::caterpillars(model_results, mod="1", xlab = "Standardised mean difference") 
 ```
 
-It is now interesting to compare how the same data set can be visualised different by look at @Figure2 and @Figure3. It is good that the caterpillar plot can show CIs for each effect size. An equivalent function was done with the size of fruit in the orchard plot. 
+It is now interesting to compare how the same data set can be visualised different by look at @fig-Figure2 and @fig-Figure3. It is good that the caterpillar plot can show CIs for each effect size. An equivalent function was done with the size of fruit in the orchard plot. 
 
 In a subsequent publication, @Senior2017 analysed this data set for effects of dietary-restriction on among-individual variation in the age at death using the log coefficient of variation ratio. A major prediction in both @EnglishUller2016 and @Senior2017 was that the type of manipulation, whether the study manipulated quality of food versus the quantity of food would be important. As such, we can fit a meta-regression model to test whether the moderator "Manipulation Type" `ManipType` impacts our results on the mean and variance
 
 ```{r, warning=FALSE, message=FALSE, fig.width = 6, fig.height = 8}
-#| label: Figure4
+#| label: fig-Figure4
 #| fig-cap: "Orchard plot of diet qualities impact on SMD (top) and log coefficient of variation (bottom)"
 #| fig-width: 6
 #| fig-height: 4
@@ -156,7 +171,7 @@ english_MR0 <- rma.mv(yi = SMD, V = vSMD, mods = ~ ManipType,
 summary(english_MR0)
 
 # Again, we can create a table of results
-res2 <- orchaRd::mod_results(english_MR0, mod = "ManipType", data = english, group = "StudyNo")
+res2 <- orchaRd::mod_results(english_MR0, mod = "ManipType", group = "StudyNo")
 res2
 
 # we fit a meta-regression (contrast) for the log coefficient of variation
@@ -168,39 +183,39 @@ summary(senior_MR0)
 
 
 # creating a table of results
-res3 <- orchaRd::mod_results(senior_MR0, mod = "ManipType", data = english, group = "StudyNo", at = list(ManipType = "Quality"), subset = TRUE)
+res3 <- orchaRd::mod_results(senior_MR0, mod = "ManipType",  group = "StudyNo", at = list(ManipType = "Quality"), subset = TRUE)
 res3
 
 # We can now plot SMD and lnCVR beside each other and compare the results
 p1 <- orchaRd::orchard_plot(res2, 
-                   mod = "ManipType", data = english, group = "StudyNo", xlab = "Standardised mean difference")
+                   mod = "ManipType", group = "StudyNo", xlab = "Standardised mean difference")
 
 p2 <- orchaRd::orchard_plot(res3,
-  mod = "ManipType", data = english, group = "StudyNo", xlab = "log(CV ratio) (lnCVR)")
+  mod = "ManipType", group = "StudyNo", xlab = "log(CV ratio) (lnCVR)")
 
 p1 / p2
 ```
 
-Our orchard plot for the log coefficient of variation demonstrates that, while restrictions on dietary quality and quantity do not affect the average age at death (top of @Figure4), among-individual variation may be altered by quality restrictions (bottom of @Figure4). The effect is negative suggesting that the coefficient of variation in the control group is lower than that in the treatment group, and the 95% CI does not span zero. Again though, the effect is heterogeneous; a substantial number of positive effects are still predicted. 
+Our orchard plot for the log coefficient of variation demonstrates that, while restrictions on dietary quality and quantity do not affect the average age at death (top of @fig-Figure4), among-individual variation may be altered by quality restrictions (bottom of @fig-Figure4). The effect is negative suggesting that the coefficient of variation in the control group is lower than that in the treatment group, and the 95% CI does not span zero. Again though, the effect is heterogeneous; a substantial number of positive effects are still predicted. 
 
 Let's draw comparable caterpillars plots to compare these two results again. 
 
 ```{r, echo = TRUE, eval = TRUE,  warning=FALSE, message=FALSE}
-#| label: Figure5
+#| label: fig-Figure5
 #| fig-cap: "Catterpilar plot of diet qualities impact on the log coefficient of variation (lnCVR)"
 #| fig-width: 6
 #| fig-height: 4
 # We can now plot SMD and lnCVR beside each other and compare the results
 p1c <- orchaRd::caterpillars(res2, 
-                   mod = "ManipType",data = english, group = "StudyNo",  xlab = "Standardised mean difference")
+                   mod = "ManipType", group = "StudyNo",  xlab = "Standardised mean difference")
 
 p2c <- orchaRd::caterpillars(res3,
-  mod = "ManipType", data = english, group = "StudyNo", xlab = "log(CV ratio) (lnCVR)")
+  mod = "ManipType",  group = "StudyNo", xlab = "log(CV ratio) (lnCVR)")
 
 p1c / p2c
 ```
 
-Now compare between @Figure4 and @Figure5. We think they both look nice. 
+Now compare between @fig-Figure4 and @fig-Figure5. We think they both look nice. 
 
 ## **Example 2: Predation and Invertebrate Community**
 
@@ -237,36 +252,36 @@ summary(eklof_MR0)
 
 ```
 
-Above we have fit a meta-regression model using "Grazer Type" as a moderator which is predicted to explain variation in log response ratios. We can demonstrate a few simple changes users can make, but we note here that users can make far more complex changes down the line if needed, but we'll save explaining these more complex changes for the last example. The first is the angle at which the y-axis labels are positioned (bottom of @Figure6):
+Above we have fit a meta-regression model using "Grazer Type" as a moderator which is predicted to explain variation in log response ratios. We can demonstrate a few simple changes users can make, but we note here that users can make far more complex changes down the line if needed, but we'll save explaining these more complex changes for the last example. The first is the angle at which the y-axis labels are positioned (bottom of @fig-Figure6):
 
 ```{r, echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE}
-#| label: Figure6
+#| label: fig-Figure6
 #| fig-cap: "Orchard plots of the effects of predation on benthic invertebrate communities compared using the log response ratio. Top panel is the default plot and bottom panel a plot containing changes in label axes"
 #| fig-width: 6
 #| fig-height: 4
 #| 
-f <- orchaRd::mod_results(eklof_MR0, mod = "Grazer.type", data = eklof, group = "ExptID") 
+f <- orchaRd::mod_results(eklof_MR0, mod = "Grazer.type",  group = "ExptID") 
 
-p3 <- orchaRd::orchard_plot(eklof_MR0, mod = "Grazer.type", data = eklof, group = "ExptID", xlab = "log(Response ratio) (lnRR)", 
+p3 <- orchaRd::orchard_plot(eklof_MR0, mod = "Grazer.type",  group = "ExptID", xlab = "log(Response ratio) (lnRR)", 
   transfm = "none") 
 
-p4 <- orchaRd::orchard_plot(eklof_MR0, mod = "Grazer.type", data = eklof, group = "ExptID", xlab = "log(Response ratio) (lnRR)", 
+p4 <- orchaRd::orchard_plot(eklof_MR0, mod = "Grazer.type",  group = "ExptID", xlab = "log(Response ratio) (lnRR)", 
   transfm = "none", angle = 45, g = FALSE) 
 
 p3/p4
 
 ```
 
-The other thing we can change is the type of scaling we wish to use. Let's say we are interested in scaling the effect size by the total sample size of the study we use a vector of N, sample size (bottom of @Figure7:
+The other thing we can change is the type of scaling we wish to use. Let's say we are interested in scaling the effect size by the total sample size of the study we use a vector of N, sample size (bottom of @fig-Figure7:
 
 ```{r, echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE}
-#| label: Figure7
+#| label: fig-Figure7
 #| fig-cap: "Orchard plots of the effects of predation on benthic invertebrate communities compared using the log response ratio. Top panel is the default plot and bottom panel a plot containing changes in label axes and scaling with sample size instead of precision"
 #| fig-width: 6
 #| fig-height: 4
-p5 <- orchaRd::orchard_plot(eklof_MR0, mod = "Grazer.type", data = eklof, group = "ExptID", xlab = "log(Response ratio) (lnRR)") 
+p5 <- orchaRd::orchard_plot(eklof_MR0, mod = "Grazer.type",  group = "ExptID", xlab = "log(Response ratio) (lnRR)") 
 
-p6 <- orchaRd::orchard_plot(eklof_MR0, mod = "Grazer.type", data = eklof, group = "ExptID", xlab = "log(Response ratio) (lnRR)", angle = 45, N = "N", g = FALSE) 
+p6 <- orchaRd::orchard_plot(eklof_MR0, mod = "Grazer.type",  group = "ExptID", xlab = "log(Response ratio) (lnRR)", angle = 45, N = "N", g = FALSE) 
 
 p5/p6
 
@@ -274,18 +289,18 @@ p5/p6
 
 Overall, our orchard plot shows the results of a re-analysis of their data. The estimated mean effects are negative for both gastropods and amphipods suggesting that mean abundance/biomass in the control group is lower than in the treatment groups, although the effect is largest, and is statistically significant, for amphipods. In both cases the prediction intervals reveal the extent of heterogeneity, with positive effects predicted to be observed.
 
-Again, we can also draw the caterpillars-plot counterpart for this data set (bottom of @Figure8):
+Again, we can also draw the caterpillars-plot counterpart for this data set (bottom of @fig-Figure8):
 
 ```{r , echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE}
-#| label: Figure8
+#| label: fig-Figure8
 #| fig-cap: "Caterpillars plot of the effects of predation on benthic invertebrate communities compared using the log response ratio"
 #| fig-width: 6
 #| fig-height: 4
-eklof_MR_result <- orchaRd::mod_results(eklof_MR0, mod = "Grazer.type", data = eklof, group = "ExptID")
-orchaRd::caterpillars(eklof_MR_result, mod = "Grazer.type", data = eklof, group = "ExptID", xlab = "log(Response ratio) (lnRR)") 
+eklof_MR_result <- orchaRd::mod_results(eklof_MR0, mod = "Grazer.type", group = "ExptID")
+orchaRd::caterpillars(eklof_MR_result, mod = "Grazer.type", group = "ExptID", xlab = "log(Response ratio) (lnRR)") 
 
 ```
-Like last time, we compare between @Figure7 and @Figure8. Again, they both look quite informative. 
+Like last time, we compare between @fig-Figure7 and @fig-Figure8. Again, they both look quite informative. 
 
 ## **Example 3: Maternal-Offspring Morphological Correlations**
 
@@ -293,7 +308,7 @@ Finally, we also look at the case discussed by @Lim2014, who meta-analysed the s
 
 Here we have used an orchard plot to represent the results obtained when meta-analysing the data from @Lim2014 by taxonomic Phylum. 
 
-```{r echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE, class.source='klippy'}
+```{r echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE}
 	data(lim)
 
 # Add in the sampling variance
@@ -308,19 +323,19 @@ Here we have used an orchard plot to represent the results obtained when meta-an
 Noe we can plot a default orchard plot, scaling each effect size by N. Also, because we are using Zr, we can use transfm = "tanh" and it will do the conversions for us:
 
 ```{r, echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE}
-#| label: Figure9
+#| label: fig-Figure9
 #| fig-cap: "Orchard plot of the the strength of correlation between maternal and offspring size within-species"
 #| fig-width: 6
 #| fig-height: 4
   #Plot the meta-regression model
-  orchaRd::orchard_plot(lim_MR, mod = "Phylum", group = "Article", data = lim, xlab = "Correlation coefficient", 
+  orchaRd::orchard_plot(lim_MR, mod = "Phylum", group = "Article",  xlab = "Correlation coefficient", 
     alpha = 0.5, transfm = "tanh", angle = 45, N = "N", cb = FALSE)
 ```
 
-Now that we have @Figure9, we can do some small changes to make it pretty and add some more details, such as between study heterogeneity and R^2^ for phylum (we use ). Currently, the cb argument is "FALSE", we can change this to "TRUE" to use colour blind friendly colours. Additionally, because we are using `ggplot` we can add element to the figure to make it look pretty. 
+Now that we have @fig-Figure9, we can do some small changes to make it pretty and add some more details, such as between study heterogeneity and R^2^ for phylum (we use ). Currently, the cb argument is "FALSE", we can change this to "TRUE" to use colour blind friendly colours. Additionally, because we are using `ggplot` we can add element to the figure to make it look pretty. 
 
 ```{r, echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE}
-#| label: Figure10
+#| label: fig-Figure10
 #| fig-cap: "Orchard plot of the the strength of correlation between maternal and offspring size within-species"
 #| fig-width: 6
 #| fig-height: 4
@@ -328,7 +343,7 @@ Now that we have @Figure9, we can do some small changes to make it pretty and ad
   R2 <- orchaRd::r2_ml(lim_MR)
 
   # We can draw an orchard plot with R2
-  orchaRd::orchard_plot(lim_MR, mod = "Phylum", group = "Article", data = lim, xlab = "Correlation coefficient (r)", 
+  orchaRd::orchard_plot(lim_MR, mod = "Phylum", group = "Article",  xlab = "Correlation coefficient (r)", 
                         alpha = 0.5, transfm = "tanh", angle = 45, N = "N", cb = TRUE) +
 theme(legend.position= c(0.05, 0.99), legend.justification = c(0,1), legend.key.size = unit(1, "mm")) +
 theme(legend.direction="horizontal", legend.title = element_text(size =8),legend.text = element_text(size = 10)) + 
@@ -336,37 +351,36 @@ annotate(geom="text", x=0.8, y=0.7, label=paste0("italic(R)^{2} == ", round(R2[1
 
 ```
 
-As in @Figure10, new elements can be added to the `orchard_plot` to modify it as one sees fit. It will overwrite existing elements. From our orchard plots above, it is clear that the analysis is dominated by data from Chordates and Arthropods, with the other Phyla being much more poorly represented. Second, there is a difference between the strength of a typical correlation within these two well represented groups (the correlation is stronger in Chordates), which arguably would explain the phylogenetic signals detected by @Lim2014. Lastly, although there are differences within the typical correlation between Chordates and Arthropods, there remains a large overlap in predicted range of individual effect sizes; individual species within Phyla are still highly variable.
+As in @fig-Figure10, new elements can be added to the `orchard_plot` to modify it as one sees fit. It will overwrite existing elements. From our orchard plots above, it is clear that the analysis is dominated by data from Chordates and Arthropods, with the other Phyla being much more poorly represented. Second, there is a difference between the strength of a typical correlation within these two well represented groups (the correlation is stronger in Chordates), which arguably would explain the phylogenetic signals detected by @Lim2014. Lastly, although there are differences within the typical correlation between Chordates and Arthropods, there remains a large overlap in predicted range of individual effect sizes; individual species within Phyla are still highly variable.
 
 Finally, we make a comparable caterpillars plot.
 ```{r, echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE}
-#| label: Figure11
+#| label: fig-Figure11
 #| fig-cap: "Caterpillars plot of the the strength of correlation between maternal and offspring size within-species"
 #| fig-width: 6
 #| fig-height: 4  
   #Plot the meta-regression model
-  lim_MR_results <- orchaRd::mod_results(lim_MR, mod = "Phylum", group = "Article", data = lim)
-  orchaRd::caterpillars(lim_MR_results, mod = "Phylum", group = "Article", data = lim, xlab = "Correlation coefficient", transfm = "tanh", g = FALSE)
+  lim_MR_results <- orchaRd::mod_results(lim_MR, mod = "Phylum", group = "Article")
+  orchaRd::caterpillars(lim_MR_results, mod = "Phylum", group = "Article",  xlab = "Correlation coefficient", transfm = "tanh", g = FALSE)
 ```
 
-Compared to the orchard plot @Figure10, @Figure11 does not look as elegant, unlike the previous comparisons. This is because the groups with small sample sizes are packed at the top of the figure. 
+Compared to the orchard plot @fig-Figure10, @fig-Figure11 does not look as elegant, unlike the previous comparisons. This is because the groups with small sample sizes are packed at the top of the figure. 
 
-From @Figure10 we can see that many taxonimic groups have very little data. We may want instead to just focus the readers attention to means of groups with sufficient data. The new `mod_results` function allows us to do this using the maginalised means approach. We can do that as follows:
+From @fig-Figure10 we can see that many taxonimic groups have very little data. We may want instead to just focus the readers attention to means of groups with sufficient data. The new `mod_results` function allows us to do this using the maginalised means approach. We can do that as follows:
 
 ```{r, echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE}
-#| label: Figure121
+#| label: fig-Figure121
 #| fig-cap: "Caterpillars plot of the the strength of correlation between maternal and offspring size within-species"
 #| fig-width: 6
 #| fig-height: 4 
   #Plot the meta-regression model
   lim_MR_results <- orchaRd::mod_results(lim_MR, mod = "Phylum", group = "Article", 
-                                         data = lim, 
                                            at = list(Phylum = c("Chordata", "Arthropoda", "Mollusca")),
                                            subset = TRUE)
-  orchaRd::orchard_plot(lim_MR_results,  data = lim, xlab = "Correlation coefficient", transfm = "tanh", g = TRUE, angle = 45)
+  orchaRd::orchard_plot(lim_MR_results, xlab = "Correlation coefficient", transfm = "tanh", g = TRUE, angle = 45)
 ```
 
-We can now see that @Figure121 limits what it plots to only the three levels relevant for presentation. 
+We can now see that @fig-Figure121 limits what it plots to only the three levels relevant for presentation. 
 
 # **Orchard Plots with Meta-regression Models: Marginalised means and heteroscedastic residual variances**
 
@@ -411,20 +425,19 @@ model_het
 We can see from above that we now have four variances; one estimated for each level of the `trait.type` moderator. Now that we have fit our model and estimated the relevant parameters we can produce the orchard plot  using the `marginal_means` function:
 
 ```{r, echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE}
-#| label: figure12
+#| label: fig-figure12
 #| fig-cap: "Orchard plot with heteroscedastic error for trait typess"
 #| fig-width: 6
 #| fig-height: 4 
 
 het_model <- orchaRd::mod_results(model_het, 
                                      group = "group_ID", 
-                                       mod = "trait.type", 
-                                      data = warm_dat)
+                                       mod = "trait.type")
   
-orchaRd::orchard_plot(het_model, xlab = "lnRR", data = warm_dat)
+orchaRd::orchard_plot(het_model, xlab = "lnRR")
 ```
 
-We can now see from @figure12 that the variance in effects for the morphological and physiological trait categories are smaller than for life-history and behavioural trait categories; likely because of the very small sample sizes in the latter trait categories.
+We can now see from @fig-figure12 that the variance in effects for the morphological and physiological trait categories are smaller than for life-history and behavioural trait categories; likely because of the very small sample sizes in the latter trait categories.
 
 As a second example, we can turn to @Pottier2021 who did a meta-analysis comparing acclimation differences between males and females. @Pottier2021 found that aquatic and terrestrial systems differed in their variability of effects. Here, we'll also show how phylogenetic correlation matrices can be incorporated within the models and work with orchaRd.
 
@@ -454,20 +467,20 @@ mod.habitat_het
 Now we can produce an `orchaRd` plot using this model to show the unequal variance in the two habitat types. 
 
 ```{r, echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE}
-#| label: figsure13a
+#| label: fig-figsure13a
 #| fig-cap: "Orchard plot with heteroscedastic error for habitat type"
 #| fig-width: 6
 #| fig-height: 4 
-orchard_plot(mod.habitat_het, data = pottier, group = "species_ID", mod = "habitat", xlab = "dARR", angle = 45)
+orchard_plot(mod.habitat_het,  group = "species_ID", mod = "habitat", xlab = "dARR", angle = 45)
 
 ```
 
 We can also create the model results table (@tbl-tab1). 
 
 ```{r}
-#| label: tab1
+#| label: tbl-tab1
 #| tbl-cap: Model results table
-flextable::flextable(mod_results(mod.habitat_het, data = pottier, group = "species_ID", mod = "habitat")$mod_table)
+flextable::flextable(mod_results(mod.habitat_het,  group = "species_ID", mod = "habitat")$mod_table)
 ```
 
 <!-- We can check calculation for, say,aquatic  is correct: 0.2087 + qt(0.975, 136)*sqrt(sum(0.0655^2 + 0.0716 + 0.0129 + 0.0090)) -->
@@ -486,28 +499,28 @@ mod.habitat_het2
 Again, we can plot this new model normally.
 
 ```{r, echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE}
-#| label: figsure14a
+#| label: fig-figsure14a
 #| fig-cap: "Orchard plot with heteroscedastic error for habitat type at the residual and species level"
-orchard_plot(mod.habitat_het2, data = pottier, group = "species_ID", mod = "habitat", xlab = "dARR", angle = 45)
+orchard_plot(mod.habitat_het2, group = "species_ID", mod = "habitat", xlab = "dARR", angle = 45)
 
 ```
 
-We can also view the model results table (@tb-2)
+We can also view the model results table (@tbl-2)
 
 ```{r}
-#| label: tb-2
+#| label: tbl-2
 #| tbl-cap: Model results table
-flextable::flextable(mod_results(mod.habitat_het2, data = pottier, group = "species_ID", mod = "habitat")$mod_table)
+flextable::flextable(mod_results(mod.habitat_het2, group = "species_ID", mod = "habitat")$mod_table)
 ```
 
 ## **Example 5: Bubble plots with continuous moderators**
 
 `orchaRd` 2.0 can now also create bubble plots. Bubble plots are extremely useful when one has a continuous moderator variable. For example, this might be publication year or sampling variance if one is testing for various forms of publication bias. We'll demonstrate using two examples.
 
-First, we'll return to the @Lim2014 dataset. Here, we can fit a model that assessing time-lag effects for studies on captive and wild populations. Say, for the sake of argument, that we expect the time-lag effect to vary by lab/wild conditions. We can fit an interaction model and create bubble plots for these situations (@bubbleslim):
+First, we'll return to the @Lim2014 dataset. Here, we can fit a model that assessing time-lag effects for studies on captive and wild populations. Say, for the sake of argument, that we expect the time-lag effect to vary by lab/wild conditions. We can fit an interaction model and create bubble plots for these situations (@fig-bubbleslim):
 
 ```{r, echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE}
-#| label: bubbleslim
+#| label: fig-bubbleslim
 #| fig-cap: "Bubble plot with Lim et al. 2014 dataset assessing publication bias (time-lag bias) in wild and captive studies."
 
 data(lim)
@@ -518,15 +531,15 @@ model<-metafor::rma.mv(yi=yi, V=vi, mods= ~Environment*year,
 
 
 lim_bubble <- orchaRd::mod_results(model, mod = "year", group = "Article",
-                    data = lim, weights = "prop", by = "Environment")
+                    weights = "prop", by = "Environment")
 
-orchaRd::bubble_plot(lim_bubble, data = lim, group = "Article", mod = "year", xlab = "Year", legend.pos = "top.left")
+orchaRd::bubble_plot(lim_bubble, group = "Article", mod = "year", xlab = "Year", legend.pos = "top.left")
 ```
 
-As second example, we'll return back to @Pottier2021, who collected data on body mass for species in the data set where the acclimation response ratio (ARR) was calculated. We might expect the ARR to vary by body mass because small species might be able to acclimate faster than larger species. Using a simplified version of @Pottier2021's model, we can look at this effect (@bubblespatrice):
+As second example, we'll return back to @Pottier2021, who collected data on body mass for species in the data set where the acclimation response ratio (ARR) was calculated. We might expect the ARR to vary by body mass because small species might be able to acclimate faster than larger species. Using a simplified version of @Pottier2021's model, we can look at this effect (@fig-bubblespatrice):
 
 ```{r, echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE}
-#| label: bubblespatrice
+#| label: fig-bubblespatrice
 #| fig-cap: "Bubble plot with Pottier et al. 2021 dataset assessing whether body mass affects the acclimation response ratio (ARR)."
 #| 
   # extract complete cases
@@ -537,7 +550,7 @@ As second example, we'll return back to @Pottier2021, who collected data on body
 mod.body_mass <-  metafor::rma.mv(yi = dARR, V = Var_dARR,mods= ~body_mass, method="REML", test="t", dfs="contain",
                            random=list(~1|species_ID, ~1|es_ID), data = pottier2)
 
-orchaRd::bubble_plot(mod.body_mass, mod = "body_mass", group = "species_ID", xlab = "Body mass (g)", ylab = "Acclimation Response Ratio (ARR)", legend.pos = "top.left", data = pottier2)
+orchaRd::bubble_plot(mod.body_mass, mod = "body_mass", group = "species_ID", xlab = "Body mass (g)", ylab = "Acclimation Response Ratio (ARR)", legend.pos = "top.left")
 
 ```
 
@@ -577,11 +590,11 @@ model
 Our model is complicated. It not only estimates the effects of trait type, but type of experimental design, degree difference and treatment duration. But, effects of moderators are now conditional on each other. What happens if we just want to plot mean effects for trait type? We can do this using marginalised means. We can see that there's not much going on for experimental design, so we will marginalize the means across each level of this moderator. Degree difference and treatment end days are continuous, however. To deal with continuous moderators we need to specify the levels we want predictions to be made. We can do that using the `marginal_means` function:
 
 ```{r, echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE}
-#| label: figure13
+#| label: fig-figure13
 #| fig-cap: "Orchard plot of marginalised mean effect sizes for 5, 10, and 15 degree Celcius temperture differences"
-HetModel <- orchaRd::mod_results(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif", weights = "prop", data = warm_dat)
+HetModel <- orchaRd::mod_results(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif", weights = "prop" )
 
-orchaRd::orchard_plot(HetModel, xlab = "lnRR", data = warm_dat, angle = 45, g = FALSE, legend.pos = "top.left") + 
+orchaRd::orchard_plot(HetModel, xlab = "lnRR" , angle = 45, g = FALSE, legend.pos = "top.left") + 
   theme(legend.direction = "vertical")
 
 ```
@@ -591,11 +604,11 @@ We can see the orchard plot changes. Here we have a condition label. This specif
 We can also specify the specific value of `treat_end_day` if the user would like to be more precise. We can do that as follows:
 
 ```{r, echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE}
-#| label: figure14
+#| label: fig-figure14
 #| fig-cap: "Orchard plot of marginalised mean effect sizes for 5, 10, and 15 degree Celcius temperture differences"
-HetModel2 <- orchaRd::mod_results(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10)), by = "deg_dif", weights = "prop", data = warm_dat)
+HetModel2 <- orchaRd::mod_results(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10)), by = "deg_dif", weights = "prop")
 
-orchaRd::orchard_plot(HetModel2, xlab = "lnRR", data = warm_dat, angle = 45, g = FALSE, legend.pos = "top.left") + 
+orchaRd::orchard_plot(HetModel2, xlab = "lnRR", angle = 45, g = FALSE, legend.pos = "top.left") + 
   theme(legend.direction = "vertical")
 
 
