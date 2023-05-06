@@ -4,7 +4,7 @@
 \alias{get_data_raw}
 \title{get_data_raw}
 \usage{
-get_data_raw(model, mod, group, N = NULL, data, at = NULL, subset = TRUE)
+get_data_raw(model, mod, group, N = NULL, at = NULL, subset = TRUE)
 }
 \arguments{
 \item{model}{\code{rma.mv} object.}
@@ -14,8 +14,6 @@ get_data_raw(model, mod, group, N = NULL, data, at = NULL, subset = TRUE)
 \item{group}{The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species, or whatever other grouping variable one wishes to present sample sizes.}
 
 \item{N}{The name of the column in the data specifying the sample size, N. Defaults to \code{NULL}, so precision is plotted instead of sample size.}
-
-\item{data}{The data frame used to fit the \code{rma.mv} model object.}
 
 \item{at}{List of moderators. If \code{at} is equal to \code{mod} then levels specified within \code{at} will be used to subset levels when \code{subset = TRUE}. Otherwise, it will marginalise over the moderators at the specified levels.}
 
@@ -32,14 +30,14 @@ Collects and builds the data used to fit the \code{rma.mv} or \code{rma} model i
 data(fish)
 warm_dat <- fish
 model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 | es_ID), mods = ~ experimental_design + trait.type + deg_dif + treat_end_days, method = "REML", test = "t", data = warm_dat, control=list(optimizer="optim", optmethod="Nelder-Mead"))
- test <- get_data_raw(model, mod = "trait.type", group = "group_ID", data = warm_dat, at = list(trait.type = c("physiology", "morphology")))
- test2 <- get_data_raw(model, mod = "1", group = "group_ID", data = warm_dat)
+ test <- get_data_raw(model, mod = "trait.type", group = "group_ID", at = list(trait.type = c("physiology", "morphology")))
+ test2 <- get_data_raw(model, mod = "1", group = "group_ID")
 
  data(english)
  # We need to calculate the effect sizes, in this case d
- english <- escalc(measure = "SMD", n1i = NStartControl, sd1i = SD_C, m1i = MeanC, n2i = NStartExpt, sd2i = SD_E, m2i = MeanE, var.names=c("SMD","vSMD"), data = english)
+ english <- escalc(measure = "SMD", n1i = NStartControl, sd1i = SD_C, m1i = MeanC, n2i = NStartExpt, sd2i = SD_E, m2i = MeanE, var.names=c("SMD","vSMD"))
  model <- rma.mv(yi = SMD, V = vSMD, random = list( ~ 1 | StudyNo, ~ 1 | EffectID), data = english)
- test3 <-  get_data_raw(model, mod = "1", group = "StudyNo", data = english)}
+ test3 <-  get_data_raw(model, mod = "1", group = "StudyNo")}
 }
 \author{
 Shinichi Nakagawa - s.nakagawa@unsw.edu.au

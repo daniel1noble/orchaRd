@@ -8,7 +8,6 @@ orchard_plot(
   object,
   mod = "1",
   group,
-  data,
   xlab,
   N = NULL,
   alpha = 0.5,
@@ -38,8 +37,6 @@ orchard_plot(
 \item{mod}{the name of a moderator. Defaults to \code{"1"} for an intercept-only model. Not needed if an \code{orchard_plot} is provided with a \code{mod_results} object of class \code{orchard}.}
 
 \item{group}{The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species, or any grouping variable one wishes to present sample sizes for. Not needed if an \code{orchard_plot} is provided with a \code{mod_results} object of class \code{orchard}.}
-
-\item{data}{The data frame used to fit the \code{rma.mv} model object.  Not needed if an \code{orchard_plot} is provided with a \code{mod_results} object of class \code{orchard}.}
 
 \item{xlab}{The effect size measure label.}
 
@@ -98,12 +95,12 @@ eklof$Datapoint<-as.factor(seq(1, dim(eklof)[1], 1))
 # fit a MLMR - accounting for some non-independence
 eklof_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~ Grazer.type-1,
 random=list(~1|ExptID, ~1|Datapoint), data=eklof)
-results <- mod_results(eklof_MR, mod = "Grazer.type", group = "ExptID", data = eklof)
+results <- mod_results(eklof_MR, mod = "Grazer.type", group = "ExptID")
 orchard_plot(results, mod = "Grazer.type",
 group = "ExptID", xlab = "log(Response ratio) (lnRR)")
 # or
 orchard_plot(eklof_MR, mod = "Grazer.type", group = "ExptID",
-xlab = "log(Response ratio) (lnRR)", data = eklof)
+xlab = "log(Response ratio) (lnRR)")
 
 # Example 2
 data(lim)
@@ -111,7 +108,7 @@ lim$vi<- 1/(lim$N - 3)
 lim_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~Phylum-1, random=list(~1|Article,
 ~1|Datapoint), data=lim)
 orchard_plot(lim_MR, mod = "Phylum", group = "Article",
-xlab = "Correlation coefficient", transfm = "tanh", N = lim$N, data = lim)
+xlab = "Correlation coefficient", transfm = "tanh", N = lim$N)
 }
 }
 \author{

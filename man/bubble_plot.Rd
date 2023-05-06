@@ -8,7 +8,6 @@ bubble_plot(
   object,
   mod,
   group = NULL,
-  data,
   xlab = "Moderator",
   ylab = "Effect size",
   N = "none",
@@ -37,8 +36,6 @@ bubble_plot(
 \item{mod}{The name of a continuous moderator, to be plotted on the x-axis of the bubble plot.}
 
 \item{group}{The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species, or any grouping variable one wishes to present sample sizes for. Not needed if an \code{orchard_plot} is provided with a \code{mod_results} object of class \code{orchard}.}
-
-\item{data}{The data frame used to fit the \code{rma.mv} model object. Not needed if an \code{orchard_plot} is provided with a \code{mod_results} object of class \code{orchard}.}
 
 \item{xlab}{Moderator label.}
 

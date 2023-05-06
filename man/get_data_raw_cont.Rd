@@ -4,7 +4,7 @@
 \alias{get_data_raw_cont}
 \title{get_data_raw_cont}
 \usage{
-get_data_raw_cont(model, mod, group, N = NULL, data, by)
+get_data_raw_cont(model, mod, group, N = NULL, by)
 }
 \arguments{
 \item{model}{\code{rma.mv} object.}
@@ -14,8 +14,6 @@ get_data_raw_cont(model, mod, group, N = NULL, data, by)
 \item{group}{The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species or whatever other grouping variable one wishes to present sample sizes.}
 
 \item{N}{The name of the column in the data specifying the sample size, N. Defaults to \code{NULL} so that precision is plotted instead of sample size.}
-
-\item{data}{The data frame used to fit the \code{rma.mv} model object.}
 
 \item{by}{Character name(s) of the 'condition' variables to use for grouping into separate tables.}
 }

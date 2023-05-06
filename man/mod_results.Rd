@@ -8,7 +8,6 @@ mod_results(
   model,
   mod = "1",
   group,
-  data,
   N = NULL,
   weights = "prop",
   by = NULL,
@@ -24,8 +23,6 @@ mod_results(
 \item{mod}{Moderator variable of interest that one wants marginal means for. Defaults to the intercept, i.e. \code{"1"}.}
 
 \item{group}{The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species, or any grouping variable one wishes to present sample sizes for.}
-
-\item{data}{The data frame used to fit the \code{rma.mv} model object.}
 
 \item{N}{The name of the column in the data specifying the sample size, N. Defaults to \code{NULL}, so that precision is plotted instead of sample size.}
 
@@ -52,14 +49,13 @@ Using a \pkg{metafor} model object of class \code{rma} or \code{rma.mv}, this fu
 # Simple eklof data
 data(eklof)
 eklof<-metafor::escalc(measure="ROM", n1i=N_control, sd1i=SD_control,
-m1i=mean_control, n2i=N_treatment, sd2i=SD_treatment, m2i=mean_treatment,
-data=eklof)
+m1i=mean_control, n2i=N_treatment, sd2i=SD_treatment, m2i=mean_treatment, data = eklof)
 # Add the unit level predictor
 eklof$Datapoint<-as.factor(seq(1, dim(eklof)[1], 1))
 # fit a MLMR - accouting for some non-independence
 eklof_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~ Grazer.type, random=list(~1|ExptID,
-~1|Datapoint), data=eklof)
-results <- mod_results(eklof_MR, mod = "Grazer.type", group = "ExptID", data=eklof)
+~1|Datapoint), data = eklof)
+results <- mod_results(eklof_MR, mod = "Grazer.type", group = "ExptID")
 
 # Fish example demonstrating marginalised means
 data(fish)
@@ -67,29 +63,29 @@ warm_dat <- fish
 model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi,
 random = list(~1 | group_ID, ~1 | es_ID),
 mods = ~ experimental_design + trait.type + deg_dif + treat_end_days,
-method = "REML", test = "t", data = warm_dat,
-control=list(optimizer="optim", optmethod="Nelder-Mead"))
-  overall <- mod_results(model, group = "group_ID", data = warm_dat)
-across_trait <- mod_results(model, group = "group_ID", mod = "trait.type", data = warm_dat)
+method = "REML", test = "t",
+control=list(optimizer="optim", optmethod="Nelder-Mead"), data = warm_dat)
+  overall <- mod_results(model, group = "group_ID")
+across_trait <- mod_results(model, group = "group_ID", mod = "trait.type")
 across_trait_by_degree_diff <- mod_results(model, group = "group_ID",
-mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif", data = warm_dat)
+mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif")
 across_trait_by_degree_diff_at_treat_end_days10 <- mod_results(model, group = "group_ID",
 mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = 10),
 by = "deg_dif",data = warm_dat)
 across_trait_by_degree_diff_at_treat_end_days10And50 <- mod_results(model, group = "group_ID",
 mod = "trait.type", at = list(deg_dif = c(5, 10, 15),
- treat_end_days = c(10, 50)), by = "deg_dif", data = warm_dat)
+ treat_end_days = c(10, 50)), by = "deg_dif")
 across_trait_by_treat_end_days10And50 <- mod_results(model, group = "group_ID",
 mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)),
-by = "treat_end_days", data = warm_dat)
+by = "treat_end_days")
 across_trait_by_treat_end_days10And50_ordinaryMM <- mod_results(model, group = "group_ID",
 mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)),
-by = "treat_end_days", weights = "prop", data = warm_dat)
+by = "treat_end_days", weights = "prop")
 
 # Fish data example with a heteroscedastic error
-model_het <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 + trait.type| es_ID), mods = ~ trait.type + deg_dif, method = "REML", test = "t", rho = 0, struc = "HCS", data = warm_dat, control=list(optimizer="optim", optmethod="Nelder-Mead"))
-HetModel <- mod_results(model_het, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif", weights = "prop", data = warm_dat)
-orchard_plot(HetModel, xlab = "lnRR", data = warm_dat)
+model_het <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 + trait.type| es_ID), mods = ~ trait.type + deg_dif, method = "REML", test = "t", rho = 0, struc = "HCS", control=list(optimizer="optim", optmethod="Nelder-Mead"), data = warm_dat)
+HetModel <- mod_results(model_het, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif", weights = "prop")
+orchard_plot(HetModel, xlab = "lnRR")
 }
 }
 \author{
