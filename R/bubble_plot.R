@@ -63,10 +63,6 @@ bubble_plot <- function(object, mod, group = NULL, xlab = "Moderator", ylab = "E
   k.pos <- match.arg(NULL, choices = k.pos)
   #facet <- match.arg(NULL, choices = facet)
 
-  if(any(grepl(mod, colnames(data))) == FALSE){
-    error("The moderator specified is not found in your data. Did you transform the variable in the model and forget to add it to your dataframe?")
-  }
-
   if(missing(group)){
     stop("Please specify the 'group' argument by providing the name of the grouping variable. See ?bubble_plot")
   }
