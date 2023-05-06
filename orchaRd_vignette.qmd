@@ -58,6 +58,8 @@ To install `orchaRd` use the following code in R:
 If you want to download the development branch, which contains newer features you can execute the following code:
 
 ```{r}
+#| echo: false
+#| include: false
 rm(list = ls())
 devtools::install_github("daniel1noble/orchaRd", ref = "dev", force = TRUE)
 pacman::p_load(devtools, tidyverse, metafor, patchwork, R.rsp, orchaRd, emmeans, ape, phytools, flextable)
@@ -69,7 +71,7 @@ pacman::p_load(devtools, tidyverse, metafor, patchwork, R.rsp, orchaRd, emmeans,
 ```{r echo = TRUE, eval = TRUE, results = 'hide', warning=FALSE, message=FALSE,  class.source='klippy'}
 #install.packages("pacman")
 rm(list = ls())
-devtools::install_github("daniel1noble/orchaRd", ref = "dev", force = TRUE)
+devtools::install_github("daniel1noble/orchaRd", ref = "master", force = TRUE)
 pacman::p_load(devtools, tidyverse, metafor, patchwork, R.rsp, orchaRd, emmeans, ape, phytools, flextable)
 ```
 
@@ -533,7 +535,7 @@ model<-metafor::rma.mv(yi=yi, V=vi, mods= ~Environment*year,
 lim_bubble <- orchaRd::mod_results(model, mod = "year", group = "Article",
                     weights = "prop", by = "Environment")
 
-orchaRd::bubble_plot(lim_bubble, group = "Article", mod = "year", xlab = "Year", legend.pos = "top.left")
+orchaRd::bubble_plot(lim_bubble, group = "Article",  mod = "year", xlab = "Year", legend.pos = "top.left")
 ```
 
 As second example, we'll return back to @Pottier2021, who collected data on body mass for species in the data set where the acclimation response ratio (ARR) was calculated. We might expect the ARR to vary by body mass because small species might be able to acclimate faster than larger species. Using a simplified version of @Pottier2021's model, we can look at this effect (@fig-bubblespatrice):
