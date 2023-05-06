@@ -7,7 +7,11 @@
 
 # Citing orchaRd
 
-To cite `orchaRd` in publications one can use the following reference:
+To cite `orchaRd` 2.0 in publications one can use the following reference:
+
+Shinichi Nakagawa, Malgorzata Lagisz, Rose E. O'Dea, Patrice Pottier, Joanna Rutkowska, Alistair M. Senior, Yefeng Yang, Daniel W.A. Noble. 2023. orchaRd 2.0: An R package for visualizing meta-analyses with orchard plots. **EcoEvoRxiv**, https://doi.org/10.32942/X2QC7K. 
+
+For earlier versions please cite:
 
 Nakagawa, S., Lagisz, M., O'Dea, R. E., Rutkowska, J., Yang, Y., Noble, D. W., & Senior, A. M. (2019). The Orchard Plot: Cultivating Forest Plots for Use in Ecology, Evolution and Beyond. *Research Synthesis Methods* https://doi.org/10.1002/jrsm.1424 12: 4-12 (preprint = *EcoEvoRxiv* https://doi.org/10.32942/osf.io/epqa7)
 
