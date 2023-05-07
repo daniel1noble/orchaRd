@@ -384,9 +384,9 @@ From @fig-Figure10 we can see that many taxonimic groups have very little data. 
 
 We can now see that @fig-Figure121 limits what it plots to only the three levels relevant for presentation. 
 
-# **Orchard Plots with Meta-regression Models: Marginalised means and heteroscedastic residual variances**
+# **Orchard Plots with Meta-regression Models: Marginalised and conditional means with heteroscedastic residual variances**
 
-In `orchaRd` 2.0 we've made some major updates to the types of models that can be used with the package. Meta-analyses in ecology and evolution often fit a multitude of moderators and random effects within a single model. This is even desirable in many cases to deal with high heterogeneity and disentangle the independent contributions of moderators to changes in mean effect size. The challenge with the previous version of the package was that it was difficult to accommodate these models. However, the `emmeans` package is an excellent solution to the problem. It will produce marginsalised mean estimates for a given level of moderator -- producing mean estimates that average over all other moderators in the model. This includes models with categorical and continuous moderators. 
+In `orchaRd` 2.0 we've made some major updates to the types of models that can be used with the package. Meta-analyses in ecology and evolution often fit a multitude of moderators and random effects within a single model. This is even desirable in many cases to deal with high heterogeneity and disentangle the independent contributions of moderators to changes in mean effect size. The challenge with the previous version of the package was that it was difficult to accommodate these models. However, the `emmeans` package is an excellent solution to the problem. It will produce marginsalised or conditional mean estimates for a given level of moderator. This includes models with categorical and continuous moderators. 
 
 An additional issue that is of importance with meta-regression models is the need to deal with heteroscedastic variance across levels of a moderator. Homogeneity of variance assumptions are often violated in meta-analysis. `orchaRd` 2.0 allows the user to fit models that explicitly estimate different residual variances reducing the probability of type I errors. 
 
@@ -561,9 +561,9 @@ orchaRd::bubble_plot(mod.body_mass, mod = "body_mass", group = "species_ID", xla
 
 <br>
 
-## **Example 6: Meta-regression and marginalised mean effect sizes**
+## **Example 6: Meta-regression and conditional mean effect sizes**
 
-We'll now demonstrate how multi-moderator meta-regression models can be used with `orchaRd` 2.0, by plotting marginalised mean effects within categories of a single moderator. Marginalised means are also extremely useful to improve interpretation of overall model results. 
+We'll now demonstrate how multi-moderator meta-regression models can be used with `orchaRd` 2.0, by plotting conditional mean effects within categories of a single moderator. 
 
 To demonstrate how to do this we'll again turn to @ODea2019 as our example data set. We'll first load the data set, if you haven't already done so:
 
@@ -576,7 +576,7 @@ To demonstrate how to do this we'll again turn to @ODea2019 as our example data 
     warm_dat <- fish
 ```
 
-Now that we have the data set assume we are interested in modelling multiple moderators that we hypothesize will explain effect size variance. We want to provide a model that will allow us to understand the conditional (independent) effects of each moderator on mean effect size. We know that `experimental_design` and the temperature difference between treatments (`deg_diff`) are expected to impact mean effect size. We also expect experiments that last longer to have stronger effects (`treat_end_days`). We'll now extend our model from @sec-sec4 above to include these moderators so we can look at the effects of each controlling for each other. 
+Now that we have the data set assume we are interested in modelling multiple moderators that we hypothesize will explain effect size variance. We want to provide a model that will allow us to understand the effects of each multiple moderators on mean effect size. We know that `experimental_design` and the temperature difference between treatments (`deg_diff`) are expected to impact mean effect size. We also expect experiments that last longer to have stronger effects (`treat_end_days`). We'll now extend our model from @sec-sec4 above to include these moderators so we can look at the effects of each controlling for each other. 
 
 ```{r echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE}
 
@@ -592,11 +592,11 @@ model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi,
 model
 ```
 
-Our model is complicated. It not only estimates the effects of trait type, but type of experimental design, degree difference and treatment duration. But, effects of moderators are now conditional on each other. What happens if we just want to plot mean effects for trait type? We can do this using marginalised means. We can see that there's not much going on for experimental design, so we will marginalize the means across each level of this moderator. Degree difference and treatment end days are continuous, however. To deal with continuous moderators we need to specify the levels we want predictions to be made. We can do that using the `marginal_means` function:
+Our model is complicated. It not only estimates the effects of trait type, but type of experimental design, degree difference and treatment duration. But, effects of moderators are now conditional on each other. What happens if we just want to plot mean effects for trait type, but we want to condition these effects on a given temperature different? We can do this using calculating conditional meta-analytic means. We can see that there's not much going on for experimental design, so we will marginalize the means across each level of this moderator. Degree difference is continuous. To deal with continuous moderators we need to specify the levels we want predictions to be made. 
 
 ```{r, echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE}
 #| label: fig-figure13
-#| fig-cap: "Orchard plot of marginalised mean effect sizes for 5, 10, and 15 degree Celcius temperture differences"
+#| fig-cap: "Orchard plot of meta-anlaytic mean estimates conditioned on a 5, 10, and 15 degree Celcius temperture difference"
 HetModel <- orchaRd::mod_results(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif", weights = "prop" )
 
 orchaRd::orchard_plot(HetModel, xlab = "lnRR" , angle = 45, g = FALSE, legend.pos = "top.left", condition.lab = "Temperature Difference") + 
@@ -604,13 +604,13 @@ orchaRd::orchard_plot(HetModel, xlab = "lnRR" , angle = 45, g = FALSE, legend.po
 
 ```
 
-We can see the orchard plot changes. Here we have a condition label. This specifies the degree difference for mean predicted. Note that, these means effectively average over all levels of experimental design **and** all possible values of `treat_end_days`. We have also made some small changes to the plot. First, we set `g = FALSE` which will suppress the total groups on the plot (e.g. studies), moved the position of legends and angled the labels. 
+We can see the orchard plot changes. Here we have a 'condition' label, which we have renamed to "Temperature Difference" using the `condition.lab` argument. This new legend specifies the degree difference for each mean predicted. Note that these means effectively average over all levels of experimental design **and** all possible values of `treat_end_days` (i.e., marginalize). We have also made some small changes to the plot. First, we set `g = FALSE` which will suppress the total groups on the plot (e.g. studies), moved the position of legends and angled the labels. 
 
-We can also specify the specific value of `treat_end_day` if the user would like to be more precise. We can do that as follows:
+We can also specify the specific value of `treat_end_day`, further conditioning our mean estimates. We can do that as follows:
 
 ```{r, echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE}
 #| label: fig-figure14
-#| fig-cap: "Orchard plot of marginalised mean effect sizes for 5, 10, and 15 degree Celcius temperture differences"
+#| fig-cap: "Orchard plot of meta-anlaytic mean estimates conditioned on a 5, 10, and 15 degree Celcius temperture difference"
 HetModel2 <- orchaRd::mod_results(model, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10)), by = "deg_dif", weights = "prop")
 
 orchaRd::orchard_plot(HetModel2, xlab = "lnRR", angle = 45, g = FALSE, legend.pos = "top.left", condition.lab = "Temperature Difference") + 
