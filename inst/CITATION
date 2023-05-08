@@ -1,6 +1,6 @@
 citHeader("To cite orchaRd in publications use:")
 
-citEntry(
+bibEntry(
   entry    = "Article",
   title    = "orchaRd 2.0: An R package for visualizing meta-analyses with orchard plots",
   author   = "Shinichi Nakagawa, Malgorzata Lagisz, Rose E. O'Dea, Patrice Pottier, Joanna Rutkowska, Alistair M. Senior, Yefeng Yang, Daniel W.A. Noble",
@@ -9,6 +9,6 @@ citEntry(
   volume   = "12",
   pages    = "4-12",
   doi      = "https://doi.org/10.32942/X2QC7K",
-  textVersion = paste(
+  textVersion = paste(Shinichi Nakagawa, Malgorzata Lagisz, Rose E. O'Dea, Patrice Pottier, Joanna Rutkowska, Alistair M. Senior, Yefeng Yang, Daniel W.A. Noble. 2023. orchaRd 2.0: An R package for visualizing meta-analyses with orchard plots. EcoEvoRxiv 12:4-12. https://doi.org/10.32942/X2QC7K"
   )
 )
