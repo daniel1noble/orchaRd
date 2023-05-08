@@ -1,6 +1,6 @@
 citHeader("To cite orchaRd in publications use:")
 
-bibEntry(
+bibentry(
   entry    = "Article",
   title    = "orchaRd 2.0: An R package for visualizing meta-analyses with orchard plots",
   author   = "Shinichi Nakagawa, Malgorzata Lagisz, Rose E. O'Dea, Patrice Pottier, Joanna Rutkowska, Alistair M. Senior, Yefeng Yang, Daniel W.A. Noble",
