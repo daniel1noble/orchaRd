@@ -2,6 +2,20 @@ citHeader("To cite orchaRd in publications use:")
 
 citEntry(
   entry    = "Article",
+  title    = "orchaRd 2.0: An R package for visualizing meta-analyses with orchard plots",
+  author   = "Shinichi Nakagawa, Malgorzata Lagisz, Rose E. O'Dea, Patrice Pottier, Joanna Rutkowska, Alistair M. Senior, Yefeng Yang, Daniel W.A. Noble",
+  journal  = "EcoEvoRxiv",
+  year     = "2023",
+  volume   = "12",
+  pages    = "4-12",
+  doi      = "https://doi.org/10.32942/X2QC7K",
+  textVersion = paste(
+
+  )
+)
+
+citEntry(
+  entry    = "Article",
   title    = "The orchard plot: Cultivating a forest plot for use in ecology, evolution, and beyond",
   author   = "Shinichi Nakagawa, Malgorzata Lagisz, Rose E O'Dea, Joanna Rutkowska, Yefeng Yang, Daniel WA Noble, Alistair M Senior",
   journal  = "Research Synthesis Methods",
