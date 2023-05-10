@@ -559,6 +559,16 @@ orchaRd::bubble_plot(mod.body_mass, mod = "body_mass", group = "species_ID", xla
 
 ```
 
+We may want to colour code the points based on some grouping variable, such as habitat. As indicated through the vignette, we can override layers of the orchard plot to do this fairly easily (@fig-bubblespatrice22).
+
+```{r}
+#| label: fig-bubblespatrice22
+#| fig-cap: "Bubble plot with @Pottier2021 dataset assessing whether body mass affects the acclimation response ratio (ARR), with points coloured by habitat type. 'Blue' are terrestrial species, 'red' are aquatic species."
+#| message: FALSE
+#| warning: FALSE
+orchaRd::bubble_plot(mod.body_mass, mod = "body_mass", group = "species_ID", xlab = "Body mass (g)", ylab = "Acclimation Response Ratio (ARR)", legend.pos = "top.left") + geom_point(data = pottier, aes(x = body_mass, y = dARR, color = habitat, size = 1/sqrt(Var_dARR)), alpha = 0.6) + scale_color_discrete()
+```
+
 <br>
 
 ## **Example 6: Meta-regression and conditional mean effect sizes**
