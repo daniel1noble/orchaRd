@@ -4,6 +4,7 @@
 [![codecov](https://codecov.io/gh/daniel1noble/orchaRd/branch/main/graph/badge.svg?token=KqQLvcGfLv)](https://codecov.io/gh/daniel1noble/orchaRd)
 [![Ask Us Anything\ !](https://img.shields.io/badge/Ask%20me-anything-1abc9c.svg)](https://github.com/daniel1noble/orchaRd/issues/new)
 ![Open Source Love](https://badges.frapsoft.com/os/v2/open-source.svg?v=103)
+[![DOI](https://zenodo.org/badge/358763476.svg)](https://zenodo.org/badge/latestdoi/358763476)
 
 # Citing orchaRd
 
