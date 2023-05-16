@@ -12,17 +12,35 @@ eklof_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~ Grazer.type, random=list(~1|ExptID
 ~1|Datapoint), data=eklof)
 results <- orchaRd::mod_results(eklof_MR, mod = "Grazer.type", group = "ExptID")
 
+# Adding in some missing data
+  eklof$yi[c(1,3,5,6)] <- NA
+
+# Missing model. Add missing data to one variable
+eklof_MR_miss<-metafor::rma.mv(yi=yi, V=vi, mods=~ Grazer.type, random=list(~1|ExptID,
+~1|Datapoint), data=eklof)
+results_miss <- mod_results(eklof_MR_miss, mod = "Grazer.type", group = "ExptID")
+
+# Adding in some missing data
+  eklof$vi[c(1,4,7,8)] <- NA
+
+# Missing model2. Add missing data to two variable
+eklof_MR_miss2<-metafor::rma.mv(yi=yi, V=vi, mods=~ Grazer.type, random=list(~1|ExptID,
+~1|Datapoint), data=eklof)
+results_miss2 <- mod_results(eklof_MR_miss2, mod = "Grazer.type", group = "ExptID")
+
 testthat::test_that("Checking mod_results output for eklof dataset ..", {
 
-    testthat::expect_equal(
-    dim(results)[[2]], 2,
-    info = "mod_results output for eklof has correct dimensions")
+  testthat::expect_equal(dim(results)[[2]], 2, info = "mod_results output for eklof has correct dimensions")
 
   testthat::expect_equal(round(results$mod_table[1,2],2), round(-0.8095289, 2), info = "checking mod_results output for eklof calculates correct mean for Amphipod group...")
 
   testthat::expect_equal(round(results$mod_table[1,4],2), round(-0.20206548, 2), info = "checking mod_results output for eklof calculates correct upper confidence interval for Amphipod group...")
 
   testthat::expect_equal(round(results$mod_table[1,5],2), round(-3.021706, 2), info = "checking mod_results output for eklof calculates correct lower predcition interval for Amphipod group...")
+
+  testthat::expect_equal(dim(results_miss$mod_table), c(2,6), info = "checking mod_results output for eklof when missing data is included in yi...")
+
+  testthat::expect_equal(dim(results_miss2$mod_table), c(2,6), info = "checking mod_results output for eklof when missing data is included in yi and vi are calculated...")
 })
 
 
