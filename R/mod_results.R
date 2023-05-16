@@ -92,8 +92,16 @@ mod_results <- function(model, mod = "1", group,  N = NULL,  weights = "prop", b
     df_mod = 1.0e6 # almost identical to z value
   }
 
-  if(is.character(model$data[[mod]]) | is.factor(model$data[[mod]]) | is.null(model$data[[mod]])) {
-    grid <- emmeans::qdrg(formula = stats::formula(model), at = at, data = model$data, coef = model$b,
+# Extract the data from the model object
+data <- model$data 
+
+# Check if missing values exist and use complete case data
+if(any(model$not.na == FALSE)){
+	data <- datadata_test[model$not.na,]
+}
+
+  if(is.character(data[[mod]]) | is.factor(data[[mod]]) | is.null(data[[mod]])) {
+    grid <- emmeans::qdrg(formula = stats::formula(model), at = at, data = data, coef = model$b,
                           vcov = stats::vcov(model), df = model$k-1) ## NOTE: Added data argument emmeans >vers 1.7.4. Object is unstable so feeding in the relevant arguments from model object directly. Note, we should think about df!
     mm <- emmeans::emmeans(grid, specs = mod, df = df_mod, by = by, weights = weights, ...)
 
@@ -125,9 +133,9 @@ mod_results <- function(model, mod = "1", group,  N = NULL,  weights = "prop", b
                              labels = mod_table$name)
 
   } else{
-    at2 <- list(mod = seq(min(model$data[,mod], na.rm = TRUE), max(model$data[,mod], na.rm = TRUE), length.out = 100))
+    at2 <- list(mod = seq(min(data[,mod], na.rm = TRUE), max(data[,mod], na.rm = TRUE), length.out = 100))
     names(at2) <- mod
-    grid <- emmeans::qdrg(formula =  stats::formula(model), data = model$data, coef = model$b,
+    grid <- emmeans::qdrg(formula =  stats::formula(model), data = data, coef = model$b,
                           vcov = stats::vcov(model), df = model$k-1, at = c(at2, at))  # getting 100 points. Fixing this to make it more general
     mm <- emmeans::emmeans(grid, specs = mod, by = c(mod, by), weights = weights, df = df_mod)
 
@@ -245,9 +253,14 @@ get_data_raw <- function(model, mod, group, N = NULL, at = NULL, subset = TRUE){
   if(missing(group)){
     stop("Please specify the 'group' argument by providing the name of the grouping variable. See ?mod_results")
   }
-   # Extract data
-  # Check first if missing data exists
-  data <- model$data
+ 
+# Extract the data from the model object
+  data <- model$data 
+
+# Check if missing values exist and use complete case data
+  if(any(model$not.na == FALSE)){
+    data <- datadata_test[model$not.na,]
+  }
 
   if(!is.null(at) & subset){
     # Find the at slot in list that pertains to the moderator and extract levels
@@ -303,8 +316,13 @@ get_data_raw_cont <- function(model, mod, group, N = NULL, by){
     stop("Please specify the 'group' argument by providing the name of the grouping variable. See ?mod_results")
   }
 
-  # Extract data
-  data <- model$data
+  # Extract the data from the model object
+  data <- model$data 
+
+# Check if missing values exist and use complete case data
+  if(any(model$not.na == FALSE)){
+    data <- datadata_test[model$not.na,]
+  }
 
   # Extract effect sizes
   yi <- model$yi
