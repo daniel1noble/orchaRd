@@ -97,7 +97,7 @@ data <- model$data
 
 # Check if missing values exist and use complete case data
 if(any(model$not.na == FALSE)){
-	data <- datadata_test[model$not.na,]
+	data <- data[model$not.na,]
 }
 
   if(is.character(data[[mod]]) | is.factor(data[[mod]]) | is.null(data[[mod]])) {
@@ -259,7 +259,7 @@ get_data_raw <- function(model, mod, group, N = NULL, at = NULL, subset = TRUE){
 
 # Check if missing values exist and use complete case data
   if(any(model$not.na == FALSE)){
-    data <- datadata_test[model$not.na,]
+    data <- data[model$not.na,]
   }
 
   if(!is.null(at) & subset){
@@ -321,7 +321,7 @@ get_data_raw_cont <- function(model, mod, group, N = NULL, by){
 
 # Check if missing values exist and use complete case data
   if(any(model$not.na == FALSE)){
-    data <- datadata_test[model$not.na,]
+    data <- data[model$not.na,]
   }
 
   # Extract effect sizes
