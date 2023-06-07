@@ -10,7 +10,7 @@
 
 To cite `orchaRd` 2.0 in publications one can use the following reference:
 
-Shinichi Nakagawa, Malgorzata Lagisz, Rose E. O'Dea, Patrice Pottier, Joanna Rutkowska, Alistair M. Senior, Yefeng Yang, Daniel W.A. Noble. 2023. orchaRd 2.0: An R package for visualizing meta-analyses with orchard plots. **EcoEvoRxiv**, https://doi.org/10.32942/X2QC7K. 
+Shinichi Nakagawa, Malgorzata Lagisz, Rose E. O'Dea, Patrice Pottier, Joanna Rutkowska, Alistair M. Senior, Yefeng Yang, Daniel W.A. Noble. 2023. orchaRd 2.0: An R package for visualizing meta-analyses with orchard plots. **Methods in Ecology and Evolution**, https://doi.org/10.1111/2041-210X.14152(preprint = **EcoEvoRxiv**, https://doi.org/10.32942/X2QC7). 
 
 For earlier versions please cite:
 
