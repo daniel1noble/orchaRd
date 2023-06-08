@@ -239,9 +239,18 @@ orchard_plot <- function(object, mod = "1", group, xlab, N = NULL,
 	    plot <- plot + ggplot2::annotate('text',  y = (min(data_trim$yi) + (min(data_trim$yi)*0.10)), x = (seq(1, group_no, 1)+0.3),
 	                        label= paste("italic(k)==", mod_table$K[1:group_no], "~","(", mod_table$g[1:group_no], ")"),
 	                        parse = TRUE, hjust = "left", size = 3.5)
-	  }
-
-
+	  } else if (k == TRUE && g == FALSE && k.pos%in%c('right','left','none')==FALSE) {
+	    # get group numbers for moderator
+	    plot <- plot + ggplot2::annotate("text", y = k.pos, x = (seq(1, group_no, 
+	                                                                1) + 0.3), label = paste("italic(k)==", mod_table$K[1:group_no]), 
+	                                    parse = TRUE, size = 3.5)
+	  } else if (k == TRUE && g == TRUE && k.pos%in%c('right','left','none')==FALSE) {
+	    # get group numbers for moderator
+	    plot <- plot + ggplot2::annotate("text", y = k.pos, x = (seq(1, group_no, 
+	                                                                1) + 0.3), label = paste("italic(k)==", mod_table$K[1:group_no], 
+	                                                                                         "~", "(", mod_table$g[1:group_no], ")"), 
+	                                    parse = TRUE, size = 3.5)
+    }
 	  return(plot)
 }
 
