@@ -24,6 +24,7 @@
 #' @param fill If \code{TRUE}, effect sizes will be filled with colours. If \code{FALSE}, they will not be filled with colours.
 #' @param weights Used when one wants marginalised means. How to marginalize categorical variables. The default is \code{weights = "prop"}, which weights moderator level means based on their proportional representation in the data. For example, if "sex" is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal. In the case of sex, for example, males and females are roughly equally prevalent in a population. As such, you can give the moderator levels equal weight using \code{weights = "equal"}.
 #' @param upper Logical, defaults to \code{TRUE}, indicating that the first letter of the character string for the moderator variable should be capitalized.
+#' @param flip Logical, defaults to \code{TRUE}, indicating whether the plot should be flipped.
 #' @return Orchard plot
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
@@ -66,7 +67,7 @@ orchard_plot <- function(object, mod = "1", group, xlab, N = NULL,
                          k.pos = c("right", "left", "none"),
                          colour = FALSE,
                          fill = TRUE,
-                         weights = "prop", by = NULL, at = NULL, upper = TRUE)
+                         weights = "prop", by = NULL, at = NULL, upper = TRUE, flip = TRUE)
 {
   ## evaluate choices, if not specified it takes the first choice
      transfm <- match.arg(NULL, choices = transfm)
@@ -159,7 +160,7 @@ orchard_plot <- function(object, mod = "1", group, xlab, N = NULL,
 	     ggplot2::geom_pointrange(data = mod_table, ggplot2::aes(y = estimate, x = name, ymin = lowerPR, ymax = upperPR,  shape = as.factor(condition), fill = color2), size = twig.size, position = ggplot2::position_dodge2(width = 0.3), fatten = trunk.size) +
 	     # this will only work for up to 5 different conditions
 	     # flipping things around (I guess we could do use the same geoms but the below is the original so we should not change)
-	     ggplot2::scale_shape_manual(values =  20 + (1:condition_no)) + ggplot2::coord_flip() +
+	     ggplot2::scale_shape_manual(values =  20 + (1:condition_no))  +
 	     ggplot2::theme_bw() +
 	     ggplot2::guides(fill = "none", colour = "none") +
 	     ggplot2::theme(legend.position= c(0, 1), legend.justification = c(0, 1)) +
@@ -171,6 +172,9 @@ orchard_plot <- function(object, mod = "1", group, xlab, N = NULL,
 	     ggplot2::theme(axis.text.y = ggplot2::element_text(size = 10, colour ="black",
 	                                                        hjust = 0.5,
 	                                                        angle = angle))
+	if(flip){
+		plot <- plot + ggplot2::coord_flip()
+	}
 
 	 } else {
 
@@ -183,7 +187,6 @@ orchard_plot <- function(object, mod = "1", group, xlab, N = NULL,
 	    ggplot2::geom_linerange(data = mod_table, ggplot2::aes(x = name, ymin = lowerCL, ymax = upperCL), size = branch.size) +
 	    # drowning point estimate and PI
 	    ggplot2::geom_pointrange(data = mod_table, ggplot2::aes(y = estimate, x = name,  ymin = lowerPR, ymax = upperPR, fill = color2), size = twig.size, fatten = trunk.size, shape = 21) +
-	    ggplot2::coord_flip() +
 	    ggplot2::theme_bw() +
 	    ggplot2::guides(fill = "none", colour = "none") +
 	    ggplot2::theme(legend.title = ggplot2::element_text(size = 9)) +
@@ -194,7 +197,9 @@ orchard_plot <- function(object, mod = "1", group, xlab, N = NULL,
 	                                                       hjust = 0.5,
 	                                                       angle = angle)) #+
 	    #ggplot2::theme(legend.position= c(1, 0), legend.justification = c(1, 0))
-
+	 if(flip){
+		plot <- plot + ggplot2::coord_flip()
+	}
 	 }
 
 	   # adding legend

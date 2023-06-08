@@ -277,7 +277,6 @@ p4 <- orchaRd::orchard_plot(eklof_MR0, mod = "Grazer.type",  group = "ExptID", x
   transfm = "none", angle = 45, g = FALSE) 
 
 p3/p4
-
 ```
 
 The other thing we can change is the type of scaling we wish to use. Let's say we are interested in scaling the effect size by the total sample size of the study we use a vector of N, sample size (bottom of @fig-Figure7:
@@ -334,10 +333,10 @@ Noe we can plot a default orchard plot, scaling each effect size by N. Also, bec
 
   #Plot the meta-regression model
   orchaRd::orchard_plot(lim_MR, mod = "Phylum", group = "Article",  xlab = "Correlation coefficient", 
-    alpha = 0.5, transfm = "tanh", angle = 45, N = "N", cb = FALSE)
+    alpha = 0.5, transfm = "tanh", angle = 45, N = "N", cb = FALSE) 
 ```
 
-Now that we have @fig-Figure9, we can do some small changes to make it pretty and add some more details, such as between study heterogeneity and R^2^ for phylum (we use ). Currently, the cb argument is "FALSE", we can change this to "TRUE" to use colour blind friendly colours. Additionally, because we are using `ggplot` we can add element to the figure to make it look pretty. 
+Now that we have @fig-Figure9, we can do some small changes to make it pretty and add some more details, such as between study heterogeneity and R^2^ for phylum. Currently, the cb argument is "FALSE", we can change this to "TRUE" to use colour blind friendly colours. Additionally, because we are using `ggplot` we can add element to the figure to make it look pretty. 
 
 ```{r, echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE}
 #| label: fig-Figure10
@@ -383,6 +382,19 @@ From @fig-Figure10 we can see that many taxonimic groups have very little data. 
 ```
 
 We can now see that @fig-Figure121 limits what it plots to only the three levels relevant for presentation. 
+
+We may also at times want to revert back to a normal plot with catagorical variables on the x-axis. We can do this by setting `flip` argument to `FALSE`. 
+
+```{r, echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE}
+#| label: fig-Figure1212
+#| fig-cap: "Caterpillars plot of the the strength of correlation between maternal and offspring size within-species"
+ 
+  #Plot the meta-regression model
+  lim_MR_results <- orchaRd::mod_results(lim_MR, mod = "Phylum", group = "Article", 
+                                           at = list(Phylum = c("Chordata", "Arthropoda", "Mollusca")),
+                                           subset = TRUE)
+  orchaRd::orchard_plot(lim_MR_results, xlab = "Correlation coefficient", transfm = "tanh", g = TRUE, flip = FALSE)
+```
 
 # **Orchard Plots with Meta-regression Models: Marginalised and conditional means with heteroscedastic residual variances**
 
