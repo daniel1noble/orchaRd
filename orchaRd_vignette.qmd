@@ -79,7 +79,7 @@ It's important to note that this version may not be as stable as the master bran
 ```{r echo = TRUE, eval = TRUE, results = 'hide', warning=FALSE, message=FALSE,  class.source='klippy'}
 #install.packages("pacman")
 rm(list = ls())
-devtools::install_github("daniel1noble/orchaRd", ref = "dev", force = TRUE)
+devtools::install_github("daniel1noble/orchaRd", ref = "main", force = TRUE)
 pacman::p_load(devtools, tidyverse, metafor, patchwork, R.rsp, orchaRd, emmeans, ape, phytools, flextable)
 ```
 
