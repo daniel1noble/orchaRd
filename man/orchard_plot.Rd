@@ -65,7 +65,7 @@ orchard_plot(
 
 \item{legend.pos}{Where to place the legend. To remove the legend, use \code{legend.pos = "none"}.}
 
-\item{k.pos}{Where to put k (number of effect sizes) on the plot.}
+\item{k.pos}{Where to put k (number of effect sizes) on the plot. Users can specify the exact position or they can use specify \code{"right"}, \code{"left"},  or \code{"none"}.}
 
 \item{colour}{Colour of effect size shapes. By default, effect sizes are colored according to the \code{mod} argument. If \code{TRUE}, they are colored according to the grouping variable}
 
