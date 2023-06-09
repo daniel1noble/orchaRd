@@ -28,7 +28,8 @@ orchard_plot(
   weights = "prop",
   by = NULL,
   at = NULL,
-  upper = TRUE
+  upper = TRUE,
+  flip = TRUE
 )
 }
 \arguments{
@@ -77,6 +78,8 @@ orchard_plot(
 \item{at}{List of levels one wishes to predict at for the corresponding varaibles in 'by'. Used when one wants marginalised means. This argument can also be used to suppress levels of the moderator when argument \code{subset = TRUE}. Provide a list as follows: \code{list(mod = c("level1", "level2"))}.}
 
 \item{upper}{Logical, defaults to \code{TRUE}, indicating that the first letter of the character string for the moderator variable should be capitalized.}
+
+\item{flip}{Logical, defaults to \code{TRUE}, indicating whether the plot should be flipped.}
 }
 \value{
 Orchard plot
