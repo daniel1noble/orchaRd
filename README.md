@@ -5,7 +5,8 @@
 [![Ask Us Anything\ !](https://img.shields.io/badge/Ask%20me-anything-1abc9c.svg)](https://github.com/daniel1noble/orchaRd/issues/new)
 ![Open Source Love](https://badges.frapsoft.com/os/v2/open-source.svg?v=103)
 [![DOI](https://zenodo.org/badge/358763476.svg)](https://zenodo.org/badge/latestdoi/358763476)
-[![Github Downloads](https://img.shields.io/github/downloads/daniel1noble/orchaRd/total.svg)]()
+![GitHub downloads](https://img.shields.io/github/downloads/daniel1noble/orchaRd/total)
+
 
 # Citing orchaRd
 
