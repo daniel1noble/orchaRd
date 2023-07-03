@@ -91,7 +91,8 @@ bubble_plot <- function(object, mod, group = NULL, xlab = "Moderator", ylab = "E
   mod_table <- results$mod_table
 
   data_trim <- results$data
-  #data_trim$moderator <- factor(data_trim$moderator, levels = mod_table$name, labels = mod_table$name)
+  # making sure factor names match
+  data_trim$condition <- factor(data_trim$condition, levels = mod_table$condition, labels = mod_table$condition)
 
   data_trim$scale <- (1/sqrt(data_trim[,"vi"]))
   legend <- "Precision (1/SE)"
@@ -127,7 +128,7 @@ bubble_plot <- function(object, mod, group = NULL, xlab = "Moderator", ylab = "E
   #group_num <- c(2,4)
   group_num <- as.vector(by(data_trim, data_trim[,"condition"], function(x) base::length(base::unique(x[,"stdy"]))))
 
-  dat_text <- data.frame(K = effect_num, G = group_num, condition = as.vector(base::unique(data_trim$condition)))
+  dat_text <- data.frame(K = effect_num, G = group_num, condition = as.vector(base::levels(data_trim$condition)))
   }
   # the number of groups in a moderator & data points
   #group_no <- length(unique(mod_table[, "name"]))
@@ -236,7 +237,7 @@ bubble_plot <- function(object, mod, group = NULL, xlab = "Moderator", ylab = "E
     plot <- plot +
       ggplot2::geom_text(data = dat_text,
                         mapping = ggplot2::aes(x = Inf, y = Inf),
-                        label =  paste("italic(k)==", rev(dat_text$K)),
+                        label =  paste("italic(k)==", dat_text$K),
                         parse = TRUE,
                         hjust   = 2,
                         vjust   = 2.5
@@ -246,7 +247,7 @@ bubble_plot <- function(object, mod, group = NULL, xlab = "Moderator", ylab = "E
     plot <- plot +
       ggplot2::geom_text(data = dat_text,
                          mapping = ggplot2::aes(x = -Inf, y = Inf),
-                         label =  paste("italic(k)==", rev(dat_text$K)),
+                         label =  paste("italic(k)==", dat_text$K),
                          parse = TRUE,
                          hjust   = -0.5,
                          vjust   = 2.5
@@ -264,7 +265,7 @@ bubble_plot <- function(object, mod, group = NULL, xlab = "Moderator", ylab = "E
     plot <- plot +
       ggplot2::geom_text(data = dat_text,
                          mapping = ggplot2::aes(x = -Inf, y = -Inf),
-                         label =  paste("italic(k)==", rev(dat_text$K)),
+                         label =  paste("italic(k)==", dat_text$K),
                          parse = TRUE,
                          hjust   = -0.5,
                          vjust   = -1.5
@@ -276,9 +277,8 @@ bubble_plot <- function(object, mod, group = NULL, xlab = "Moderator", ylab = "E
     plot <- plot +
       ggplot2::geom_text(data = dat_text,
                                    mapping = ggplot2::aes(x = Inf, y = Inf),
-                                   label =  paste("italic(k)==",
-                                                  rev(dat_text$K),
-                                                         "~","(", rev(dat_text$G), ")"),
+                                   label =  paste("italic(k)==", dat_text$K,
+                                                         "~","(", dat_text$G, ")"),
                                    parse = TRUE,
                                    hjust   = 1.5,
                                    vjust   = 2)
@@ -288,9 +288,8 @@ bubble_plot <- function(object, mod, group = NULL, xlab = "Moderator", ylab = "E
     plot <- plot +
       ggplot2::geom_text(data = dat_text,
                          mapping = ggplot2::aes(x = -Inf, y = Inf),
-                         label =  paste("italic(k)==",
-                                        rev(dat_text$K),
-                                        "~","(", rev(dat_text$G), ")"),
+                         label =  paste("italic(k)==", dat_text$K,
+                                        "~","(", dat_text$G, ")"),
                          parse = TRUE,
                          hjust   = -0.5,
                          vjust   = 2)
@@ -299,9 +298,8 @@ bubble_plot <- function(object, mod, group = NULL, xlab = "Moderator", ylab = "E
     plot <- plot +
       ggplot2::geom_text(data = dat_text,
                          mapping = ggplot2::aes(x = Inf, y = -Inf),
-                         label =  paste("italic(k)==",
-                                        rev(dat_text$K),
-                                        "~","(", rev(dat_text$G), ")"),
+                         label =  paste("italic(k)==", dat_text$K,
+                                        "~","(", dat_text$G, ")"),
                          parse = TRUE,
                          hjust   = 1.5,
                          vjust   = -0.5)
@@ -310,9 +308,8 @@ bubble_plot <- function(object, mod, group = NULL, xlab = "Moderator", ylab = "E
     plot <- plot +
       ggplot2::geom_text(data = dat_text,
                          mapping = ggplot2::aes(x = -Inf, y = -Inf),
-                         label =  paste("italic(k)==",
-                                        rev(dat_text$K),
-                                        "~","(", rev(dat_text$G), ")"),
+                         label =  paste("italic(k)==", dat_text$K,
+                                        "~","(", dat_text$G, ")"),
                          parse = TRUE,
                          hjust   = -0.5,
                          vjust   = -0.5)

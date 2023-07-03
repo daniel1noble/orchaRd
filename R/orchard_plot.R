@@ -92,6 +92,7 @@ orchard_plot <- function(object, mod = "1", group, xlab, N = NULL,
 	mod_table <- results$mod_table
 
   data_trim <- results$data
+  # making sure factor names match
   data_trim$moderator <- factor(data_trim$moderator, levels = mod_table$name, labels = mod_table$name)
 
   data_trim$scale <- (1/sqrt(data_trim[,"vi"]))
@@ -246,14 +247,14 @@ orchard_plot <- function(object, mod = "1", group, xlab, N = NULL,
 	                        parse = TRUE, hjust = "left", size = 3.5)
 	  } else if (k == TRUE && g == FALSE && k.pos%in%c('right','left','none')==FALSE) {
 	    # get group numbers for moderator
-	    plot <- plot + ggplot2::annotate("text", y = k.pos, x = (seq(1, group_no, 
-	                                                                1) + 0.3), label = paste("italic(k)==", mod_table$K[1:group_no]), 
+	    plot <- plot + ggplot2::annotate("text", y = k.pos, x = (seq(1, group_no,
+	                                                                1) + 0.3), label = paste("italic(k)==", mod_table$K[1:group_no]),
 	                                    parse = TRUE, size = 3.5)
 	  } else if (k == TRUE && g == TRUE && k.pos%in%c('right','left','none')==FALSE) {
 	    # get group numbers for moderator
-	    plot <- plot + ggplot2::annotate("text", y = k.pos, x = (seq(1, group_no, 
-	                                                                1) + 0.3), label = paste("italic(k)==", mod_table$K[1:group_no], 
-	                                                                                         "~", "(", mod_table$g[1:group_no], ")"), 
+	    plot <- plot + ggplot2::annotate("text", y = k.pos, x = (seq(1, group_no,
+	                                                                1) + 0.3), label = paste("italic(k)==", mod_table$K[1:group_no],
+	                                                                                         "~", "(", mod_table$g[1:group_no], ")"),
 	                                    parse = TRUE, size = 3.5)
     }
 	  return(plot)
