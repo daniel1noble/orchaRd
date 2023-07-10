@@ -11,7 +11,37 @@
 #' @param trunk.size Size of the mean, or central point.
 #' @param branch.size Size of the confidence intervals.
 #' @return An orchard plot with the corrected meta-analytic mean and confidence intervals added.
-
+#' @author Daniel Noble - daniel.noble@anu.edu.au
+#' @examples
+#' \dontrun{
+#' 	# Data
+#' 		data(english)
+#' 		# We need to calculate the effect sizes, in this case d
+#' 		english <- escalc(measure = "SMD", n1i = NStartControl, sd1i = SD_C, m1i = MeanC, n2i = NStartExpt, sd2i = SD_E, m2i = MeanE, 
+#' 						var.names=c("SMD","vSMD"),
+#' 						data = english)
+#' 
+#' 	# Our MLMA model
+#' 		english_MA1 <- rma.mv(yi = SMD, V = vSMD, random = list( ~ 1 | StudyNo, ~ 1 | EffectID),test = "t", data = english)
+#' 
+#' 	# Step 1: Fit the fixed effect model
+#' 		english_MA2 <- rma.mv(yi = SMD, V = vSMD, data = english, test = "t")
+#' 
+#' 		english_MA3 <- rma(yi = SMD, vi = vSMD, data = english, test = "t", method = "FE")
+#' 
+#' 	# Step 2: Correct for dependency 
+#' 		english_MA2_1 <- robust(english_MA2, cluster = english$StudyNo, clubSandwich=TRUE)
+#' 
+#' 	# Step 3: Testing modified eggers. Need intercept
+#' 		english_MA4 <- rma.mv(yi = SMD, V = vSMD, mod = ~vSMD, random = list( ~ 1 | StudyNo, ~ 1 | EffectID),test = "t", data = english)
+#' 
+#' 	# Now plot the results
+#' 
+#' 		plot <- orchard_plot(english_MA1, group = "StudyNo",  xlab = "Standardized Mean Difference")
+#' 		plot2 <- pub_bias_plot(plot, english_MA2_1)
+#' 		plot3 <- pub_bias_plot(plot, english_MA2_1, english_MA4)
+#' 		}
+#' @export
   	pub_bias_plot <- function(plot, fe_model, v_model = NULL, col = c("red", "blue"), plotadj = -0.05, textadj = 0.05, branch.size = 1.2, trunk.size = 3){
 		      
 		# Add check to make sure it's an intercept ONLY model being added. Message to user if not.
@@ -34,6 +64,12 @@
 			plot + geom_pub_stats_yang(pub_bias_data, plotadj = plotadj, textadj = textadj, branch.size = branch.size, trunk.size = trunk.size) + geom_pub_stats_naka(pub_bias_data2, plotadj = plotadj, textadj = textadj, branch.size = branch.size, trunk.size = trunk.size) 
 		}		
 	}
+
+
+#####################
+## Helper functioons
+#####################
+
 
 #' @title geom_pub_stats_yang
 #' @description This function adds a corrected meta-analytic mean, sensu Yang et al. 2023, confidence interval and text annotation to an intercept only orchard plot.

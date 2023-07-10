@@ -38,3 +38,36 @@ An orchard plot with the corrected meta-analytic mean and confidence intervals a
 \description{
 This function adds the bias corrected mean and confidence intervals to an existing orchard plot that displays the overall meta-analytic mean effect size.
 }
+\examples{
+\dontrun{
+	# Data
+		data(english)
+		# We need to calculate the effect sizes, in this case d
+		english <- escalc(measure = "SMD", n1i = NStartControl, sd1i = SD_C, m1i = MeanC, n2i = NStartExpt, sd2i = SD_E, m2i = MeanE, 
+						var.names=c("SMD","vSMD"),
+						data = english)
+
+	# Our MLMA model
+		english_MA1 <- rma.mv(yi = SMD, V = vSMD, random = list( ~ 1 | StudyNo, ~ 1 | EffectID),test = "t", data = english)
+
+	# Step 1: Fit the fixed effect model
+		english_MA2 <- rma.mv(yi = SMD, V = vSMD, data = english, test = "t")
+
+		english_MA3 <- rma(yi = SMD, vi = vSMD, data = english, test = "t", method = "FE")
+
+	# Step 2: Correct for dependency 
+		english_MA2_1 <- robust(english_MA2, cluster = english$StudyNo, clubSandwich=TRUE)
+
+	# Step 3: Testing modified eggers. Need intercept
+		english_MA4 <- rma.mv(yi = SMD, V = vSMD, mod = ~vSMD, random = list( ~ 1 | StudyNo, ~ 1 | EffectID),test = "t", data = english)
+
+	# Now plot the results
+
+		plot <- orchard_plot(english_MA1, group = "StudyNo",  xlab = "Standardized Mean Difference")
+		plot2 <- pub_bias_plot(plot, english_MA2_1)
+		plot3 <- pub_bias_plot(plot, english_MA2_1, english_MA4)
+		}
+}
+\author{
+Daniel Noble - daniel.noble@anu.edu.au
+}
