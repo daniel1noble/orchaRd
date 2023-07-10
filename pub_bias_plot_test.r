@@ -32,23 +32,18 @@
 			# Add to Existing Orchard Plot
 			plot + ggplot2::geom_point(data = pub_bias_data[[1]], ggplot2::aes(x = name, y = pred), color = col[1], shape = "diamond", position = position_nudge(plotadj), size = trunk.size) + 
 					ggplot2::geom_linerange(data = pub_bias_data[[1]], ggplot2::aes(x = name, ymin = ci.lb, ymax = ci.ub), color = col[1], position = position_nudge(plotadj), size = branch.size) + 
-					ggplot2::geom_hline(yintercept = pub_bias_data[[1]]$pred, linetype = "dashed", color = col[1]) + 
 					ggplot2::annotate("text", x = 1+plotadj-textadj, y = pub_bias_data[[1]]$pred+textadj, label = pub_bias_data[[2]], color = col[1], size = 4, hjust = pub_bias_data[[1]]$ci.ub -0.2) 
 		} else{
 			# Extract the corrected meta-analytic mean and CI
 			pub_bias_data2 <- get_ints_dat(v_model, type = "naka")
-plotadj = -0.05, textadj = 0.05
+
 			plot + ggplot2::geom_point(data = pub_bias_data[[1]], ggplot2::aes(x = name, y = pred), color = col[1], shape = "diamond", position = position_nudge(plotadj), size = trunk.size) + 
 					ggplot2::geom_linerange(data = pub_bias_data[[1]], ggplot2::aes(x = name, ymin = ci.lb, ymax = ci.ub), color = col[1], position = position_nudge(plotadj), size = branch.size) + 
-					ggplot2::geom_hline(yintercept = pub_bias_data[[1]]$pred, linetype = "dashed", color = col[1]) + 
 					ggplot2::annotate("text", x = 1+plotadj-textadj, y = pub_bias_data[[1]]$pred+textadj, label = pub_bias_data[[2]], color = col[1], size = 4, hjust = pub_bias_data[[1]]$ci.ub -0.2)    + 
 
 					ggplot2::geom_point(data = pub_bias_data2[[1]], ggplot2::aes(x = name, y = pred), color = col[2], shape = "diamond", position = position_nudge(abs(plotadj)), size = trunk.size) + 
 					ggplot2::geom_linerange(data = pub_bias_data2[[1]], ggplot2::aes(x = name, ymin = ci.lb, ymax = ci.ub), color = col[2], position = position_nudge(abs(plotadj)), size = branch.size) + 
-					ggplot2::geom_hline(yintercept = pub_bias_data2[[1]]$pred, linetype = "dashed", color = col[2]) + 
 					ggplot2::annotate("text", x = 1+abs(plotadj)+textadj, y = pub_bias_data2[[1]]$pred-textadj, label = pub_bias_data2[[2]], color = col[2], size = 4, hjust = pub_bias_data2[[1]]$ci.ub +0.2)
-
-			
 		}		
 	}
 	# Simplified version of above function
@@ -86,7 +81,6 @@ plotadj = -0.05, textadj = 0.05
 	geom_pub_stats_yang <-  function(data, col = "red", plotadj = -0.05, textadj = 0.05, branch.size = 1.2, trunk.size = 3){
 		list(ggplot2::geom_point(data = data[[1]], ggplot2::aes(x = name, y = pred), color = col, shape = "diamond", position = position_nudge(plotadj), size = trunk.size), 
 				ggplot2::geom_linerange(data = data[[1]], ggplot2::aes(x = name, ymin = ci.lb, ymax = ci.ub), color = col, position = position_nudge(plotadj), size = branch.size),
-						ggplot2::geom_hline(yintercept = data[[1]]$pred, linetype = "dashed", color = col),
 					ggplot2::annotate("text", x = 1+plotadj-textadj, y = data[[1]]$pred+textadj, label = data[[2]], color = col, size = 4, hjust = data[[1]]$ci.ub -0.2)	
 		)
 	}
@@ -102,7 +96,6 @@ plotadj = -0.05, textadj = 0.05
 	geom_pub_stats_naka <- function(data, col = "blue", plotadj = -0.05, textadj = 0.05, branch.size = 1.2, trunk.size = 3) {
 					list(ggplot2::geom_point(data = data[[1]], ggplot2::aes(x = name, y = pred), color = col, shape = "diamond", position = position_nudge(abs(plotadj)), size = trunk.size), 
 					ggplot2::geom_linerange(data = data[[1]], ggplot2::aes(x = name, ymin = ci.lb, ymax = ci.ub), color = col, position = position_nudge(abs(plotadj)), size = branch.size), 
-					ggplot2::geom_hline(yintercept = data[[1]]$pred, linetype = "dashed", color = col), 
 					ggplot2::annotate("text", x = 1+abs(plotadj)+textadj, y = data[[1]]$pred-textadj, label = data[[2]], color = col, size = 4, hjust = data[[1]]$ci.ub +0.2))
 	}
 
@@ -120,13 +113,13 @@ plotadj = -0.05, textadj = 0.05
 								ci.lb = model$ci.lb[1], 
 								ci.ub = model$ci.ub[1])
 				if(type == "naka"){
-				lab <- paste0("Nakagawa Bias Corrected: ", round(dat$pred, 2), 
-									", 95% CI (", round(dat$ci.lb, 2), "–", round(dat$ci.ub, 2), ")")
+				lab <- paste0("Bias Corrected Estimate: ", round(dat$pred, 2), 
+									", 95% CI [", round(dat$ci.lb, 2), ",", round(dat$ci.ub, 2), "]")
 				}
 
 				if(type == "yang"){
-				lab <- paste0("Yang Bias Corrected: ", round(dat$pred, 2), 
-									", 95% CI (", round(dat$ci.lb, 2), "–", round(dat$ci.ub, 2), ")")
+				lab <- paste0("Bias Robust Estimate: ", round(dat$pred, 2), 
+									", 95% CI [", round(dat$ci.lb, 2), ",", round(dat$ci.ub, 2), "]")
 	}
 
 	return(list(dat, lab))
@@ -198,5 +191,5 @@ plotadj = -0.05, textadj = 0.05
 		#plot <- orchard_plot(eklof_MR0_2, group = "ExptID",  xlab = "Log Response Ratio")
 		plot2 <- pub_bias_plot(plot, eklof_MR02)
 		plot3 <- pub_bias_plot(plot, eklof_MR02, eklof_MR03)
-		plot4 <- pub_bias_plot2(plot, eklof_MR02, eklof_MR03, text_pos = 0, textadj = 0)
+		plot4 <- pub_bias_plot2(plot, eklof_MR02, eklof_MR03)
 
