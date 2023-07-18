@@ -27,7 +27,7 @@ r2_ml <- function(model, data, boot = NULL) {
 
     if(any(class(model) %in% c("robust.rma")) == TRUE){stop("Sorry, bootstrapping currently doesn't work for robust.rma objects. Please use rma.mv instead.")}
     # Simulate the vector of effect sizes
-    sim <- metafor::simulate.rma(model, nsim=boot)
+    sim <- metafor::simulate.rma(model, nsim=boot) # Add try catch here? DN
 
     # Get formula from model object.
     random_formula <- model$random

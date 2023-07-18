@@ -66,7 +66,7 @@ i2_ml <- function(model, method = c("ratio", "matrix"), data, boot = NULL) {
 
   if(!is.null(boot)){
     # Simulate the vector of effect sizes
-    sim <- metafor::simulate.rma(model, nsim=boot)
+    sim <- metafor::simulate.rma(model, nsim=boot) # Add try catch here? DN
 
     # Get formula from model object.
     random_formula <- model$random
