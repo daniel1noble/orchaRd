@@ -50,7 +50,7 @@
 		}
 		
 		# Get the predictions from the final model and create a label for the plot
-			pub_bias_data <- get_ints_dat(fe_model, type = "yang")
+			pub_bias_data <- get_ints_dat(fe_model, type = "br")
 
 		if(is.null(v_model)){
 			
@@ -59,7 +59,7 @@
 		
 		} else{
 			# Extract the corrected meta-analytic mean and CI
-			pub_bias_data2 <- get_ints_dat(v_model, type = "naka")
+			pub_bias_data2 <- get_ints_dat(v_model, type = "bc")
 
 			plot + geom_pub_stats_yang(pub_bias_data, plotadj = plotadj, textadj = textadj, branch.size = branch.size, trunk.size = trunk.size) + geom_pub_stats_naka(pub_bias_data2, plotadj = plotadj, textadj = textadj, branch.size = branch.size, trunk.size = trunk.size) 
 		}		
