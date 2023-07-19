@@ -80,6 +80,8 @@
 #' @param branch.size Size of the confidence intervals.
 #' @param trunk.size Size of the mean, or central point.
 #' @return A list of ggplot2 objects to be added to the orchard plot.
+#' @author Daniel Noble - daniel.noble@anu.edu.au
+
 	geom_pub_stats_yang <-  function(data, col = "red", plotadj = -0.05, textadj = 0.05, branch.size = 1.2, trunk.size = 3){
 		list(ggplot2::geom_point(data = data[[1]], ggplot2::aes(x = name, y = pred), color = col, shape = "diamond", position = position_nudge(plotadj), size = trunk.size), 
 				ggplot2::geom_linerange(data = data[[1]], ggplot2::aes(x = name, ymin = ci.lb, ymax = ci.ub), color = col, position = position_nudge(plotadj), size = branch.size),
@@ -96,6 +98,8 @@
 #' @param branch.size Size of the confidence intervals.
 #' @param trunk.size Size of the mean, or central point.
 #' @return A list of ggplot2 objects to be added to the orchard plot.
+#' @author Daniel Noble - daniel.noble@anu.edu.au
+
 	geom_pub_stats_naka <- function(data, col = "blue", plotadj = -0.05, textadj = 0.05, branch.size = 1.2, trunk.size = 3) {
 					list(ggplot2::geom_point(data = data[[1]], ggplot2::aes(x = name, y = pred), color = col, shape = "diamond", position = position_nudge(abs(plotadj)), size = trunk.size), 
 					ggplot2::geom_linerange(data = data[[1]], ggplot2::aes(x = name, ymin = ci.lb, ymax = ci.ub), color = col, position = position_nudge(abs(plotadj)), size = branch.size), 
@@ -105,8 +109,10 @@
 #' @title get_ints_dat
 #' @description This function extracts the corrected meta-analytic mean and confidence intervals from a model object.
 #' @param model The rma model object containing the corrected meta-analytic mean and confidence intervals.
-#' @param type The type of correction to extract the corrected meta-analytic mean and confidence intervals from. "br" (i.e., "Bias Robust") for Yang et al. 2023, "bc" (i.e., Bias-Corrected) for Nakagawa et al. 2023.
+#' @param type The type of correction to extract the corrected meta-analytic mean and confidence intervals from. "br" (i.e., Bias Robust) for Yang et al. 2023, "bc" (i.e., Bias-Corrected) for Nakagawa et al. 2023.
 #' @return A list containing the corrected meta-analytic mean and confidence intervals, and a label for the plot.
+#' @author Daniel Noble - daniel.noble@anu.edu.au
+
 	get_ints_dat <- function(model, type = c("bc", "br")){
 			# Extract the corrected meta-analytic mean and CI
 				type = match.arg(type)

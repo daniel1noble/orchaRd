@@ -32,3 +32,6 @@ A list of ggplot2 objects to be added to the orchard plot.
 \description{
 This function adds a corrected meta-analytic mean, sensu Yang et al. 2023, confidence interval and text annotation to an intercept only orchard plot.
 }
+\author{
+Daniel Noble - daniel.noble@anu.edu.au
+}
