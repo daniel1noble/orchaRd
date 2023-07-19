@@ -105,9 +105,9 @@
 #' @title get_ints_dat
 #' @description This function extracts the corrected meta-analytic mean and confidence intervals from a model object.
 #' @param model The rma model object containing the corrected meta-analytic mean and confidence intervals.
-#' @param type The type of correction to extract the corrected meta-analytic mean and confidence intervals from. "yang" for Yang et al. 2023, "naka" for Nakagawa et al. 2023.
+#' @param type The type of correction to extract the corrected meta-analytic mean and confidence intervals from. "br" for Yang et al. 2023, "bc" for Nakagawa et al. 2023.
 #' @return A list containing the corrected meta-analytic mean and confidence intervals, and a label for the plot.
-	get_ints_dat <- function(model, type = c("naka", "yang")){
+	get_ints_dat <- function(model, type = c("bc", "br")){
 			# Extract the corrected meta-analytic mean and CI
 				type = match.arg(type)
 				
@@ -115,12 +115,12 @@
 								pred = model$b["intrcpt",], 
 								ci.lb = model$ci.lb[1], 
 								ci.ub = model$ci.ub[1])
-				if(type == "naka"){
+				if(type == "bc"){
 				lab <- paste0("Bias Corrected Estimate: ", round(dat$pred, 2), 
 									", 95% CI [", round(dat$ci.lb, 2), ",", round(dat$ci.ub, 2), "]")
 				}
 
-				if(type == "yang"){
+				if(type == "br"){
 				lab <- paste0("Bias Robust Estimate: ", round(dat$pred, 2), 
 									", 95% CI [", round(dat$ci.lb, 2), ",", round(dat$ci.ub, 2), "]")
 	}
