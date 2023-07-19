@@ -4,12 +4,12 @@
 \alias{get_ints_dat}
 \title{get_ints_dat}
 \usage{
-get_ints_dat(model, type = c("naka", "yang"))
+get_ints_dat(model, type = c("bc", "br"))
 }
 \arguments{
 \item{model}{The rma model object containing the corrected meta-analytic mean and confidence intervals.}
 
-\item{type}{The type of correction to extract the corrected meta-analytic mean and confidence intervals from. "yang" for Yang et al. 2023, "naka" for Nakagawa et al. 2023.}
+\item{type}{The type of correction to extract the corrected meta-analytic mean and confidence intervals from. "br" (i.e., "Bias Robust") for Yang et al. 2023, "bc" (i.e., Bias-Corrected) for Nakagawa et al. 2023.}
 }
 \value{
 A list containing the corrected meta-analytic mean and confidence intervals, and a label for the plot.
