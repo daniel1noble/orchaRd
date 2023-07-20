@@ -6,6 +6,9 @@
 #' @param xlab The effect size measure label.
 #' @param overall Logical, indicating whether to re-label "Intrcpt" (the default label from \code{rma} or \code{rma.mv} intercept only models or meta-analyses) to "Overall". Defaults to \code{TRUE}.
 #' @param transfm If set to \code{"tanh"}, a tanh transformation will be applied to effect sizes, converting Zr to a correlation or pulling in extreme values for other effect sizes (lnRR, lnCVR, SMD). Defaults to \code{"none"}.
+#' @param colerrorbar Colour of the error bar in the caterpillars plot. Defaults to hex code - "#00CD00". 
+#' @param colpoint Point estimate colour in the caterpillars plot. Defaults to hex code - "#FFD700".
+#' @param colpoly Polygon colour in the caterpillars plot. Defaults to "red".
 #' @param k If \code{TRUE}, it displays k (number of effect sizes) on the plot.
 #' @param g If \code{TRUE}, it displays g (number of grouping levels for each level of the moderator) on the plot.
 #' @param by Used when one wants marginalised means. Character vector indicating the name that predictions should be conditioned on for the levels of the moderator.
@@ -40,7 +43,7 @@
 #' }
 #' @export
 
-caterpillars <- function(object, mod = "1",  group, xlab, overall = TRUE, transfm = c("none", "tanh"), k = TRUE, g = TRUE, at = NULL, by = NULL, weights = "prop") {
+caterpillars <- function(object, mod = "1",  group, xlab, overall = TRUE, transfm = c("none", "tanh"), colerrorbar = "#00CD00", colpoint = "#FFD700", colpoly = "red",  k = TRUE, g = TRUE, at = NULL, by = NULL, weights = "prop") {
 
   if(any(class(object) %in% c("rma.mv", "rma"))){
 
@@ -126,14 +129,14 @@ caterpillars <- function(object, mod = "1",  group, xlab, overall = TRUE, transf
   plot <- ggplot2::ggplot(data = data, ggplot2::aes(x = yi, y = Y)) +
     # 95 % CI
     ggplot2::geom_errorbarh(ggplot2::aes(xmin = lower, xmax = upper),
-                            colour = "#00CD00", height = 0, show.legend = FALSE, size = 0.5, alpha = 0.6) +
+                            colour = colerrorbar, height = 0, show.legend = FALSE, size = 0.5, alpha = 0.6) +
     ggplot2::geom_vline(xintercept = 0, linetype = 2, colour = "black", alpha = 0.5) +
     # creating dots for point estimates
-    ggplot2::geom_point(colour = "#FFD700", size = 1) +
+    ggplot2::geom_point(colour = colpoint, size = 1) +
     # creating 95% prediction intervals
     ggplot2::geom_segment(data = mod_table, ggplot2::aes(x = lowerPR, y = Y, xend = upperPR, yend = Y, group = name)) +
     # creating diamonsts (95% CI)
-    ggplot2::geom_polygon(data = sum_data, ggplot2::aes(x = x.diamond, y = y.diamond, group = moderator), fill = "red") +
+    ggplot2::geom_polygon(data = sum_data, ggplot2::aes(x = x.diamond, y = y.diamond, group = moderator), fill = colpoly) +
     #ggplot2::facet_wrap(~moderator, scales = "free_y", nrow = GN,  strip.position = "left") + # using facet_wrap - does not really work well
     ggplot2::theme_bw() +
     ggplot2::theme(strip.text.y = ggplot2::element_text(angle = 0, size = 8),# margin = margin(t=15, r=15, b=15, l=15)),
