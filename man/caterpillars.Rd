@@ -11,6 +11,9 @@ caterpillars(
   xlab,
   overall = TRUE,
   transfm = c("none", "tanh"),
+  colerrorbar = "#00CD00",
+  colpoint = "#FFD700",
+  colpoly = "red",
   k = TRUE,
   g = TRUE,
   at = NULL,
@@ -30,6 +33,12 @@ caterpillars(
 \item{overall}{Logical, indicating whether to re-label "Intrcpt" (the default label from \code{rma} or \code{rma.mv} intercept only models or meta-analyses) to "Overall". Defaults to \code{TRUE}.}
 
 \item{transfm}{If set to \code{"tanh"}, a tanh transformation will be applied to effect sizes, converting Zr to a correlation or pulling in extreme values for other effect sizes (lnRR, lnCVR, SMD). Defaults to \code{"none"}.}
+
+\item{colerrorbar}{Colour of the error bar in the caterpillars plot. Defaults to hex code - "#00CD00".}
+
+\item{colpoint}{Point estimate colour in the caterpillars plot. Defaults to hex code - "#FFD700".}
+
+\item{colpoly}{Polygon colour in the caterpillars plot. Defaults to "red".}
 
 \item{k}{If \code{TRUE}, it displays k (number of effect sizes) on the plot.}
 
