@@ -7,7 +7,7 @@
 #' @param at List of levels one wishes to predict at for the corresponding varaibles in 'by'. Used when one wants marginalised means. This argument can also be used to suppress levels of the moderator when argument \code{subset = TRUE}. Provide a list as follows: \code{list(mod = c("level1", "level2"))}.
 #' @param weights Used when one wants marginalised means. How to marginalize categorical variables. The default is \code{weights = "prop"}, which weights moderator level means based on their proportional representation in the data. For example, if "sex" is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal. In the case of sex, for example, males and females are roughly equally prevalent in a population. As such, you can give the moderator levels equal weight using \code{weights = "equal"}.
 #' @param xlab The effect size measure label.
-#' @param N The name of the column in the data specifying the sample size, N. Defaults to \code{NULL}, so that precision is plotted instead of sample size.
+#' @param N The name of the column in the data specifying the sample size so that each effect size estimate is scaled to the sample size, N. Defaults to \code{NULL}, so that precision is used for scaling each raw effect size estimate instead of sample size.
 #' @param alpha The level of transparency for effect sizes represented in the orchard plot.
 #' @param angle The angle of y labels. The default is 90 degrees.
 #' @param cb If \code{TRUE}, it uses 20 colour blind friendly colors.
@@ -98,7 +98,7 @@ orchard_plot <- function(object, mod = "1", group, xlab, N = NULL,
   data_trim$scale <- (1/sqrt(data_trim[,"vi"]))
 	legend <- "Precision (1/SE)"
 
-	if(any(N != "none")){
+	if(is.null(N) == FALSE){
 	  data_trim$scale <- data_trim$N
 		  legend <- paste0("Sample Size ($\\textit{N}$)") # we want to use italic
 		  #latex2exp::TeX()

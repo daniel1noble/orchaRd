@@ -41,7 +41,7 @@ orchard_plot(
 
 \item{xlab}{The effect size measure label.}
 
-\item{N}{The name of the column in the data specifying the sample size, N. Defaults to \code{NULL}, so that precision is plotted instead of sample size.}
+\item{N}{The name of the column in the data specifying the sample size so that each effect size estimate is scaled to the sample size, N. Defaults to \code{NULL}, so that precision is used for scaling each raw effect size estimate instead of sample size.}
 
 \item{alpha}{The level of transparency for effect sizes represented in the orchard plot.}
 
