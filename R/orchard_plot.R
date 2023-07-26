@@ -58,6 +58,7 @@
 
 orchard_plot <- function(object, mod = "1", group, xlab, N = NULL,
                          alpha = 0.5, angle = 90, cb = TRUE, k = TRUE, g = TRUE,
+                         tree.order = NULL,
                          trunk.size = 3, branch.size = 1.2, twig.size = 0.5,
                          transfm = c("none", "tanh"), condition.lab = "Condition",
                          legend.pos = c("bottom.right", "bottom.left",
@@ -90,7 +91,12 @@ orchard_plot <- function(object, mod = "1", group, xlab, N = NULL,
 	}
 
 	mod_table <- results$mod_table
-
+	
+	#reorder mod table according to custom order if there is one
+	if (!is.null(tree.order)){
+	mod_table <- mod_table %>% dplyr::arrange(factor(name, levels = tree.order))
+	}
+	
   data_trim <- results$data
   # making sure factor names match
   data_trim$moderator <- factor(data_trim$moderator, levels = mod_table$name, labels = mod_table$name)
