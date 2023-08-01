@@ -6,10 +6,11 @@
 #' @param xlab The effect size measure label.
 #' @param overall Logical, indicating whether to re-label "Intrcpt" (the default label from \code{rma} or \code{rma.mv} intercept only models or meta-analyses) to "Overall". Defaults to \code{TRUE}.
 #' @param transfm If set to \code{"tanh"}, a tanh transformation will be applied to effect sizes, converting Zr to a correlation or pulling in extreme values for other effect sizes (lnRR, lnCVR, SMD). Defaults to \code{"none"}.
-#' @param colour Colour of effect size shapes. By default, effect sizes are colored according to the \code{mod} argument. If \code{TRUE}, they are colored according to the grouping variable. Will override colpoint and colerror.
 #' @param colerrorbar Colour of the error bar in the caterpillars plot. Defaults to hex code - "#00CD00". 
 #' @param colpoint Point estimate colour in the caterpillars plot. Defaults to hex code - "#FFD700".
 #' @param colpoly Polygon colour in the caterpillars plot. Defaults to "red".
+#' @param colour Colour of effect size shapes. By default, effect sizes are colored according to the \code{mod} argument. If \code{TRUE}, they are colored according to the grouping variable. Will override colpoint and colerror.
+#' @param cb If \code{TRUE}, it uses 20 colour blind friendly colors.
 #' @param k If \code{TRUE}, it displays k (number of effect sizes) on the plot.
 #' @param g If \code{TRUE}, it displays g (number of grouping levels for each level of the moderator) on the plot.
 #' @param by Used when one wants marginalised means. Character vector indicating the name that predictions should be conditioned on for the levels of the moderator.
@@ -44,7 +45,7 @@
 #' }
 #' @export
 
-caterpillars <- function(object, mod = "1",  group, xlab, overall = TRUE, transfm = c("none", "tanh"), colour=F, colerrorbar = "#00CD00", colpoint = "#FFD700", colpoly = "red",  k = TRUE, g = TRUE, at = NULL, by = NULL, weights = "prop") {
+caterpillars <- function(object, mod = "1",  group, xlab, overall = TRUE, transfm = c("none", "tanh"), colerrorbar = "#00CD00", colpoint = "#FFD700", colpoly = "red", colour=F, cb=T, k = TRUE, g = TRUE, at = NULL, by = NULL, weights = "prop") {
 
   if(any(class(object) %in% c("rma.mv", "rma"))){
 
@@ -199,6 +200,13 @@ caterpillars <- function(object, mod = "1",  group, xlab, overall = TRUE, transf
                      ylim = c((min(data$Y)-10), (max(data$Y)+4))
                      , expand = F)+
   labs(color="Study") #relabel legend
+  
+    # if colourblind is TRUE, recolour to colourblind friendly palette
+    if(cb == TRUE){
+      plot <- plot +
+        ggplot2::scale_fill_manual(values = cbpl) +
+        ggplot2::scale_colour_manual(values = cbpl)
+    }
   }
   
   # putting k in
