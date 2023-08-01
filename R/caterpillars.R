@@ -6,6 +6,7 @@
 #' @param xlab The effect size measure label.
 #' @param overall Logical, indicating whether to re-label "Intrcpt" (the default label from \code{rma} or \code{rma.mv} intercept only models or meta-analyses) to "Overall". Defaults to \code{TRUE}.
 #' @param transfm If set to \code{"tanh"}, a tanh transformation will be applied to effect sizes, converting Zr to a correlation or pulling in extreme values for other effect sizes (lnRR, lnCVR, SMD). Defaults to \code{"none"}.
+#' @param colour Colour of effect size shapes. By default, effect sizes are colored according to the \code{mod} argument. If \code{TRUE}, they are colored according to the grouping variable. Will override colpoint and colerror.
 #' @param colerrorbar Colour of the error bar in the caterpillars plot. Defaults to hex code - "#00CD00". 
 #' @param colpoint Point estimate colour in the caterpillars plot. Defaults to hex code - "#FFD700".
 #' @param colpoly Polygon colour in the caterpillars plot. Defaults to "red".
@@ -43,7 +44,7 @@
 #' }
 #' @export
 
-caterpillars <- function(object, mod = "1",  group, xlab, overall = TRUE, transfm = c("none", "tanh"), colerrorbar = "#00CD00", colpoint = "#FFD700", colpoly = "red",  k = TRUE, g = TRUE, at = NULL, by = NULL, weights = "prop") {
+caterpillars <- function(object, mod = "1",  group, xlab, overall = TRUE, transfm = c("none", "tanh"), colour=F, colerrorbar = "#00CD00", colpoint = "#FFD700", colpoly = "red",  k = TRUE, g = TRUE, at = NULL, by = NULL, weights = "prop") {
 
   if(any(class(object) %in% c("rma.mv", "rma"))){
 
@@ -124,15 +125,60 @@ caterpillars <- function(object, mod = "1",  group, xlab, overall = TRUE, transf
                                          mod_table$Y - 1.2),
                          "moderator" = rep(mod_table$name, times = 4)
   )
+  
+  cbpl <- c("#88CCEE", "#CC6677", "#DDCC77", "#117733", "#332288", 
+            "#AA4499", "#44AA99", "#999933", "#882255", "#661100", 
+            "#6699CC", "#888888", "#E69F00", "#56B4E9", "#009E73", 
+            "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#999999")
 
-  # make caterpillars plot
-  plot <- ggplot2::ggplot(data = data, ggplot2::aes(x = yi, y = Y)) +
+  #if colour is FALSE, use this plotting method
+  if (colour == FALSE) {
+
+      # make caterpillars plot
+      plot <- ggplot2::ggplot(data = data, ggplot2::aes(x = yi, y = Y)) +
+      # 95 % CI
+      ggplot2::geom_errorbarh(ggplot2::aes(xmin = lower, xmax = upper),
+                              colour = colerrorbar, height = 0, show.legend = FALSE, size = 0.5, alpha = 0.6) +
+      ggplot2::geom_vline(xintercept = 0, linetype = 2, colour = "black", alpha = 0.5) +
+      # creating dots for point estimates
+      ggplot2::geom_point(colour = colpoint, size = 1) +
+      # creating 95% prediction intervals
+      ggplot2::geom_segment(data = mod_table, ggplot2::aes(x = lowerPR, y = Y, xend = upperPR, yend = Y, group = name)) +
+      # creating diamonsts (95% CI)
+      ggplot2::geom_polygon(data = sum_data, ggplot2::aes(x = x.diamond, y = y.diamond, group = moderator), fill = colpoly) +
+      #ggplot2::facet_wrap(~moderator, scales = "free_y", nrow = GN,  strip.position = "left") + # using facet_wrap - does not really work well
+      ggplot2::theme_bw() +
+      ggplot2::theme(strip.text.y = ggplot2::element_text(angle = 0, size = 8),# margin = margin(t=15, r=15, b=15, l=15)),
+                     strip.background = ggplot2::element_rect(colour = NULL,
+                                                              linetype = "blank",
+                                                              fill = "gray90"),
+                     axis.text.y = ggplot2::element_blank(),
+                     axis.ticks.y = ggplot2::element_blank()) +
+      ggplot2::labs(x = label, y = "", parse = TRUE) +
+      
+      ggplot2::annotate('text', x = min(data$lower)*0.975, y = mod_table$Y,
+                        label= mod_table$name, hjust = "left", size = 3.5) +
+      ggplot2::coord_cartesian(xlim = c(min(data$lower)*1.05, max(data$upper)*1.05),
+                               ylim = c((min(data$Y)-10), (max(data$Y)+4))
+                               , expand = F)
+  }
+  
+
+  #if colour is TRUE, use this plotting method
+  if (colour == TRUE) {
+    
+    #make a vector to colour by study
+    coleffectsizes <- as.factor(data$stdy)
+     
+    # make caterpillars plot
+    plot <- ggplot2::ggplot()+
     # 95 % CI
-    ggplot2::geom_errorbarh(ggplot2::aes(xmin = lower, xmax = upper),
-                            colour = colerrorbar, height = 0, show.legend = FALSE, size = 0.5, alpha = 0.6) +
+    ggplot2::geom_errorbarh(ggplot2::aes(xmin = data$lower, xmax = data$upper, y=data$Y, colour = coleffectsizes),
+                            height = 0, show.legend = FALSE, size = 0.5, alpha = 0.6) +
     ggplot2::geom_vline(xintercept = 0, linetype = 2, colour = "black", alpha = 0.5) +
     # creating dots for point estimates
-    ggplot2::geom_point(colour = colpoint, size = 1) +
+    ggplot2::geom_point(ggplot2::aes(x=data$yi, y=data$Y, colour = coleffectsizes),
+                        size = 1) +
     # creating 95% prediction intervals
     ggplot2::geom_segment(data = mod_table, ggplot2::aes(x = lowerPR, y = Y, xend = upperPR, yend = Y, group = name)) +
     # creating diamonsts (95% CI)
@@ -146,13 +192,15 @@ caterpillars <- function(object, mod = "1",  group, xlab, overall = TRUE, transf
                    axis.text.y = ggplot2::element_blank(),
                    axis.ticks.y = ggplot2::element_blank()) +
     ggplot2::labs(x = label, y = "", parse = TRUE) +
-
+     
     ggplot2::annotate('text', x = min(data$lower)*0.975, y = mod_table$Y,
-                      label= mod_table$name, hjust = "left", size = 3.5) +
+                       label= mod_table$name, hjust = "left", size = 3.5) +
     ggplot2::coord_cartesian(xlim = c(min(data$lower)*1.05, max(data$upper)*1.05),
-                    ylim = c((min(data$Y)-10), (max(data$Y)+4))
-                    , expand = F)
-
+                     ylim = c((min(data$Y)-10), (max(data$Y)+4))
+                     , expand = F)+
+  labs(color="Study") #relabel legend
+  }
+  
   # putting k in
   if(k == TRUE && g == FALSE){
     plot <- plot +
@@ -167,7 +215,6 @@ caterpillars <- function(object, mod = "1",  group, xlab, overall = TRUE, transf
       ggplot2::annotate('text', x = max(data$upper)*0.975, y = mod_table$Y-1.7,
                         label= paste("italic(k)==", mod_table$K[1:group_no], "~~","(", mod_table$g[1:group_no], ")"), parse = TRUE, hjust = "right", size = 3.5)
   }
-
 
   return(plot)
 }
