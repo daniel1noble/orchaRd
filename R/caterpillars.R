@@ -16,6 +16,7 @@
 #' @param by Used when one wants marginalised means. Character vector indicating the name that predictions should be conditioned on for the levels of the moderator.
 #' @param at Used when one wants marginalised means. List of levels one wishes to predict at for the corresponding variables in \code{by}, but is not presented in output. Provide a list as follows: \code{list(mod = c("level1", "level2"))}.
 #' @param weights Used when one wants marginalised means. How to marginalize categorical variables. The default is \code{weights = "prop"}, which weights means for moderator levels based on their proportional representation in the data. For example, if "sex" is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal. In the case of sex, for example, males and females are roughly equally prevalent in a population. As such, you can give the moderator levels equal weight using \code{weights = "equal"}.
+#' @param flip Logical, defaults to \code{TRUE}, indicating whether the plot should be flipped.
 #' @return Caterpillars plot
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
@@ -45,7 +46,7 @@
 #' }
 #' @export
 
-caterpillars <- function(object, mod = "1",  group, xlab, overall = TRUE, transfm = c("none", "tanh"), colerrorbar = "#00CD00", colpoint = "#FFD700", colpoly = "red", colour=F, cb=T, k = TRUE, g = TRUE, at = NULL, by = NULL, weights = "prop") {
+caterpillars <- function(object, mod = "1",  group, xlab, overall = TRUE, transfm = c("none", "tanh"), colerrorbar = "#00CD00", colpoint = "#FFD700", colpoly = "red", colour=F, cb=T, k = TRUE, g = TRUE, at = NULL, by = NULL, weights = "prop", flip=F) {
 
   if(any(class(object) %in% c("rma.mv", "rma"))){
 
@@ -155,13 +156,10 @@ caterpillars <- function(object, mod = "1",  group, xlab, overall = TRUE, transf
                                                               fill = "gray90"),
                      axis.text.y = ggplot2::element_blank(),
                      axis.ticks.y = ggplot2::element_blank()) +
-      ggplot2::labs(x = label, y = "", parse = TRUE) +
-      
-      ggplot2::annotate('text', x = min(data$lower)*0.975, y = mod_table$Y,
-                        label= mod_table$name, hjust = "left", size = 3.5) +
-      ggplot2::coord_cartesian(xlim = c(min(data$lower)*1.05, max(data$upper)*1.05),
-                               ylim = c((min(data$Y)-10), (max(data$Y)+4))
-                               , expand = F)
+      ggplot2::labs(x = label, y = "", parse = TRUE) + 
+        ggplot2::coord_cartesian(xlim = c(min(data$lower)*1.05, max(data$upper)*1.05),
+                                 ylim = c((min(data$Y)-10), (max(data$Y)+4))
+                                 , expand = F)
   }
   
 
@@ -193,36 +191,61 @@ caterpillars <- function(object, mod = "1",  group, xlab, overall = TRUE, transf
                    axis.text.y = ggplot2::element_blank(),
                    axis.ticks.y = ggplot2::element_blank()) +
     ggplot2::labs(x = label, y = "", parse = TRUE) +
-     
-    ggplot2::annotate('text', x = min(data$lower)*0.975, y = mod_table$Y,
-                       label= mod_table$name, hjust = "left", size = 3.5) +
     ggplot2::coord_cartesian(xlim = c(min(data$lower)*1.05, max(data$upper)*1.05),
                      ylim = c((min(data$Y)-10), (max(data$Y)+4))
                      , expand = F)+
   labs(color="Study") #relabel legend
   
-    # if colourblind is TRUE, recolour to colourblind friendly palette
-    if(cb == TRUE){
-      plot <- plot +
-        ggplot2::scale_fill_manual(values = cbpl) +
-        ggplot2::scale_colour_manual(values = cbpl)
-    }
   }
   
-  # putting k in
-  if(k == TRUE && g == FALSE){
+  # if colourblind is TRUE, recolour to colourblind friendly palette
+  if(cb == TRUE){
     plot <- plot +
-      ggplot2::annotate('text', x = max(data$upper)*0.975, y = mod_table$Y-1.7,
-                        label= paste("italic(k)==", mod_table$K), parse = TRUE, hjust = "right", size = 3.5)
+      ggplot2::scale_fill_manual(values = cbpl) +
+      ggplot2::scale_colour_manual(values = cbpl)
   }
-
-  # putting groups
-  if(k == TRUE && g == TRUE){
-    # get group numbers for moderator
-    plot <- plot +
-      ggplot2::annotate('text', x = max(data$upper)*0.975, y = mod_table$Y-1.7,
-                        label= paste("italic(k)==", mod_table$K[1:group_no], "~~","(", mod_table$g[1:group_no], ")"), parse = TRUE, hjust = "right", size = 3.5)
-  }
-
-  return(plot)
+    
+    #(don't) flip and annotate)
+    if(flip==F){
+      plot <- plot + ggplot2::annotate('text', x = min(data$lower)*0.975, y = mod_table$Y,
+                                       label= mod_table$name, hjust = "left", size = 3.5)
+      # putting k in
+      if(k == TRUE && g == FALSE){
+        plot <- plot +
+          ggplot2::annotate('text', x = max(data$upper)*0.975, y = mod_table$Y-1.7,
+                            label= paste("italic(k)==", mod_table$K), parse = TRUE, hjust = "right", size = 3.5)
+      }
+      
+      # putting groups
+      if(k == TRUE && g == TRUE){
+        # get group numbers for moderator
+        plot <- plot +
+          ggplot2::annotate('text', x = max(data$upper)*0.975, y = mod_table$Y-1.7,
+                            label= paste("italic(k)==", mod_table$K[1:group_no], "~~","(", mod_table$g[1:group_no], ")"), parse = TRUE, hjust = "right", size = 3.5)
+      }
+      
+    }
+  
+    #flip and annotate)
+    if(flip==T){
+      plot <- plot + ggplot2::coord_flip() +
+        ggplot2::annotate('text', x = min(data$lower)*0.975, y = mod_table$Y,
+                          label= mod_table$name, vjust = "left", size = 3.5)
+      # putting k in
+      if(k == TRUE && g == FALSE){
+        plot <- plot +
+          ggplot2::annotate('text', x = max(data$upper)*0.975, y = mod_table$Y-1.7,
+                            label= paste("italic(k)==", mod_table$K), parse = TRUE, hjust = "left", size = 3.5)
+      }
+      
+      # putting groups
+      if(k == TRUE && g == TRUE){
+        # get group numbers for moderator
+        plot <- plot +
+          ggplot2::annotate('text', x = max(data$upper)*0.975, y = mod_table$Y-1.7,
+                            label= paste("italic(k)==", mod_table$K[1:group_no], "~~","(", mod_table$g[1:group_no], ")"), parse = TRUE, hjust = "left", size = 3.5)
+      }
+    }
+    
+   return(plot)
 }
