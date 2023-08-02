@@ -103,17 +103,36 @@ caterpillars <- function(object, mod = "1",  group, xlab, overall = TRUE, transf
   # use dplyr here - need to change....
   # Dan can you make this basic R code - maybe I got it
   # data <- data[order(data$moderator, -data$yi),]
+  if (flip==F){
   data <- data %>% dplyr::group_by(moderator) %>% dplyr::arrange(moderator, dplyr::desc(yi)) %>%
     dplyr::ungroup() %>%
     dplyr::mutate(Y = 1:data_no +
              unlist(mapply(function(x, y) rep(x*6 , y) , x = 1:group_no, y = mod_table$K))
     ) %>%
     data.frame()
-
+  
   # mod ID
   mod_table$Y <- data %>% dplyr::group_by(moderator) %>%
     dplyr::summarise(Y = dplyr::first(Y)) %>%
     dplyr::select(Y) %>% t() %>% as.vector() -2
+  
+  }
+  
+  if (flip==T){
+    data <- data %>% dplyr::group_by(moderator) %>% dplyr::arrange(moderator, dplyr::desc(yi)) %>%
+      dplyr::ungroup() %>%
+      dplyr::mutate(Y = data_no:1 +
+                      unlist(mapply(function(x, y) rep(x*6 , y) , x = 1:group_no, y = mod_table$K))
+      ) %>%
+      data.frame()
+    
+    # mod ID
+    mod_table$Y <- data %>% dplyr::group_by(moderator) %>%
+      dplyr::summarise(Y = dplyr::last(Y)) %>%
+      dplyr::select(Y) %>% t() %>% as.vector() -2
+  }
+
+
 
   # preparing for diamons for summary
   # modified from internal_viz_classicforest() from the R package, metaviz
