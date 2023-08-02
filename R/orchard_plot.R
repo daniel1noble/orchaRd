@@ -59,7 +59,7 @@
 
 orchard_plot <- function(object, mod = "1", group, xlab, N = NULL,
                          alpha = 0.5, angle = 90, cb = TRUE, k = TRUE, g = TRUE,
-                         trunk.size = 3, branch.size = 1.2, twig.size = 0.5,
+                         tree.order = NULL, trunk.size = 3, branch.size = 1.2, twig.size = 0.5,
                          transfm = c("none", "tanh"), condition.lab = "Condition",
                          legend.pos = c("bottom.right", "bottom.left",
                                         "top.right", "top.left",
@@ -99,13 +99,14 @@ orchard_plot <- function(object, mod = "1", group, xlab, N = NULL,
   data_trim$scale <- (1/sqrt(data_trim[,"vi"]))
 	legend <- "Precision (1/SE)"
 	
-	#if length of tree order does not match number of categories in categorical moderator, then stop function and throw an error
-	if(length(tree.order)!=levels(data_trim[,'moderator']))){
+	#if tree.order isn't equal to NULL, and length of tree order does not match number of categories in categorical moderator, then stop function and throw an error
+	if(!is.null(tree.order)&length(tree.order)!=nlevels(data_trim[,'moderator'])){
 	  stop("Length of 'tree.order' does not equal number of categories in moderator")
 	}
 
-  #if tree.order, isn't equal to NULL, then reorder mod table according to custom order if there is one
+  #if tree.order isn't equal to NULL but passes above check, then reorder mod table according to custom order if there is one
   if (!is.null(tree.order)){
+    data_trim$moderator<-factor(data_trim$moderator, levels = tree.order, labels = tree.order)
     mod_table <- mod_table %>% dplyr::arrange(factor(name, levels = tree.order))
   }
 
