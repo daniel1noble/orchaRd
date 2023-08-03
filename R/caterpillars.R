@@ -6,7 +6,7 @@
 #' @param xlab The effect size measure label.
 #' @param overall Logical, indicating whether to re-label "Intrcpt" (the default label from \code{rma} or \code{rma.mv} intercept only models or meta-analyses) to "Overall". Defaults to \code{TRUE}.
 #' @param transfm If set to \code{"tanh"}, a tanh transformation will be applied to effect sizes, converting Zr to a correlation or pulling in extreme values for other effect sizes (lnRR, lnCVR, SMD). Defaults to \code{"none"}.
-#' @param colerrorbar Colour of the error bar in the caterpillars plot. Defaults to hex code - "#00CD00". 
+#' @param colerrorbar Colour of the error bar in the caterpillars plot. Defaults to hex code - "#00CD00".
 #' @param colpoint Point estimate colour in the caterpillars plot. Defaults to hex code - "#FFD700".
 #' @param colpoly Polygon colour in the caterpillars plot. Defaults to "red".
 #' @param colour Colour of effect size shapes. By default, effect sizes are colored according to the \code{mod} argument. If \code{TRUE}, they are colored according to the grouping variable. Will override colpoint and colerror.
@@ -110,14 +110,14 @@ caterpillars <- function(object, mod = "1",  group, xlab, overall = TRUE, transf
              unlist(mapply(function(x, y) rep(x*6 , y) , x = 1:group_no, y = mod_table$K))
     ) %>%
     data.frame()
-  
+
   # mod ID
   mod_table$Y <- data %>% dplyr::group_by(moderator) %>%
     dplyr::summarise(Y = dplyr::first(Y)) %>%
     dplyr::select(Y) %>% t() %>% as.vector() -2
-  
+
   }
-  
+
   if (flip==T){
     data <- data %>% dplyr::group_by(moderator) %>% dplyr::arrange(moderator, dplyr::desc(yi)) %>%
       dplyr::ungroup() %>%
@@ -125,7 +125,7 @@ caterpillars <- function(object, mod = "1",  group, xlab, overall = TRUE, transf
                       unlist(mapply(function(x, y) rep(x*6 , y) , x = 1:group_no, y = mod_table$K))
       ) %>%
       data.frame()
-    
+
     # mod ID
     mod_table$Y <- data %>% dplyr::group_by(moderator) %>%
       dplyr::summarise(Y = dplyr::last(Y)) %>%
@@ -146,10 +146,10 @@ caterpillars <- function(object, mod = "1",  group, xlab, overall = TRUE, transf
                                          mod_table$Y - 1.2),
                          "moderator" = rep(mod_table$name, times = 4)
   )
-  
-  cbpl <- c("#88CCEE", "#CC6677", "#DDCC77", "#117733", "#332288", 
-            "#AA4499", "#44AA99", "#999933", "#882255", "#661100", 
-            "#6699CC", "#888888", "#E69F00", "#56B4E9", "#009E73", 
+
+  cbpl <- c("#88CCEE", "#CC6677", "#DDCC77", "#117733", "#332288",
+            "#AA4499", "#44AA99", "#999933", "#882255", "#661100",
+            "#6699CC", "#888888", "#E69F00", "#56B4E9", "#009E73",
             "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#999999")
 
   #if colour is FALSE, use this plotting method
@@ -169,25 +169,19 @@ caterpillars <- function(object, mod = "1",  group, xlab, overall = TRUE, transf
       ggplot2::geom_polygon(data = sum_data, ggplot2::aes(x = x.diamond, y = y.diamond, group = moderator), fill = colpoly) +
       #ggplot2::facet_wrap(~moderator, scales = "free_y", nrow = GN,  strip.position = "left") + # using facet_wrap - does not really work well
       ggplot2::theme_bw() +
-      ggplot2::theme(strip.text.y = ggplot2::element_text(angle = 0, size = 8),# margin = margin(t=15, r=15, b=15, l=15)),
-                     strip.background = ggplot2::element_rect(colour = NULL,
-                                                              linetype = "blank",
-                                                              fill = "gray90"),
-                     axis.text.y = ggplot2::element_blank(),
-                     axis.ticks.y = ggplot2::element_blank()) +
-      ggplot2::labs(x = label, y = "", parse = TRUE) + 
+      ggplot2::labs(x = label, y = "", parse = TRUE) +
         ggplot2::coord_cartesian(xlim = c(min(data$lower)*1.05, max(data$upper)*1.05),
                                  ylim = c((min(data$Y)-10), (max(data$Y)+4))
                                  , expand = F)
   }
-  
+
 
   #if colour is TRUE, use this plotting method
   if (colour == TRUE) {
-    
+
     #make a vector to colour by study
     coleffectsizes <- as.factor(data$stdy)
-     
+
     # make caterpillars plot
     plot <- ggplot2::ggplot()+
     # 95 % CI
@@ -203,38 +197,38 @@ caterpillars <- function(object, mod = "1",  group, xlab, overall = TRUE, transf
     ggplot2::geom_polygon(data = sum_data, ggplot2::aes(x = x.diamond, y = y.diamond, group = moderator), fill = colpoly) +
     #ggplot2::facet_wrap(~moderator, scales = "free_y", nrow = GN,  strip.position = "left") + # using facet_wrap - does not really work well
     ggplot2::theme_bw() +
-    ggplot2::theme(strip.text.y = ggplot2::element_text(angle = 0, size = 8),# margin = margin(t=15, r=15, b=15, l=15)),
-                   strip.background = ggplot2::element_rect(colour = NULL,
-                                                   linetype = "blank",
-                                                   fill = "gray90"),
-                   axis.text.y = ggplot2::element_blank(),
-                   axis.ticks.y = ggplot2::element_blank()) +
     ggplot2::labs(x = label, y = "", parse = TRUE) +
     ggplot2::coord_cartesian(xlim = c(min(data$lower)*1.05, max(data$upper)*1.05),
                      ylim = c((min(data$Y)-10), (max(data$Y)+4))
                      , expand = F)+
   labs(color="Study") #relabel legend
-  
+
   }
-  
+
   # if colourblind is TRUE, recolour to colourblind friendly palette
   if(cb == TRUE){
     plot <- plot +
       ggplot2::scale_fill_manual(values = cbpl) +
       ggplot2::scale_colour_manual(values = cbpl)
   }
-    
+
     #(don't) flip and annotate)
     if(flip==F){
       plot <- plot + ggplot2::annotate('text', x = min(data$lower)*0.975, y = mod_table$Y,
-                                       label= mod_table$name, hjust = "left", size = 3.5)
+                                       label= mod_table$name, hjust = "left", size = 3.5)+
+        ggplot2::theme(strip.text.y = ggplot2::element_text(angle = 0, size = 8),# margin = margin(t=15, r=15, b=15, l=15)),
+                       strip.background = ggplot2::element_rect(colour = NULL,
+                                                                linetype = "blank",
+                                                                fill = "gray90"),
+                       axis.text.y = ggplot2::element_blank(),
+                       axis.ticks.y = ggplot2::element_blank())
       # putting k in
       if(k == TRUE && g == FALSE){
         plot <- plot +
           ggplot2::annotate('text', x = max(data$upper)*0.975, y = mod_table$Y-1.7,
                             label= paste("italic(k)==", mod_table$K), parse = TRUE, hjust = "right", size = 3.5)
       }
-      
+
       # putting groups
       if(k == TRUE && g == TRUE){
         # get group numbers for moderator
@@ -242,21 +236,27 @@ caterpillars <- function(object, mod = "1",  group, xlab, overall = TRUE, transf
           ggplot2::annotate('text', x = max(data$upper)*0.975, y = mod_table$Y-1.7,
                             label= paste("italic(k)==", mod_table$K[1:group_no], "~~","(", mod_table$g[1:group_no], ")"), parse = TRUE, hjust = "right", size = 3.5)
       }
-      
+
     }
-  
+
     #flip and annotate)
     if(flip==T){
       plot <- plot + ggplot2::coord_flip() +
         ggplot2::annotate('text', x = min(data$lower)*0.975, y = mod_table$Y,
-                          label= mod_table$name, vjust = "left", size = 3.5)
+                          label= mod_table$name, vjust = "left", size = 3.5)+
+        ggplot2::theme(strip.text.x = ggplot2::element_text(angle = 0, size = 8),# margin = margin(t=15, r=15, b=15, l=15)),
+                       strip.background = ggplot2::element_rect(colour = NULL,
+                                                                linetype = "blank",
+                                                                fill = "gray90"),
+                       axis.text.x = ggplot2::element_blank(),
+                       axis.ticks.x = ggplot2::element_blank())
       # putting k in
       if(k == TRUE && g == FALSE){
         plot <- plot +
           ggplot2::annotate('text', x = max(data$upper)*0.975, y = mod_table$Y-1.7,
                             label= paste("italic(k)==", mod_table$K), parse = TRUE, hjust = "left", size = 3.5)
       }
-      
+
       # putting groups
       if(k == TRUE && g == TRUE){
         # get group numbers for moderator
@@ -265,6 +265,6 @@ caterpillars <- function(object, mod = "1",  group, xlab, overall = TRUE, transf
                             label= paste("italic(k)==", mod_table$K[1:group_no], "~~","(", mod_table$g[1:group_no], ")"), parse = TRUE, hjust = "left", size = 3.5)
       }
     }
-    
+
    return(plot)
 }
