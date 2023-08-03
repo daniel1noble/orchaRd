@@ -15,6 +15,7 @@
 #' @param g If \code{TRUE}, it displays g (number of grouping levels for each level of the moderator) on the plot.
 #' @param transfm If set to \code{"tanh"}, a tanh transformation will be applied to effect sizes, converting Zr to a correlation or pulling in extreme values for other effect sizes (lnRR, lnCVR, SMD). Defaults to \code{"none"}.
 #' @param condition.lab Label for the condition being marginalized over.
+#' @param tree.order Order in which to plot the groups of the moderator when it is a categorical one. Should be a vector of equal length to number of groups in the categorical moderator, in the desired order (bottom to top, or left to right for flipped orchard plot) 
 #' @param trunk.size Size of the mean, or central point.
 #' @param branch.size Size of the confidence intervals.
 #' @param twig.size Size of the prediction intervals.
@@ -58,7 +59,7 @@
 
 orchard_plot <- function(object, mod = "1", group, xlab, N = NULL,
                          alpha = 0.5, angle = 90, cb = TRUE, k = TRUE, g = TRUE,
-                         trunk.size = 3, branch.size = 1.2, twig.size = 0.5,
+                         tree.order = NULL, trunk.size = 3, branch.size = 1.2, twig.size = 0.5,
                          transfm = c("none", "tanh"), condition.lab = "Condition",
                          legend.pos = c("bottom.right", "bottom.left",
                                         "top.right", "top.left",
@@ -97,6 +98,17 @@ orchard_plot <- function(object, mod = "1", group, xlab, N = NULL,
 
   data_trim$scale <- (1/sqrt(data_trim[,"vi"]))
 	legend <- "Precision (1/SE)"
+	
+	#if tree.order isn't equal to NULL, and length of tree order does not match number of categories in categorical moderator, then stop function and throw an error
+	if(!is.null(tree.order)&length(tree.order)!=nlevels(data_trim[,'moderator'])){
+	  stop("Length of 'tree.order' does not equal number of categories in moderator")
+	}
+
+  #if tree.order isn't equal to NULL but passes above check, then reorder mod table according to custom order if there is one
+  if (!is.null(tree.order)){
+    data_trim$moderator<-factor(data_trim$moderator, levels = tree.order, labels = tree.order)
+    mod_table <- mod_table %>% dplyr::arrange(factor(name, levels = tree.order))
+  }
 
 	if(is.null(N) == FALSE){
 	  data_trim$scale <- data_trim$N
