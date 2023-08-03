@@ -14,6 +14,8 @@ caterpillars(
   colerrorbar = "#00CD00",
   colpoint = "#FFD700",
   colpoly = "red",
+  colour = F,
+  cb = T,
   k = TRUE,
   g = TRUE,
   at = NULL,
@@ -39,6 +41,10 @@ caterpillars(
 \item{colpoint}{Point estimate colour in the caterpillars plot. Defaults to hex code - "#FFD700".}
 
 \item{colpoly}{Polygon colour in the caterpillars plot. Defaults to "red".}
+
+\item{colour}{Colour of effect size shapes. By default, effect sizes are colored according to the \code{mod} argument. If \code{TRUE}, they are colored according to the grouping variable. Will override colpoint and colerror.}
+
+\item{cb}{If \code{TRUE}, it uses 20 colour blind friendly colors.}
 
 \item{k}{If \code{TRUE}, it displays k (number of effect sizes) on the plot.}
 
