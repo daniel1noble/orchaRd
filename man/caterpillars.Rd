@@ -14,11 +14,14 @@ caterpillars(
   colerrorbar = "#00CD00",
   colpoint = "#FFD700",
   colpoly = "red",
+  colour = F,
+  cb = T,
   k = TRUE,
   g = TRUE,
   at = NULL,
   by = NULL,
-  weights = "prop"
+  weights = "prop",
+  flip = F
 )
 }
 \arguments{
@@ -40,6 +43,10 @@ caterpillars(
 
 \item{colpoly}{Polygon colour in the caterpillars plot. Defaults to "red".}
 
+\item{colour}{Colour of effect size shapes. By default, effect sizes are colored according to the \code{mod} argument. If \code{TRUE}, they are colored according to the grouping variable. Will override colpoint and colerror.}
+
+\item{cb}{If \code{TRUE}, it uses 20 colour blind friendly colors.}
+
 \item{k}{If \code{TRUE}, it displays k (number of effect sizes) on the plot.}
 
 \item{g}{If \code{TRUE}, it displays g (number of grouping levels for each level of the moderator) on the plot.}
@@ -49,6 +56,8 @@ caterpillars(
 \item{by}{Used when one wants marginalised means. Character vector indicating the name that predictions should be conditioned on for the levels of the moderator.}
 
 \item{weights}{Used when one wants marginalised means. How to marginalize categorical variables. The default is \code{weights = "prop"}, which weights means for moderator levels based on their proportional representation in the data. For example, if "sex" is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal. In the case of sex, for example, males and females are roughly equally prevalent in a population. As such, you can give the moderator levels equal weight using \code{weights = "equal"}.}
+
+\item{flip}{Logical, defaults to \code{TRUE}, indicating whether the plot should be flipped.}
 }
 \value{
 Caterpillars plot
