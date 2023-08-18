@@ -91,8 +91,6 @@ bubble_plot <- function(object, mod, group = NULL, xlab = "Moderator", ylab = "E
   mod_table <- results$mod_table
 
   data_trim <- results$data
-  # making sure factor names match
-  data_trim$condition <- factor(data_trim$condition, levels = mod_table$condition, labels = mod_table$condition)
 
   data_trim$scale <- (1/sqrt(data_trim[,"vi"]))
   legend <- "Precision (1/SE)"
@@ -113,6 +111,7 @@ bubble_plot <- function(object, mod, group = NULL, xlab = "Moderator", ylab = "E
   # }
 
   if(is.null(data_trim$condition) == TRUE){
+
   # the number of effect sizes
   effect_num <- nrow(data_trim)
 
@@ -122,6 +121,10 @@ bubble_plot <- function(object, mod, group = NULL, xlab = "Moderator", ylab = "E
   dat_text <- data.frame(K = effect_num, G = group_num)
 
   }else{
+
+  # making sure factor names match
+  data_trim$condition <- factor(data_trim$condition, levels = mod_table$condition, labels = mod_table$condition)
+
   effect_num <- as.vector(by(data_trim, data_trim[,"condition"], function(x) base::length(x[,"yi"])))
 
   # Add in total levels of a grouping variable (e.g., study ID) within each moderator level.
@@ -160,8 +163,9 @@ bubble_plot <- function(object, mod, group = NULL, xlab = "Moderator", ylab = "E
     #theme(legend.background = element_rect(fill = "white", colour = "black")) +
      ggplot2::theme(legend.background = ggplot2::element_blank()) +
      ggplot2::theme(axis.text.y = ggplot2::element_text(size = 10, colour ="black", hjust = 0.5, angle = 90))
-  } else if(is.character(data_trim$condition) == TRUE || is.factor(data_trim$condition) == TRUE){
-    plot <-ggplot2::ggplot() +
+   } else if(is.character(data_trim$condition) == TRUE || is.factor(data_trim$condition) == TRUE){
+
+      plot <-ggplot2::ggplot() +
       # putting bubbles
       ggplot2::geom_point(data = data_trim, ggplot2::aes(x = moderator, y = yi, size = scale, fill = condition), shape = 21, alpha = alpha) +
       # prediction interval
