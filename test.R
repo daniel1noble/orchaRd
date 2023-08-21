@@ -35,7 +35,7 @@ mod_results(model, group = "group_ID")
 emmeans(mod_prep1, specs="trait.type", type="response", weights="proportional")
 str(mod_results(model, group = "group_ID", mod = "trait.type"))
 
-model_het <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 + trait.type| es_ID), mods = ~ trait.type + deg_dif, method = "REML", test = "t", rho = 0, struc = "HCS", control=list(optimizer="optim", optmethod="Nelder-Mead"), data = warm_dat)
+model_het <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 + trait.type| es_ID), mods = ~ trait.type + deg_dif, method = "REML", test = "t", dfs = "contain", rho = 0, struc = "HCS", control=list(optimizer="optim", optmethod="Nelder-Mead"), data = warm_dat)
 
 mod_prep2 <- emmprep(model_het, at = list(deg_dif = c(5, 10, 15)), by = "deg_dif")
 grid_qdrg <- emmeans::qdrg(formula = stats::formula(model_het), at = list(deg_dif = c(5, 10, 15)), by = "deg_dif", data = model_het$data, coef = model_het$b, vcov = stats::vcov(model_het), df = model_het$k-1) 
@@ -44,9 +44,11 @@ emmeans(mod_prep2, specs = "trait.type", at = list(deg_dif = c(5, 10, 15)), by =
 emmeans(grid_qdrg, specs = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif", type="response", weights="proportional")
 mod_results(model_het, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif", weights = "prop")
 
-grid <- emmeans::qdrg(formula = stats::formula(model), at = at, data = data, coef = model$b,
-                          vcov = stats::vcov(model), df = model$k-1) ## NOTE: Added data argument emmeans >vers 1.7.4. Object is unstable so feeding in the relevant arguments from model object directly. Note, we should think about df!
-    mm <- emmeans::emmeans(grid, specs = mod, df = df_mod, by = by, weights = weights, ...)
+grid <- metafor::emmprep(model_het, at = list(deg_dif = c(5, 10, 15)), by = "deg_dif")
+      mm <- emmeans::emmeans(grid, specs =  "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif")
+
+    # getting prediction intervals
+    mm_pi <- pred_interval_esmeans(model_het, mm, mod =  "trait.type")
 
 
 ######################

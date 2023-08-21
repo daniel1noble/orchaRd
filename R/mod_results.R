@@ -86,12 +86,6 @@ mod_results <- function(model, mod = "1", group,  N = NULL,  weights = "prop", b
     #model$data <- dat_tmp
   }
 
-   if(model$test == "t"){
-    df_mod = as.numeric(model$ddf[[1]])
-  } else{
-    df_mod = 1.0e6 # almost identical to z value
-  }
-
 # Extract the data from the model object
 data <- model$data 
 
@@ -101,9 +95,8 @@ if(any(model$not.na == FALSE)){
 }
 
   if(is.character(data[[mod]]) | is.factor(data[[mod]]) | is.null(data[[mod]])) {
-    grid <- emmeans::qdrg(formula = stats::formula(model), at = at, data = data, coef = model$b,
-                          vcov = stats::vcov(model), df = model$k-1) ## NOTE: Added data argument emmeans >vers 1.7.4. Object is unstable so feeding in the relevant arguments from model object directly. Note, we should think about df!
-    mm <- emmeans::emmeans(grid, specs = mod, df = df_mod, by = by, weights = weights, ...)
+    grid <- metafor::emmprep(model, by = by, at = at)
+      mm <- emmeans::emmeans(grid, specs = mod, by = by, at = at, weights = weights, ...)
 
     # getting prediction intervals
     mm_pi <- pred_interval_esmeans(model, mm, mod = mod)
@@ -135,9 +128,8 @@ if(any(model$not.na == FALSE)){
   } else{
     at2 <- list(mod = seq(min(data[,mod], na.rm = TRUE), max(data[,mod], na.rm = TRUE), length.out = 100))
     names(at2) <- mod
-    grid <- emmeans::qdrg(formula =  stats::formula(model), data = data, coef = model$b,
-                          vcov = stats::vcov(model), df = model$k-1, at = c(at2, at))  # getting 100 points. Fixing this to make it more general
-    mm <- emmeans::emmeans(grid, specs = mod, by = c(mod, by), weights = weights, df = df_mod)
+    grid <- metafor::emmprep(model, by = by, at = at)
+      mm <- emmeans::emmeans(grid, specs = mod, by = c(mod, by), at = at, weights = weights)
 
     # getting prediction intervals
     mm_pi <- pred_interval_esmeans(model, mm, mod = mod)
