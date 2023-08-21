@@ -1,10 +1,10 @@
 #' @title m1_ml
-#' @description I2 (I-squared) for mulilevel meta-analytic models, based on Nakagawa & Santos (2012). Under multilevel models, we can have a multiple I2 (see also Senior et al. 2016). Alternatively, the method proposed by Wolfgang Viechtbauer can also be used.
-#' @param model Model object of class 'rma.mv', 'rma'. Currently only model objects using the 'mods' argument (e.g., mod = ~1) work.
-#' @param method Method used to calculate I2. Two options exist, a ratio base calculation proposed by Nakagawa & Santos ('ratio') or Wolfgang Viechtbauer's matrix method ("matrix").
-#' @param data Data set used to fit the model.
-#' @param boot Number of simulations to run to produce 95\% CI's for I2. Default is NULL and only point estimate is provided.
-#' @return A data frame containing all the model results including mean effect size estimate, confidence and prediction intervals
+#' @description M1 for mulilevel meta-analytic models, based on Yang et al. (2023). Under multilevel models, we can have multiple M1 - TODO - we need to cite original M1 paper
+#' @param model Model object of class \code{rma.mv} or \code{rma}. Currently only model objects using the \code{mods} argument work (e.g., \code{mod = ~1}).
+#' @param method Method used to calculate M1. Two options exist: a ratio-based calculation proposed by Nakagawa & Santos (\code{"ratio"}), or Wolfgang Viechtbauer's matrix method (\code{"matrix"}).
+#' @param data Data frame used to fit the model.
+#' @param boot Number of simulations to run to produce 95 percent confidence intervals for M1. Default is \code{NULL}, where only the point estimate is provided.
+#' @return A data frame containing all the model results including mean effect size estimate, confidence, and prediction intervals
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
 #' @examples
@@ -17,9 +17,8 @@
 #' m2i = MeanE, var.names=c("SMD","vSMD"),data = english)
 #' english_MA <- rma.mv(yi = SMD, V = vSMD,
 #' random = list( ~ 1 | StudyNo, ~ 1 | EffectID), data = english)
-#' I2_eng_1 <- i2_ml(english_MA, data = english, boot = 10)
-#' I2_eng_2 <- i2_ml(english_MA, data = english, method = "ratio")
-#' I2_eng_3 <- i2_ml(english_MA, data = english, method = "matrix")
+#' M1_eng_1 <- m1_ml(english_MA, boot = 10)
+#' M1_eng_2 <- m1_ml(english_MA)
 #'
 #' ## Fish example
 #' data(fish)
@@ -29,9 +28,8 @@
 #' mods = ~ experimental_design + trait.type + deg_dif + treat_end_days,
 #' method = "REML", test = "t", data = warm_dat,
 #' control=list(optimizer="optim", optmethod="Nelder-Mead"))
-#' I2_fish_1 <- i2_ml(model, data = warm_dat, boot = 10)
-#' I2_fish_2 <- i2_ml(model, method = c("matrix"),data = warm_dat)
-#' I2_fish_2 <- i2_ml(model, method = c("ratio"),data = warm_dat)
+#' M1_fish_1 <- m1_ml(model, boot = 10)
+#' M1_fish_2 <- m1_ml(model)
 #'
 #' # Lim example
 #' data(lim)
@@ -40,136 +38,89 @@
 #' # Lets fit a meta-regression - I will do Article non-independence.
 #' The phylogenetic model found phylogenetic effects, however, instead we could fit Phylum as a fixed effect and explore them with an Orchard Plot
 #' lim_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~Phylum-1, random=list(~1|Article, ~1|Datapoint), data=lim)
-#' I2_lim_1 <- i2_ml(lim_MR, data=lim, boot = 10)
-#' I2_lim_2 <- i2_ml(lim_MR, data=lim)
+#' M1_lim_1 <- m1_ml(lim_MR, boot = 10)
+#' M1_lim_2 <- m1_ml(lim_MR)
 #' }
-#' @references Senior, A. M., Grueber, C. E., Kamiya, T., Lagisz, M., O’Dwyer, K., Santos, E. S. A. & Nakagawa S. 2016. Heterogeneity in ecological and evolutionary meta-analyses: its magnitudes and implications. Ecology 97(12): 3293-3299.
-#'  Nakagawa, S, and Santos, E.S.A. 2012. Methodological issues and advances in biological meta-analysis.Evolutionary Ecology 26(5): 1253-1274.
+#' @references TODO
 #' @export
 
-m1_ml <- function(model, data, boot = NULL) {
+m1_ml <- function(model,
+                  boot = NULL) {
 
   if(all(class(model) %in% c("robust.rma", "rma.mv", "rma", "rma.uni")) == FALSE) {stop("Sorry, you need to fit a metafor model of class robust.rma, rma.mv, rma, rma.uni")}
 
-  if(any(model$tau2 > 0)) {stop("Sorry. At the moment m1_ml cannot take models with heterogeneous variance.")}
+  if(any(model$tau2 > 0)) { stop("Sorry. At the moment m1_ml cannot take models with heterogeneous variance.")}
 
-  if (method == "matrix") {
-    # Wolfgang Viechtbauer's method
-    I2s <- matrix_i2(model)
-  } else {
-    # Nakagawa & Santos (2012)
-    I2s <- ratio_i2(model)
+  M1s <- ml_m1(model)
+
+  # Extract the data from the model object
+  data <- model$data
+
+  # Check if missing values exist and use complete case data
+  if(any(model$not.na == FALSE)){
+    data <- data[model$not.na,]
   }
 
   if(!is.null(boot)){
     # Simulate the vector of effect sizes
-    sim <- metafor::simulate.rma(model, nsim=boot)
+    sim <- metafor::simulate.rma(model, nsim=boot) # Add try catch here? DN
 
     # Get formula from model object.
     random_formula <- model$random
     mods_formula <- metafor::formula.rma(model, type = "mods") #in case moderators
     vi <- model$vi
 
-    # Paramatric bootsrap
+    # Parametric bootstrap
     pb <- progress::progress_bar$new(total = boot,
                                      format = "Bootstrapping [:bar] :percent ETA: :eta",
                                      show_after = 0)
+    if(is.null(mods_formula)){
+      M1_each <- sapply(sim, function(ysim) {
+        tmp <- tryCatch(metafor::rma.mv(ysim, vi,
+                                        random = random_formula, data = data))
+        pb$tick()
+        Sys.sleep(1/boot)
+        M1 <- ml_m1(tmp)
+      })
+    } else{
+      M1_each <- sapply(sim, function(ysim) {
 
-    I2_each <- sapply(sim, function(ysim) {
-
-      # The model
-      tmp <- metafor::rma.mv( ysim, vi,
-                              mods = mods_formula,
-                              random = random_formula,
-                              data = data)
-      pb$tick()
-      Sys.sleep(1 / boot)
-
-      if(method == "matrix"){
-        I2 <- matrix_i2(tmp)
-      } else {
-        I2 <- ratio_i2(tmp)
-      }
-
-      return(I2) })
-
+        # The model
+        tmp <- tryCatch(metafor::rma.mv( ysim, vi,
+                                         mods = mods_formula,
+                                         random = random_formula,
+                                         data = data))
+        pb$tick()
+        Sys.sleep(1 / boot)
+        M1 <- ml_m1(tmp)
+        return(M1) })
+    }
     # Summarise the bootstrapped distribution.
-    I2s_each_95 <- data.frame(t(apply(I2_each, 1, stats::quantile, probs=c(0.5, .025, .975))))
-    I2s <-  round(I2s_each_95, digits = 3)
-    colnames(I2s) = c("Est.", "2.5%", "97.5%")
+    M1s_each_95 <- data.frame(t(apply(M1_each, 1, stats::quantile, probs=c(0.5, .025, .975))))
+    M1s <-  round(M1s_each_95, digits = 3)
+    colnames(M1s) = c("Est.", "2.5%", "97.5%")
   }
 
-  return(I2s)
-}
-
-#' @title matrix_i2
-#' @description Calculated I2 (I-squared) for mulilevel meta-analytic models, based on a matrix method proposed by Wolfgang Viechtbauer.
-#' @param model Model object of class 'rma.mv', 'rma'
-#' @examples
-#' \dontrun{
-#' # English example
-#' data(english)
-#' english <- escalc(measure = "SMD", n1i = NStartControl, sd1i = SD_C, m1i = MeanC, n2i = NStartExpt, sd2i = SD_E, m2i = MeanE, var.names=c("SMD","vSMD"),data = english)
-#' english_MA <- rma.mv(yi = SMD, V = vSMD, random = list( ~ 1 | StudyNo, ~ 1 | EffectID), data = english)
-#' I2_eng <- i2_ml(english_MA, data = english, method = "matrix")
-#'
-#' # Lim example
-#' data(lim)
-#' # Add in the sampling variance
-#' lim$vi<-(1/sqrt(lim$N - 3))^2
-#' # Lets fit a meta-regression - I will do Article non-independence. The phylogenetic model found phylogenetic effects, however, instead we could fit Phylum as a fixed effect and explore them with an Orchard Plot
-#' lim_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~Phylum-1,
-#' random=list(~1|Article, ~1|Datapoint), data=lim)
-#' I2_lim <- i2_ml(lim_MR, data=lim, method = "matrix")
-#' }
-#' @export
-matrix_i2 <- function(model){
-
-  if(all(class(model) %in% c("robust.rma", "rma.mv", "rma", "rma.uni")) == FALSE) {stop("Sorry, you need to fit a metafor model of class robust.rma, rma.mv, rma, rma.uni")}
-
-  W <- solve(model$V)
-  X <- model.matrix(model)
-  P <- W - W %*% X %*% solve(t(X) %*% W %*% X) %*% t(X) %*% W
-  I2_total <- 100* (sum(model$sigma2) / (sum(model$sigma2) + (model$k - model$p) / sum(diag(P))))
-  I2_each <- 100* (model$sigma2 / (sum(model$sigma2) + (model$k - model$p) / sum(diag(P))))
-  names(I2_each) <- paste0("I2_", model$s.names)
-  names(I2_total) <- "I2_Total"
-  I2s <- c(I2_total, I2_each)
-  return(I2s)
+  return(M1s)
 }
 
 
-#' @title ratio_i2
-#' @description I2 (I-squared) for mulilevel meta-analytic models based on Nakagawa & Santos (2012). Under multilevel models, we can have a multiple I2 (see also Senior et al. 2016).
-#' @param model Model object of class 'rma.mv', 'rma'
-#' @examples
-#' \dontrun{
-#' # English example
-#' data(english)
-#' english <- escalc(measure = "SMD", n1i = NStartControl,
-#' sd1i = SD_C, m1i = MeanC, n2i = NStartExpt,
-#' sd2i = SD_E, m2i = MeanE, var.names=c("SMD","vSMD"),data = english)
-#' english_MA <- rma.mv(yi = SMD, V = vSMD,
-#' random = list( ~ 1 | StudyNo, ~ 1 | EffectID), data = english)
-#' I2_eng_1 <- i2_ml(english_MA, data = english, boot = 1000)
-#' I2_eng_2 <- i2_ml(english_MA, data = english, method = "ratio")
-#' }
+#' @title ml_m1
+#' @description Calculated CV for mulilevel meta-analytic models
+#' @param model Model object of class \code{rma.mv} or \code{rma}.
 #' @export
-ratio_i2 <- function(model){
 
-  if(all(class(model) %in% c("robust.rma", "rma.mv", "rma", "rma.uni")) == FALSE) {stop("Sorry, you need to fit a metafor model of class robust.rma, rma.mv, rma, rma.uni")}
+ml_m1 <- function(model){
 
-  # sigma2_v = typical sampling error variance
-  sigma2_v <- sum(1 / model$vi) * (model$k - 1) /
-    (sum(1 / model$vi)^2 - sum((1 / model$vi)^2))
+  # total m1
+  M1_total <- sqrt(sum(model$sigma2)) / (abs(model$beta[[1]]) + sqrt(sum(model$sigma2)))
+  # m1 at different levels
+  M1_each <-  sqrt(model$sigma2) / (abs(model$beta[[1]]) + sqrt(sum(model$sigma2)))
+  names(M1_each) <- paste0("M1_", model$s.names)
+  names(M1_total) <- "M1_Total"
 
-  # s^2_t = total variance
-  I2_total <- 100 * (sum(model$sigma2) / (sum(model$sigma2) + sigma2_v))
-  I2_each <- 100 * (model$sigma2 / (sum(model$sigma2) + sigma2_v))
-  names(I2_each) <- paste0("I2_", model$s.names)
-  names(I2_total) <- "I2_Total"
+  M1s <- c(M1_total, M1_each)
 
-  I2s <- c(I2_total, I2_each)
-  return(I2s)
+  return(M1s)
 }
 
