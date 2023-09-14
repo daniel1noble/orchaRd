@@ -197,13 +197,14 @@ pred_interval_esmeans <- function(model, mm, mod, ...){
 
   if(length(model$tau2) <= 1){ # including gamma2
                  sigmas <- sum(model$sigma2)
-                     PI <- test.stat * base::sqrt(tmp$SE^2 + sigmas)
+                 taus   <- model$tau2
+                     PI <- test.stat * base::sqrt(tmp$SE^2 + sigmas + taus)
         } else {
-            sigmas <- sum(model$sigma2)
-            taus   <- model$tau2
-             gammas <- model$gamma2
-                 w_tau <- model$g.levels.k
-                 w_gamma <- model$g.levels.k
+                 sigmas <- sum(model$sigma2)
+                 taus   <- model$tau2
+                 gammas <- model$gamma2
+                  w_tau <- model$g.levels.k
+                w_gamma <- model$g.levels.k
 
             if(mod == "1"){
                 tau <- weighted_var(taus, weights = w_tau)
