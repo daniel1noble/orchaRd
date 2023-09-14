@@ -195,10 +195,11 @@ pred_interval_esmeans <- function(model, mm, mod, ...){
         tmp <- tmp[ , ]
   test.stat <- stats::qt(0.975, tmp$df[[1]])
 
-  if(length(model$tau2) <= 1){ # including gamma2
+  if(length(model$tau2) <= 1 & length(model$gamma2) <= 1){ # Note this should fix #46 but code is repetitive and needs to be cleaned up. Other issue is how this plays with different rma. objects. uni models will treat slots for gamma NULL and we need to deal with this. 
                  sigmas <- sum(model$sigma2)
                  taus   <- model$tau2
-                     PI <- test.stat * base::sqrt(tmp$SE^2 + sigmas + taus)
+                 gamma2 <- ifelse(is.null(model$gamma2), 0, model$gamma2)
+                     PI <- test.stat * base::sqrt(tmp$SE^2 + sigmas + taus + gamma2)
         } else {
                  sigmas <- sum(model$sigma2)
                  taus   <- model$tau2
