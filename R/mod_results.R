@@ -68,6 +68,10 @@ mod_results <- function(model, mod = "1", group,  N = NULL,  weights = "prop", b
     warning("It is recommended that you fit the model with an intercept. Unanticipated errors can occur otherwise.")
   }
 
+  if(any(model$tau2 >=0 | is.null(model$tau2))){
+    warning("We noticed you're fitting an ~inner|outer rma model ('random slope'). There are circumstances where the prediction intervals for such models are calculated incorrectly. Please check your results carefully.")
+  }
+
   if(missing(model)){
     stop("Please specify the 'model' argument by providing rma.mv or rma model object. See ?mod_results")
   }
@@ -195,7 +199,7 @@ pred_interval_esmeans <- function(model, mm, mod, ...){
         tmp <- tmp[ , ]
   test.stat <- stats::qt(0.975, tmp$df[[1]])
 
-  if(length(model$tau2) <= 1 & length(model$gamma2) <= 1){ # Note this should fix #46 but code is repetitive and needs to be cleaned up. Other issue is how this plays with different rma. objects. uni models will treat slots for gamma NULL and we need to deal with this. 
+  if(length(model$tau2) <= 1 | length(model$gamma2) <= 1){ # Note this should fix #46 but code is repetitive and needs to be cleaned up. Other issue is how this plays with different rma. objects. uni models will treat slots for gamma NULL and we need to deal with this. 
                  sigmas <- sum(model$sigma2)
                  taus   <- model$tau2
                  gamma2 <- ifelse(is.null(model$gamma2), 0, model$gamma2)
