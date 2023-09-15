@@ -68,7 +68,7 @@ mod_results <- function(model, mod = "1", group,  N = NULL,  weights = "prop", b
     warning("It is recommended that you fit the model with an intercept. Unanticipated errors can occur otherwise.")
   }
 
-  if(any(model$tau2 >=0 | is.null(model$tau2))){
+  if(any(model$struct %in% c("GEN", "HCS"))){
     warning("We noticed you're fitting an ~inner|outer rma model ('random slope'). There are circumstances where the prediction intervals for such models are calculated incorrectly. Please check your results carefully.")
   }
 
