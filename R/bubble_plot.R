@@ -47,7 +47,7 @@
 # TODO - make poly works for bubble???
 # TODO - write to https://github.com/rvlenth/emmeans/issues (missing combinations or interaction not allowed)
 
-bubble_plot_MLJ <- function(object,
+bubble_plot <- function(object,
                             yi = NULL, vi = NULL, stdy = NULL, mod = NULL,
                             group = NULL, xlab = "Moderator", ylab = "Effect size", N = "none",
                             alpha = 0.5, cb = TRUE, k = TRUE, g = FALSE,
