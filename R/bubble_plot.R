@@ -68,6 +68,12 @@ bubble_plot_MLJ <- function(object,
   k.pos <- match.arg(NULL, choices = k.pos)
   #facet <- match.arg(NULL, choices = facet)
 
+  #Add warning message to make it clear that model parameters override those
+  if(any(class(object) %in% c("robust.rma", "rma.mv", "rma", "rma.uni","orchard"))
+     &!missing(yi)|missing(vi)|missing(stdy)|missing(by)){
+  warning("N.B:'yi', 'vi', and 'by' arguments are disregarded and overriden by those in the model/model results object provided. Plotted values and their splitting into sub-plots is based on the values of these parameters in the model, not those given in the bubble_plot() function!")
+  }
+
   if(missing(group)){
     stop("Please specify the 'group' argument by providing the name of the grouping variable. See ?bubble_plot")
   }
