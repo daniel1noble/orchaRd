@@ -1,6 +1,9 @@
 #' @title bubble_plot
 #' @description Using a \pkg{metafor} model object of class \code{rma} or \code{rma.mv}, or a results table of class \code{orchard}, the \code{bubble_plot} function creates a bubble plot from slope estimates. In cases when a model includes interaction terms, this function creates panels of bubble plots.
 #' @param object Model object of class \code{rma}, \code{rma.mv}, or \code{orchard} table of model results
+#' @param yi The name of the yi variable, to be plotted on the y-axis of the bubble plot. Only needed when providing a dataframe rather than a metafor model object.
+#' @param vi The name of the vi variable, to be plotted on the y-axis of the bubble plot. Only needed when providing a dataframe rather than a metafor model object.
+#' @param stdy The name of the study variable, for colouring points. Only needed when providing a dataframe rather than a metafor model object.
 #' @param mod The name of a continuous moderator, to be plotted on the x-axis of the bubble plot.
 #' @param group The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species, or any grouping variable one wishes to present sample sizes for. Not needed if an \code{orchard_plot} is provided with a \code{mod_results} object of class \code{orchard}.
 #' @param by Character vector indicating the name that predictions should be conditioned on for the levels of the moderator.
@@ -44,13 +47,15 @@
 # TODO - make poly works for bubble???
 # TODO - write to https://github.com/rvlenth/emmeans/issues (missing combinations or interaction not allowed)
 
-bubble_plot <- function(object, mod, group = NULL, xlab = "Moderator", ylab = "Effect size", N = "none",
-                        alpha = 0.5, cb = TRUE, k = TRUE, g = FALSE,
-                        est.lwd = 1, ci.lwd = 0.5, pi.lwd = 0.5,
-                        est.col = "black", ci.col = "black", pi.col = "black",
-                        legend.pos = c("top.left", "top.right",
-                                       "bottom.right", "bottom.left",
-                                       "top.out", "bottom.out",
+bubble_plot <- function(object,
+                            yi = NULL, vi = NULL, stdy = NULL, mod = NULL,
+                            group = NULL, xlab = "Moderator", ylab = "Effect size", N = "none",
+                            alpha = 0.5, cb = TRUE, k = TRUE, g = FALSE,
+                            est.lwd = 1, ci.lwd = 0.5, pi.lwd = 0.5,
+                            est.col = "black", ci.col = "black", pi.col = "black",
+                            legend.pos = c("top.left", "top.right",
+                                           "bottom.right", "bottom.left",
+                                           "top.out", "bottom.out",
                                        "none"),
                         k.pos = c("top.right", "top.left",
                                   "bottom.right", "bottom.left",
@@ -63,6 +68,12 @@ bubble_plot <- function(object, mod, group = NULL, xlab = "Moderator", ylab = "E
   k.pos <- match.arg(NULL, choices = k.pos)
   #facet <- match.arg(NULL, choices = facet)
 
+  #Add warning message to make it clear that model parameters override those
+  if(any(class(object) %in% c("robust.rma", "rma.mv", "rma", "rma.uni","orchard"))
+     &!missing(yi)|missing(vi)|missing(stdy)|missing(by)){
+  warning("N.B:'yi', 'vi', and 'by' arguments are disregarded and overriden by those in the model/model results object provided. Plotted values and their splitting into sub-plots is based on the values of these parameters in the model, not those given in the bubble_plot() function!")
+  }
+
   if(missing(group)){
     stop("Please specify the 'group' argument by providing the name of the grouping variable. See ?bubble_plot")
   }
@@ -72,7 +83,7 @@ bubble_plot <- function(object, mod, group = NULL, xlab = "Moderator", ylab = "E
    g = FALSE
   }
 
-
+#if object is a metafor model object, extract results and split them into two separate objects
   if(any(class(object) %in% c("robust.rma", "rma.mv", "rma", "rma.uni"))){
 
     if(mod != "1"){
@@ -82,16 +93,56 @@ bubble_plot <- function(object, mod, group = NULL, xlab = "Moderator", ylab = "E
       results <-  orchaRd::mod_results(object, mod = "1", group,
                                        by = by, at = at, weights = weights)
     }
+
+    #create object for model
+    mod_table <- results$mod_table
+
+    #create object for data underlying model
+    data_trim <- results$data
+
   }
 
   if(any(class(object) %in% c("orchard"))) {
     results <- object
+
+    #create object for model
+    mod_table <- results$mod_table
+
+    #create object for data underlying model
+    data_trim <- results$data
   }
 
-  mod_table <- results$mod_table
+  #if the class of the object is only 'data.frame'...
+  if(all(class(object) %in% c("data.frame"))) {
 
-  data_trim <- results$data
+    if(is.null(yi)){
+      stop("Must specify 'yi' when providing a dataframe as the object to be plotted. See ?bubble_plot")
+    }
+    if(is.null(vi)){
+      stop("Must specify 'vi' when providing a dataframe as the object to be plotted. See ?bubble_plot")
+    }
+    if(is.null(stdy)){
+      stop("Must specify 'stdy' when providing a dataframe as the object to be plotted. See ?bubble_plot")
+    }
+    if(is.null(mod)){
+      stop("Must specify 'mod' when providing a dataframe as the object to be plotted. See ?bubble_plot")
+    }
 
+    #create object for data underlying model from the data directly provided
+    data_trim <- data.frame(yi = object[,yi], vi = object[,vi], moderator=object[,mod], stdy=object[,stdy])
+    data_trim <- data_trim[complete.cases(data_trim),]
+
+    #if a conditioning variable is supplied, add to df
+    if(!is.null(by)){
+      #create object for model that just contains the conditioning variable if present (workaround)
+      mod_table <- data.frame(condition=object[,by])
+      #add conditioning variable to data_trim
+      data_trim$condition<-object[,by]
+    }
+
+    }
+
+  #scale the point size by 1 divided by square room of variance
   data_trim$scale <- (1/sqrt(data_trim[,"vi"]))
   legend <- "Precision (1/SE)"
 
@@ -141,45 +192,54 @@ bubble_plot <- function(object, mod, group = NULL, xlab = "Moderator", ylab = "E
   # # colour blind friendly colours with grey
   # cbpl <- c("#88CCEE", "#CC6677", "#DDCC77", "#117733", "#332288", "#AA4499", "#44AA99", "#999933", "#882255", "#661100", "#6699CC", "#888888", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#999999")
 
-  if(is.null(data_trim$condition) == TRUE){
-   plot <-ggplot2::ggplot() +
-    # putting bubbles
-     ggplot2::geom_point(data = data_trim, ggplot2::aes(x = moderator, y = yi, size = scale), shape = 21, alpha = alpha, fill = "grey90" ) +
-    # prediction interval
-     ggplot2::geom_smooth(data = mod_table, ggplot2::aes(x = moderator, y = lowerPR), method =  "loess", formula = y~x, se = FALSE, lty =  "dotted", lwd = pi.lwd, colour = pi.col) +
-     ggplot2::geom_smooth(data = mod_table, ggplot2::aes(x = moderator, y = upperPR), method =  "loess", formula = y~x, se = FALSE, lty = "dotted", lwd = pi.lwd, colour = pi.col) +
-     # confidence interval
-     ggplot2::geom_smooth(data = mod_table, ggplot2::aes(x = moderator, y = lowerCL), method =  "loess", formula = y~x, se = FALSE,lty = "dashed", lwd = ci.lwd, colour = ci.col) +
-     ggplot2::geom_smooth(data = mod_table, ggplot2::aes(x = moderator, y = upperCL), method =  "loess", formula = y~x, se = FALSE, lty ="dashed", lwd = ci.lwd, colour = ci.col) +
-     # main line
-     ggplot2::geom_smooth(data = mod_table, ggplot2::aes(x = moderator, y = estimate), method =  "loess", formula = y~x, se = FALSE, lwd = est.lwd, colour = est.col) +
-    #facet_grid(rows = vars(condition)) +
-     ggplot2::labs(x = xlab, y = ylab, size = legend, parse = TRUE) +
-     ggplot2::guides(fill = "none", colour = "none") +
-    # themes
-     ggplot2::theme_bw() +
-    #theme(legend.position= c(1, 1), legend.justification = c(1, 1)) +
-     ggplot2::theme(legend.direction="horizontal") +
-    #theme(legend.background = element_rect(fill = "white", colour = "black")) +
-     ggplot2::theme(legend.background = ggplot2::element_blank()) +
-     ggplot2::theme(axis.text.y = ggplot2::element_text(size = 10, colour ="black", hjust = 0.5, angle = 90))
-   } else if(is.character(data_trim$condition) == TRUE || is.factor(data_trim$condition) == TRUE){
+# PLOT WITHOUT ANOTHER CONDITIONING VARIABLE IN ADDITION TO THE MODERATOR ---------------------------------
 
+  #if there is not another conditioning variable...
+  if(is.null(data_trim$condition) == TRUE){
+
+    # basic plot with just points
+    plot <-ggplot2::ggplot() +
+    # putting bubbles
+    ggplot2::geom_point(data = data_trim, ggplot2::aes(x = moderator, y = yi, size = scale), shape = 21, alpha = alpha, fill = "grey90" )+
+    #facet_grid(rows = vars(condition)) +
+    ggplot2::labs(x = xlab, y = ylab, size = legend, parse = TRUE) +
+    ggplot2::guides(fill = "none", colour = "none") +
+    # themes
+    ggplot2::theme_bw() +
+    #theme(legend.position= c(1, 1), legend.justification = c(1, 1)) +
+    ggplot2::theme(legend.direction="horizontal") +
+    #theme(legend.background = element_rect(fill = "white", colour = "black")) +
+    ggplot2::theme(legend.background = ggplot2::element_blank()) +
+    ggplot2::theme(axis.text.y = ggplot2::element_text(size = 10, colour ="black", hjust = 0.5, angle = 90))
+
+    #if a model is provided, add model fit to plot
+    if(any(class(object) %in% c("robust.rma", "rma.mv", "rma", "rma.uni"))){
+     plot <-plot+
+      # prediction interval
+       ggplot2::geom_smooth(data = mod_table, ggplot2::aes(x = moderator, y = lowerPR), method =  "loess", formula = y~x, se = FALSE, lty =  "dotted", lwd = pi.lwd, colour = pi.col) +
+       ggplot2::geom_smooth(data = mod_table, ggplot2::aes(x = moderator, y = upperPR), method =  "loess", formula = y~x, se = FALSE, lty = "dotted", lwd = pi.lwd, colour = pi.col) +
+       # confidence interval
+       ggplot2::geom_smooth(data = mod_table, ggplot2::aes(x = moderator, y = lowerCL), method =  "loess", formula = y~x, se = FALSE,lty = "dashed", lwd = ci.lwd, colour = ci.col) +
+       ggplot2::geom_smooth(data = mod_table, ggplot2::aes(x = moderator, y = upperCL), method =  "loess", formula = y~x, se = FALSE, lty ="dashed", lwd = ci.lwd, colour = ci.col) +
+       # main line
+       ggplot2::geom_smooth(data = mod_table, ggplot2::aes(x = moderator, y = estimate), method =  "loess", formula = y~x, se = FALSE, lwd = est.lwd, colour = est.col)
+
+    }
+}
+
+# PLOT WITH ANOTHER CONDITIONING VARIABLE IN ADDITION TO THE MODERATOR ---------------------------------
+
+#if there is a conditioning variable...
+if(is.character(data_trim$condition) == TRUE || is.factor(data_trim$condition) == TRUE){
+
+      # basic plot with just points
       plot <-ggplot2::ggplot() +
       # putting bubbles
       ggplot2::geom_point(data = data_trim, ggplot2::aes(x = moderator, y = yi, size = scale, fill = condition), shape = 21, alpha = alpha) +
-      # prediction interval
-      ggplot2::geom_smooth(data = mod_table, ggplot2::aes(x = moderator, y = lowerPR), method =  "loess", formula = y~x, se = FALSE, lty =  "dotted", lwd = pi.lwd, colour = pi.col) +
-      ggplot2::geom_smooth(data = mod_table, ggplot2::aes(x = moderator, y = upperPR), method =  "loess", formula = y~x,se = FALSE, lty = "dotted", lwd = pi.lwd, colour = pi.col) +
-      # confidence interval
-      ggplot2::geom_smooth(data = mod_table, ggplot2::aes(x = moderator, y = lowerCL), method =  "loess", formula = y~x,se = FALSE,lty = "dashed", lwd = ci.lwd, colour = ci.col) +
-      ggplot2::geom_smooth(data = mod_table, ggplot2::aes(x = moderator, y = upperCL), method =  "loess", formula = y~x,se = FALSE, lty ="dashed", lwd = ci.lwd, colour = ci.col) +
-      # main line
-      ggplot2::geom_smooth(data = mod_table, ggplot2::aes(x = moderator, y = estimate), method =  "loess", formula = y~x, se = FALSE, lwd = est.lwd, colour = est.col) +
       ggplot2::facet_wrap(ggplot2::vars(condition), nrow = condition.nrow) +
       ggplot2::labs(x = xlab, y = ylab, size = legend, parse = TRUE) +
       ggplot2::guides(fill = "none", colour = "none") +
-      # themses
+      # themes
       ggplot2::theme_bw() +
       #theme(legend.position= c(1, 1), legend.justification = c(1, 1)) +
       ggplot2::theme(legend.direction="horizontal") +
@@ -187,36 +247,48 @@ bubble_plot <- function(object, mod, group = NULL, xlab = "Moderator", ylab = "E
       ggplot2::theme(legend.background = ggplot2::element_blank()) +
       ggplot2::theme(axis.text.y = ggplot2::element_text(size = 10, colour ="black", hjust = 0.5, angle = 90))
 
-    # if(facet == "rows"){
-    #   plot <- plot + facet_grid(rows = vars(condition))
-    # } else{
-    #   plot <- plot + facet_grid(cols = vars(condition))
-    # }
+        #if a model is provided, add model fit to plot
+        if(any(class(object) %in% c("orchard"))){
+          plot <-plot+
+           # prediction interval
+            ggplot2::geom_smooth(data = mod_table, ggplot2::aes(x = moderator, y = lowerPR), method =  "loess", formula = y~x, se = FALSE, lty =  "dotted", lwd = pi.lwd, colour = pi.col) +
+            ggplot2::geom_smooth(data = mod_table, ggplot2::aes(x = moderator, y = upperPR), method =  "loess", formula = y~x,se = FALSE, lty = "dotted", lwd = pi.lwd, colour = pi.col) +
+            # confidence interval
+            ggplot2::geom_smooth(data = mod_table, ggplot2::aes(x = moderator, y = lowerCL), method =  "loess", formula = y~x,se = FALSE,lty = "dashed", lwd = ci.lwd, colour = ci.col) +
+            ggplot2::geom_smooth(data = mod_table, ggplot2::aes(x = moderator, y = upperCL), method =  "loess", formula = y~x,se = FALSE, lty ="dashed", lwd = ci.lwd, colour = ci.col) +
+            # main line
+            ggplot2::geom_smooth(data = mod_table, ggplot2::aes(x = moderator, y = estimate), method =  "loess", formula = y~x, se = FALSE, lwd = est.lwd, colour = est.col)
+      # if(facet == "rows"){
+      #   plot <- plot + facet_grid(rows = vars(condition))
+      # } else{
+      #   plot <- plot + facet_grid(cols = vars(condition))
+      # }
+        }
+}
 
-
-  } else{
-    plot <-ggplot2::ggplot() +
-      # putting bubbles
-      #geom_point(data = data, aes(x = moderator, y = yi, size = scale), shape = 21, alpha = alpha, fill = "grey90" ) +
-      # prediction interval
-      ggplot2::geom_smooth(data = mod_table, ggplot2::aes(x = moderator, y = lowerPR), method =  "loess", formula = y~x, se = FALSE, lty =  "dotted", lwd = pi.lwd, colour = pi.col) +
-      ggplot2::geom_smooth(data = mod_table, ggplot2::aes(x = moderator, y = upperPR), method =  "loess", formula = y~x,se = FALSE, lty = "dotted", lwd = pi.lwd, colour = pi.col) +
-      # confidence interval
-      ggplot2::geom_smooth(data = mod_table, ggplot2::aes(x = moderator, y = lowerCL), method =  "loess", formula = y~x,se = FALSE,lty = "dashed", lwd = ci.lwd, colour = ci.col) +
-      ggplot2::geom_smooth(data = mod_table, ggplot2::aes(x = moderator, y = upperCL), method =  "loess", formula = y~x,se = FALSE, lty ="dashed", lwd = ci.lwd, colour = ci.col) +
-      # main line
-      ggplot2::geom_smooth(data = mod_table, ggplot2::aes(x = moderator, y = estimate), method =  "loess", formula = y~x, se = FALSE, lwd = est.lwd, colour = est.col) +
-      ggplot2::facet_wrap(ggplot2::vars(condition), nrow = condition.nrow) +
-      ggplot2::labs(x = xlab, y = ylab, size = legend, parse = TRUE) +
-      ggplot2::guides(fill = "none", colour = "none") +
-      # themses
-      ggplot2::theme_bw() # +
-      #theme(legend.position= c(1, 1), legend.justification = c(1, 1)) +
-      # theme(legend.direction="horizontal") +
-      # #theme(legend.background = element_rect(fill = "white", colour = "black")) +
-      # theme(legend.background = element_blank()) +
-      # theme(axis.text.y = element_text(size = 10, colour ="black", hjust = 0.5, angle = 90))
-  }
+  # else{
+  #   plot <-ggplot2::ggplot() +
+  #     # putting bubbles
+  #     #geom_point(data = data, aes(x = moderator, y = yi, size = scale), shape = 21, alpha = alpha, fill = "grey90" ) +
+  #     # prediction interval
+  #     ggplot2::geom_smooth(data = mod_table, ggplot2::aes(x = moderator, y = lowerPR), method =  "loess", formula = y~x, se = FALSE, lty =  "dotted", lwd = pi.lwd, colour = pi.col) +
+  #     ggplot2::geom_smooth(data = mod_table, ggplot2::aes(x = moderator, y = upperPR), method =  "loess", formula = y~x,se = FALSE, lty = "dotted", lwd = pi.lwd, colour = pi.col) +
+  #     # confidence interval
+  #     ggplot2::geom_smooth(data = mod_table, ggplot2::aes(x = moderator, y = lowerCL), method =  "loess", formula = y~x,se = FALSE,lty = "dashed", lwd = ci.lwd, colour = ci.col) +
+  #     ggplot2::geom_smooth(data = mod_table, ggplot2::aes(x = moderator, y = upperCL), method =  "loess", formula = y~x,se = FALSE, lty ="dashed", lwd = ci.lwd, colour = ci.col) +
+  #     # main line
+  #     ggplot2::geom_smooth(data = mod_table, ggplot2::aes(x = moderator, y = estimate), method =  "loess", formula = y~x, se = FALSE, lwd = est.lwd, colour = est.col) +
+  #     ggplot2::facet_wrap(ggplot2::vars(condition), nrow = condition.nrow) +
+  #     ggplot2::labs(x = xlab, y = ylab, size = legend, parse = TRUE) +
+  #     ggplot2::guides(fill = "none", colour = "none") +
+  #     # themes
+  #     ggplot2::theme_bw() # +
+  #     #theme(legend.position= c(1, 1), legend.justification = c(1, 1)) +
+  #     # theme(legend.direction="horizontal") +
+  #     # #theme(legend.background = element_rect(fill = "white", colour = "black")) +
+  #     # theme(legend.background = element_blank()) +
+  #     # theme(axis.text.y = element_text(size = 10, colour ="black", hjust = 0.5, angle = 90))
+  # }
 
   # adding legend
   if(legend.pos == "bottom.right"){

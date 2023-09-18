@@ -6,7 +6,10 @@
 \usage{
 bubble_plot(
   object,
-  mod,
+  yi = NULL,
+  vi = NULL,
+  stdy = NULL,
+  mod = NULL,
   group = NULL,
   xlab = "Moderator",
   ylab = "Effect size",
@@ -32,6 +35,12 @@ bubble_plot(
 }
 \arguments{
 \item{object}{Model object of class \code{rma}, \code{rma.mv}, or \code{orchard} table of model results}
+
+\item{yi}{The name of the yi variable, to be plotted on the y-axis of the bubble plot. Only needed when providing a dataframe rather than a metafor model object.}
+
+\item{vi}{The name of the vi variable, to be plotted on the y-axis of the bubble plot. Only needed when providing a dataframe rather than a metafor model object.}
+
+\item{stdy}{The name of the study variable, for colouring points. Only needed when providing a dataframe rather than a metafor model object.}
 
 \item{mod}{The name of a continuous moderator, to be plotted on the x-axis of the bubble plot.}
 
