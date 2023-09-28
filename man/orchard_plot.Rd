@@ -15,6 +15,7 @@ orchard_plot(
   cb = TRUE,
   k = TRUE,
   g = TRUE,
+  tree.order = NULL,
   trunk.size = 3,
   branch.size = 1.2,
   twig.size = 0.5,
@@ -52,6 +53,8 @@ orchard_plot(
 \item{k}{If \code{TRUE}, it displays k (number of effect sizes) on the plot.}
 
 \item{g}{If \code{TRUE}, it displays g (number of grouping levels for each level of the moderator) on the plot.}
+
+\item{tree.order}{Order in which to plot the groups of the moderator when it is a categorical one. Should be a vector of equal length to number of groups in the categorical moderator, in the desired order (bottom to top, or left to right for flipped orchard plot)}
 
 \item{trunk.size}{Size of the mean, or central point.}
 
