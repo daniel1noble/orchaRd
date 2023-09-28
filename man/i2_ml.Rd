@@ -4,14 +4,12 @@
 \alias{i2_ml}
 \title{i2_ml}
 \usage{
-i2_ml(model, method = c("ratio", "matrix"), data, boot = NULL)
+i2_ml(model, method = c("ratio", "matrix"), boot = NULL)
 }
 \arguments{
 \item{model}{Model object of class \code{rma.mv} or \code{rma}. Currently only model objects using the \code{mods} argument work (e.g., \code{mod = ~1}).}
 
 \item{method}{Method used to calculate I2. Two options exist: a ratio-based calculation proposed by Nakagawa & Santos (\code{"ratio"}), or Wolfgang Viechtbauer's matrix method (\code{"matrix"}).}
-
-\item{data}{Data frame used to fit the model.}
 
 \item{boot}{Number of simulations to run to produce 95 percent confidence intervals for I2. Default is \code{NULL}, where only the point estimate is provided.}
 }
