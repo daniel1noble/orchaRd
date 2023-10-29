@@ -116,7 +116,7 @@ In `orchaRd` version 2.1 and above, the data argument has now been removed from 
 
 ```{r echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE}
 
-model_results <- mod_results(english_MA, mod = "1", at = NULL,  group = "StudyNo")
+model_results <- orchaRd::mod_results(english_MA, mod = "1", at = NULL,  group = "StudyNo")
 model_results
  
 ```
