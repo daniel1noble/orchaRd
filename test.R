@@ -156,8 +156,8 @@ model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1
 model0 <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 | es_ID), method = "REML", test = "t", data = warm_dat,                               control=list(optimizer="optim", optmethod="Nelder-Mead"))
 
 
-orchard_plot(model, mod = "1", group = "group_ID", data = warm_dat, xlab = "lnRR")
-orchard_plot(model, mod = "experimental_design", group = "group_ID", data = warm_dat, xlab = "lnRR", colour = "mod")
+orchard_plot(model, mod = "1", group = "group_ID", xlab = "lnRR") + stat_function(fun = dnorm, colour = "black", args = list(mean = 0, sd = 1))
+orchard_plot(model, mod = "experimental_design", group = "group_ID", data = warm_dat, xlab = "lnRR", colour = "mod")  + theme(legend.position = "none")
 #test <- get_data_raw(model, mod = "1", group = "group_ID", data = warm_dat)
 #test <- mod_results(model, mod = "1", group = "group_ID", data = warm_dat)
 
