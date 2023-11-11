@@ -111,9 +111,9 @@ m1_ml <- function(model,
 ml_m1 <- function(model){
 
   # total m1
-  M1_total <- sqrt(sum(model$sigma2)) / (abs(model$beta[[1]]) + sqrt(sum(model$sigma2)))
+  M1_total <- sqrt(sum(model$sigma2)) / (abs(model$beta[[1]]) + sum(unlist(lapply(model$sigma2, sqrt))))
   # m1 at different levels
-  M1_each <-  sqrt(model$sigma2) / (abs(model$beta[[1]]) + sqrt(sum(model$sigma2)))
+  M1_each <-  sqrt(model$sigma2) / (abs(model$beta[[1]]) + sum(unlist(lapply(model$sigma2, sqrt))))
   names(M1_each) <- paste0("M1_", model$s.names)
   names(M1_total) <- "M1_Total"
 
