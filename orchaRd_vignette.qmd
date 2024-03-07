@@ -307,6 +307,18 @@ orchaRd::caterpillars(eklof_MR_result, mod = "Grazer.type", group = "ExptID", xl
 ```
 Like last time, we compare between @fig-Figure7 and @fig-Figure8. Again, they both look quite informative. 
 
+The last thing we can do is transform these data using the inverse logit scale.
+
+```{r, echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE}
+#| label: fig-Figure7perc
+#| fig-cap: "Orchard plots of the effects of predation on benthic invertebrate communities using the percentage difference."
+
+p6_per <- orchaRd::orchard_plot(eklof_MR0, mod = "Grazer.type",  group = "ExptID", xlab = "Percentage Change (%)", angle = 45, N = "N", g = FALSE, transfm = "percent") 
+
+p6_per
+
+```
+
 ## **Example 3: Maternal-Offspring Morphological Correlations**
 
 Finally, we also look at the case discussed by @Lim2014, who meta-analysed the strength of correlation between maternal and offspring size within-species, across a very wide range of taxa. They found, that typically, there is a moderate positive correlation between maternal size and offspring size within species (i.e. larger mothers have larger offspring). However, they also found evidence for relatively strong phylogenetic effects suggesting that the strength of the association is dependent on evolutionary lineage.

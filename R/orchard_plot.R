@@ -13,9 +13,9 @@
 #' @param cb If \code{TRUE}, it uses 20 colour blind friendly colors.
 #' @param k If \code{TRUE}, it displays k (number of effect sizes) on the plot.
 #' @param g If \code{TRUE}, it displays g (number of grouping levels for each level of the moderator) on the plot.
-#' @param transfm If set to \code{"tanh"}, a tanh transformation will be applied to effect sizes, converting Zr to a correlation or pulling in extreme values for other effect sizes (lnRR, lnCVR, SMD). Defaults to \code{"none"}.
+#' @param transfm If set to \code{"tanh"}, a tanh transformation will be applied to effect sizes, converting Zr to a correlation or pulling in extreme values for other effect sizes (lnRR, lnCVR, SMD).  \code{"invlogit"} can be used to convert lnRR to the inverse logit scale. \code{"percent"} can convert to the percentage change scale when using response ratios. Defaults to \code{"none"}.
 #' @param condition.lab Label for the condition being marginalized over.
-#' @param tree.order Order in which to plot the groups of the moderator when it is a categorical one. Should be a vector of equal length to number of groups in the categorical moderator, in the desired order (bottom to top, or left to right for flipped orchard plot) 
+#' @param tree.order Order in which to plot the groups of the moderator when it is a categorical one. Should be a vector of equal length to number of groups in the categorical moderator, in the desired order (bottom to top, or left to right for flipped orchard plot)
 #' @param trunk.size Size of the mean, or central point.
 #' @param branch.size Size of the confidence intervals.
 #' @param twig.size Size of the prediction intervals.
@@ -60,7 +60,7 @@
 orchard_plot <- function(object, mod = "1", group, xlab, N = NULL,
                          alpha = 0.5, angle = 90, cb = TRUE, k = TRUE, g = TRUE,
                          tree.order = NULL, trunk.size = 3, branch.size = 1.2, twig.size = 0.5,
-                         transfm = c("none", "tanh"), condition.lab = "Condition",
+                         transfm = c("none", "tanh", "invlogit"), condition.lab = "Condition",
                          legend.pos = c("bottom.right", "bottom.left",
                                         "top.right", "top.left",
                                         "top.out", "bottom.out",
@@ -98,7 +98,7 @@ orchard_plot <- function(object, mod = "1", group, xlab, N = NULL,
 
   data_trim$scale <- (1/sqrt(data_trim[,"vi"]))
 	legend <- "Precision (1/SE)"
-	
+
 	#if tree.order isn't equal to NULL, and length of tree order does not match number of categories in categorical moderator, then stop function and throw an error
 	if(!is.null(tree.order)&length(tree.order)!=nlevels(data_trim[,'moderator'])){
 	  stop("Length of 'tree.order' does not equal number of categories in moderator")
@@ -121,8 +121,26 @@ orchard_plot <- function(object, mod = "1", group, xlab, N = NULL,
 		mod_table[,cols] <- Zr_to_r(mod_table[,cols])
 		data_trim$yi <- Zr_to_r(data_trim$yi)
 		                  label <- xlab
-	}else{
-		label <- xlab
+	}
+
+	if(transfm == "invlogit"){
+
+	  cols <- sapply(mod_table, is.numeric)
+	  mod_table[,cols] <- lapply(mod_table[,cols], function(x) metafor::transf.ilogit(x))
+	  data_trim$yi <- metafor::transf.ilogit(data_trim$yi)
+	  label <- xlab
+	}
+
+	if(transfm == "percent"){
+
+	  cols <- sapply(mod_table, is.numeric)
+	  mod_table[,cols] <- lapply(mod_table[,cols], function(x) (exp(x) - 1)*100)
+	  data_trim$yi <- (exp(data_trim$yi) - 1)*100
+	  label <- xlab
+	}
+
+	if(transfm == "none"){
+	  label <- xlab
 	}
 
 	# Add in total effect sizes for each level
