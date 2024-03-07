@@ -307,7 +307,7 @@ orchaRd::caterpillars(eklof_MR_result, mod = "Grazer.type", group = "ExptID", xl
 ```
 Like last time, we compare between @fig-Figure7 and @fig-Figure8. Again, they both look quite informative. 
 
-The last thing we can do is transform these data using the inverse logit scale.
+The last thing we can do is transform these data using the percentage.
 
 ```{r, echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE}
 #| label: fig-Figure7perc
