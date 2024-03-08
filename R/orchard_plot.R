@@ -137,9 +137,7 @@ orchard_plot <- function(object, mod = "1", group, xlab, N = NULL,
 	  mod_table[,cols] <- lapply(mod_table[,cols], function(x) (exp(x) - 1)*100)
 	  data_trim$yi <- (exp(data_trim$yi) - 1)*100
 	  label <- xlab
-	}
-
-	if(transfm == "none"){
+	} else{
 	  label <- xlab
 	}
 
