@@ -203,7 +203,7 @@ p1 <- orchaRd::orchard_plot(res2,
 p2 <- orchaRd::orchard_plot(res3,
   mod = "ManipType", group = "StudyNo", xlab = "log(CV ratio) (lnCVR)")
 
-p1 / p2
+(p1 / p2)
 ```
 
 Our orchard plot for the log coefficient of variation demonstrates that, while restrictions on dietary quality and quantity do not affect the average age at death (top of @fig-Figure4), among-individual variation may be altered by quality restrictions (bottom of @fig-Figure4). The effect is negative suggesting that the coefficient of variation in the control group is lower than that in the treatment group, and the 95% CI does not span zero. Again though, the effect is heterogeneous; a substantial number of positive effects are still predicted. 
