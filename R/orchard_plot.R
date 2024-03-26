@@ -186,7 +186,7 @@ orchard_plot <- function(object, mod = "1", group, xlab, N = NULL,
 	     ggplot2::geom_linerange(data = mod_table, ggplot2::aes(x = name, ymin = lowerCL, ymax = upperCL),
 	                             size = branch.size, position = ggplot2::position_dodge2(width = 0.3)) +
 	     # drowning point estimate and PI
-	     ggplot2::geom_pointrange(data = mod_table, ggplot2::aes(y = estimate, x = name, ymin = lowerPR, ymax = upperPR,  shape = as.factor(condition), fill = color2), size = twig.size, position = ggplot2::position_dodge2(width = 0.3), fatten = trunk.size) +
+	     ggplot2::geom_pointrange(data = mod_table, ggplot2::aes(y = estimate, x = name, ymin = lowerPR, ymax = upperPR,  shape = as.factor(condition), fill = color2), size = trunk.size, position = ggplot2::position_dodge2(width = 0.3), fatten = twig.size) +
 	     # this will only work for up to 5 different conditions
 	     # flipping things around (I guess we could do use the same geoms but the below is the original so we should not change)
 	     ggplot2::scale_shape_manual(values =  20 + (1:condition_no))  +
@@ -215,7 +215,7 @@ orchard_plot <- function(object, mod = "1", group, xlab, N = NULL,
 	    # creating CI
 	    ggplot2::geom_linerange(data = mod_table, ggplot2::aes(x = name, ymin = lowerCL, ymax = upperCL), size = branch.size) +
 	    # drowning point estimate and PI
-	    ggplot2::geom_pointrange(data = mod_table, ggplot2::aes(y = estimate, x = name,  ymin = lowerPR, ymax = upperPR, fill = color2), size = twig.size, fatten = trunk.size, shape = 21) +
+	    ggplot2::geom_pointrange(data = mod_table, ggplot2::aes(y = estimate, x = name,  ymin = lowerPR, ymax = upperPR, fill = color2), size = trunk.size, fatten = twig.size, shape = 21) +
 	    ggplot2::theme_bw() +
 	    ggplot2::guides(fill = "none", colour = "none") +
 	    ggplot2::theme(legend.title = ggplot2::element_text(size = 9)) +
