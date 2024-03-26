@@ -126,8 +126,7 @@ If we instead want to create an orchard plot and visualise the results we can do
 ```{r, echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE}
 #| label: fig-Figure1
 #| fig-cap: "Orchard plot of the impact caloric restriction using standardised mean difference"
-orchaRd::orchard_plot(english_MA, mod="1", group = "StudyNo", xlab = "Standardised mean difference", 
-  transfm = "none") 
+orchaRd::orchard_plot(english_MA, mod="1", group = "StudyNo", xlab = "Standardised mean difference", transfm = "none", twig.size = 10) 
 ```
 
 In @fig-Figure1, we simply add in the metafor model and it will create a default orchard plot. Alternatively, we could also add in the table of results. Also. some people may wish to present the heterogeneity index, I^2^ and, at the same time, change the colours of the 'trunk and fruit' by adding a few arguments.
