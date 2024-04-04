@@ -53,7 +53,7 @@
 #' lim_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~Phylum-1, random=list(~1|Article,
 #' ~1|Datapoint), data=lim)
 #' orchard_plot(lim_MR, mod = "Phylum", group = "Article",
-#' xlab = "Correlation coefficient", transfm = "tanh", N = lim$N)
+#' xlab = "Correlation coefficient", transfm = "tanh", N = "N")
 #' }
 #' @export
 
