@@ -13,7 +13,7 @@
 #' @param cb If \code{TRUE}, it uses 20 colour blind friendly colors.
 #' @param k If \code{TRUE}, it displays k (number of effect sizes) on the plot.
 #' @param g If \code{TRUE}, it displays g (number of grouping levels for each level of the moderator) on the plot.
-#' @param transfm If set to \code{"tanh"}, a tanh transformation will be applied to effect sizes, converting Zr to a correlation or pulling in extreme values for other effect sizes (lnRR, lnCVR, SMD).  \code{"invlogit"} can be used to convert lnRR to the inverse logit scale. \code{"percent"} can convert to the percentage change scale when using response ratios. Defaults to \code{"none"}.
+#' @param transfm If set to \code{"tanh"}, a tanh transformation will be applied to effect sizes, converting Zr to a correlation or pulling in extreme values for other effect sizes (lnRR, lnCVR, SMD).  \code{"invlogit"} can be used to convert lnRR to the inverse logit scale. \code{"percentr"} can convert to the percentage change scale when using response ratios and \code{"percent"} can convert to the percentage change scale of an log transformed effect size. Defaults to \code{"none"}.
 #' @param condition.lab Label for the condition being marginalized over.
 #' @param tree.order Order in which to plot the groups of the moderator when it is a categorical one. Should be a vector of equal length to number of groups in the categorical moderator, in the desired order (bottom to top, or left to right for flipped orchard plot)
 #' @param trunk.size Size of the mean, or central point.
@@ -59,8 +59,8 @@
 
 orchard_plot <- function(object, mod = "1", group, xlab, N = NULL,
                          alpha = 0.5, angle = 90, cb = TRUE, k = TRUE, g = TRUE,
-                         tree.order = NULL, trunk.size = 3, branch.size = 1.2, twig.size = 0.5,
-                         transfm = c("none", "tanh", "invlogit"), condition.lab = "Condition",
+                         tree.order = NULL, trunk.size = 1, branch.size = 1.2, twig.size = 0.5,
+                         transfm = c("none", "tanh", "invlogit", "percent", "percentr"), condition.lab = "Condition",
                          legend.pos = c("bottom.right", "bottom.left",
                                         "top.right", "top.left",
                                         "top.out", "bottom.out",
@@ -131,11 +131,21 @@ orchard_plot <- function(object, mod = "1", group, xlab, N = NULL,
 	  label <- xlab
 	}
 
-	if(transfm == "percent"){
+	if(transfm == "percentr"){
 
 	  cols <- sapply(mod_table, is.numeric)
 	  mod_table[,cols] <- lapply(mod_table[,cols], function(x) (exp(x) - 1)*100)
 	  data_trim$yi <- (exp(data_trim$yi) - 1)*100
+	  label <- xlab
+	} 
+	
+
+	
+	if(transfm == "percent"){
+
+	  cols <- sapply(mod_table, is.numeric)
+	  mod_table[,cols] <- lapply(mod_table[,cols], function(x) (exp(x) - 1)*100)
+	  data_trim$yi <- (exp(data_trim$yi)*100)
 	  label <- xlab
 	} else{
 	  label <- xlab
