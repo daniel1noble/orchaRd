@@ -144,7 +144,7 @@ orchard_plot <- function(object, mod = "1", group, xlab, N = NULL,
 	if(transfm == "percent"){
 
 	  cols <- sapply(mod_table, is.numeric)
-	  mod_table[,cols] <- lapply(mod_table[,cols], function(x) (exp(x) - 1)*100)
+	  mod_table[,cols] <- lapply(mod_table[,cols], function(x) exp(x)*100)
 	  data_trim$yi <- (exp(data_trim$yi)*100)
 	  label <- xlab
 	} else{
