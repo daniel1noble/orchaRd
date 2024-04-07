@@ -15,6 +15,7 @@ bubble_plot(
   cb = TRUE,
   k = TRUE,
   g = FALSE,
+  transfm = c("none", "tanh", "invlogit", "percent", "percentr"),
   est.lwd = 1,
   ci.lwd = 0.5,
   pi.lwd = 0.5,
@@ -50,6 +51,8 @@ bubble_plot(
 \item{k}{If \code{TRUE}, it displays k (number of effect sizes) on the plot.}
 
 \item{g}{If \code{TRUE}, it displays g (number of grouping levels for each level of the moderator) on the plot.}
+
+\item{transfm}{If set to \code{"tanh"}, a tanh transformation will be applied to effect sizes, converting Zr to a correlation or pulling in extreme values for other effect sizes (lnRR, lnCVR, SMD).  \code{"invlogit"} can be used to convert lnRR to the inverse logit scale. \code{"percentr"} can convert to the percentage change scale when using response ratios and \code{"percent"} can convert to the percentage change scale of an log transformed effect size. Defaults to \code{"none"}.}
 
 \item{est.lwd}{Size of the point estimate.}
 

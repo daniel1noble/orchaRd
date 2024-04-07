@@ -6,6 +6,7 @@
 #' @param by Character vector indicating the name that predictions should be conditioned on for the levels of the moderator.
 #' @param at List of levels one wishes to predict at for the corresponding variables in \code{by}. Used when one wants marginalised means. This argument can also be used to suppress levels of the moderator when argument \code{subset = TRUE}. Provide a list as follows: \code{list(mod = c("level1", "level2"))}.
 #' @param weights How to marginalize categorical variables; used when one wants marginalised means. The default is \code{weights = "prop"}, which weights means for moderator levels based on their proportional representation in the data. For example, if \code{"sex"} is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal when, for example, males and females are typically roughly equally prevalent in a population. In cases such as these, you can give the moderator levels equal weight using \code{weights = "equal"}.
+#' @param transfm If set to \code{"tanh"}, a tanh transformation will be applied to effect sizes, converting Zr to a correlation or pulling in extreme values for other effect sizes (lnRR, lnCVR, SMD).  \code{"invlogit"} can be used to convert lnRR to the inverse logit scale. \code{"percentr"} can convert to the percentage change scale when using response ratios and \code{"percent"} can convert to the percentage change scale of an log transformed effect size. Defaults to \code{"none"}.
 #' @param xlab Moderator label.
 #' @param ylab Effect size measure label.
 #' @param k.pos The position of effect size number, k.
@@ -45,7 +46,7 @@
 # TODO - write to https://github.com/rvlenth/emmeans/issues (missing combinations or interaction not allowed)
 
 bubble_plot <- function(object, mod, group = NULL, xlab = "Moderator", ylab = "Effect size", N = "none",
-                        alpha = 0.5, cb = TRUE, k = TRUE, g = FALSE,
+                        alpha = 0.5, cb = TRUE, k = TRUE, g = FALSE, transfm = c("none", "tanh", "invlogit", "percent", "percentr"), 
                         est.lwd = 1, ci.lwd = 0.5, pi.lwd = 0.5,
                         est.col = "black", ci.col = "black", pi.col = "black",
                         legend.pos = c("top.left", "top.right",
@@ -59,6 +60,7 @@ bubble_plot <- function(object, mod, group = NULL, xlab = "Moderator", ylab = "E
                          #condition.lab = "Condition",
                         weights = "prop", by = NULL, at = NULL)
   {
+  transfm <- match.arg(NULL, choices = transfm)
   legend.pos <- match.arg(NULL, choices = legend.pos)
   k.pos <- match.arg(NULL, choices = k.pos)
   #facet <- match.arg(NULL, choices = facet)
@@ -100,15 +102,38 @@ bubble_plot <- function(object, mod, group = NULL, xlab = "Moderator", ylab = "E
     legend <- paste0("Sample Size ($\\textit{N}$)") # we want to use italic
   }
 
-  label <- xlab
-  # if(transfm == "tanh"){
-  #   cols <- sapply(mod_table, is.numeric)
-  #   mod_table[,cols] <- Zr_to_r(mod_table[,cols])
-  #   data_trim$yi <- Zr_to_r(data_trim$yi)
-  #   label <- xlab
-  # }else{
-  #   label <- xlab
-  # }
+  if(transfm == "tanh"){
+		                   cols <- sapply(mod_table, is.numeric)
+		mod_table[,cols] <- Zr_to_r(mod_table[,cols])
+		data_trim$yi <- Zr_to_r(data_trim$yi)
+		                  label <- xlab
+	}
+
+	if(transfm == "invlogit"){
+
+	  cols <- sapply(mod_table, is.numeric)
+	  mod_table[,cols] <- lapply(mod_table[,cols], function(x) metafor::transf.ilogit(x))
+	  data_trim$yi <- metafor::transf.ilogit(data_trim$yi)
+	  label <- xlab
+	}
+
+	if(transfm == "percentr"){
+
+	  cols <- sapply(mod_table, is.numeric)
+	  mod_table[,cols] <- lapply(mod_table[,cols], function(x) (exp(x) - 1)*100)
+	  data_trim$yi <- (exp(data_trim$yi) - 1)*100
+	  label <- xlab
+	} 
+	
+	if(transfm == "percent"){
+
+	  cols <- sapply(mod_table, is.numeric)
+	  mod_table[,cols] <- lapply(mod_table[,cols], function(x) exp(x)*100)
+	  data_trim$yi <- (exp(data_trim$yi)*100)
+	  label <- xlab
+	} else{
+	  label <- xlab
+	}
 
   if(is.null(data_trim$condition) == TRUE){
 
