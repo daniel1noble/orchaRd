@@ -578,7 +578,7 @@ As second example, we'll return back to @Pottier2021, who collected data on body
 mod.body_mass <-  metafor::rma.mv(yi = dARR, V = Var_dARR,mods= ~body_mass, method="REML", test="t", dfs="contain",
                            random=list(~1|species_ID, ~1|es_ID), data = pottier2)
 
-orchaRd::bubble_plot(mod.body_mass, mod = "body_mass", group = "species_ID", xlab = "Body mass (g)", ylab = "Acclimation Response Ratio (ARR)", legend.pos = "top.left", transfm = "tanh")
+orchaRd::bubble_plot(mod.body_mass, mod = "body_mass", group = "species_ID", xlab = "Body mass (g)", ylab = "Acclimation Response Ratio (ARR)", legend.pos = "top.left")
 
 ```
 
