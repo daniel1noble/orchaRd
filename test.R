@@ -71,7 +71,7 @@ model<-rma.mv(yi=yi, V=vi, mods= ~Environment*year, random=list(~1|Article,~1|Da
 #test <-emmeans(grid, specs = "year", by =  c("year", "Environment"))
 
 test <- mod_results(model, mod = "year", group = "Article", data = lim, weights = "prop", by = "Environment")
-bubble_plot(test, mod = "year", legend.pos = "top.left", group = "Article", g = T, data = lim)
+bubble_plot(test, mod = "year", legend.pos = "top.left", group = "Article", g = T, transfm = "percent")
 
 test2 <- mod_results(model, mod = "year", group = "Article", data = lim, weights = "prop")
 bubble_plot(test2, mod = "year", legend.pos = "top.left", group = "Article", g = T, data = lim)
