@@ -104,7 +104,7 @@ bubble_plot <- function(object, mod, group = NULL, xlab = "Moderator", ylab = "E
 
   if(transfm == "tanh"){
 		  cols <- which(colnames(mod_table) %in% c("condition", "moderator"))
-		mod_table[,!cols] <- Zr_to_r(mod_table[,!cols])
+		mod_table[,-cols] <- Zr_to_r(mod_table[,-cols])
 		data_trim$yi <- Zr_to_r(data_trim$yi)
 		                  label <- xlab
 	}
@@ -112,7 +112,7 @@ bubble_plot <- function(object, mod, group = NULL, xlab = "Moderator", ylab = "E
 	if(transfm == "invlogit"){
 
 	  cols <- which(colnames(mod_table) %in% c("condition", "moderator"))
-	  mod_table[,!cols] <- lapply(mod_table[,!cols], function(x) metafor::transf.ilogit(x))
+	  mod_table[,-cols] <- lapply(mod_table[,-cols], function(x) metafor::transf.ilogit(x))
 	  data_trim$yi <- metafor::transf.ilogit(data_trim$yi)
 	  label <- xlab
 	}
@@ -120,7 +120,7 @@ bubble_plot <- function(object, mod, group = NULL, xlab = "Moderator", ylab = "E
 	if(transfm == "percentr"){
 
 	  cols <- which(colnames(mod_table) %in% c("condition", "moderator"))
-	  mod_table[,!cols] <- lapply(mod_table[,!cols], function(x) (exp(x) - 1)*100)
+	  mod_table[,-cols] <- lapply(mod_table[,-cols], function(x) (exp(x) - 1)*100)
 	  data_trim$yi <- (exp(data_trim$yi) - 1)*100
 	  label <- xlab
 	} 
@@ -128,7 +128,7 @@ bubble_plot <- function(object, mod, group = NULL, xlab = "Moderator", ylab = "E
 	if(transfm == "percent"){
 
 	  cols <- which(colnames(mod_table) %in% c("condition", "moderator"))
-	  mod_table[,!cols] <- lapply(mod_table[,!cols], function(x) exp(x)*100)
+	  mod_table[,-cols] <- lapply(mod_table[,-cols], function(x) exp(x)*100)
 	  data_trim$yi <- (exp(data_trim$yi)*100)
 	  label <- xlab
 	} else{
@@ -353,3 +353,6 @@ bubble_plot <- function(object, mod, group = NULL, xlab = "Moderator", ylab = "E
 
   return(plot)
 }
+
+
+
