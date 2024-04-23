@@ -149,7 +149,7 @@ bubble_plot <- function(object, mod, group = NULL, xlab = "Moderator", ylab = "E
   }else{
 
     if(!is.null(cond_levels)){
-    data_trim$condition <- factor(data_trim$condition, levels = cond_levels, labels = cond_levels)
+    data_trim$condition <- factor(data_trim$condition, levels = cond_levels, labels = cond_levels, ordered = TRUE)
     } else {
     # making sure factor names match
     data_trim$condition <- factor(data_trim$condition, levels = mod_table$condition, labels = mod_table$condition)
