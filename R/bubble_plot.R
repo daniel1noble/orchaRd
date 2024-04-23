@@ -23,6 +23,7 @@
 #' @param pi.col Colour of the prediction interval.
 #' @param condition.nrow Number of rows to plot condition variable.
 #' @param legend.pos Where to place the legend, or not to include a legend ("none").
+#' @param cond_levels Order of the levels of the condition variable in the order to plot. Defaults to NULL.
 #'
 #' @return Orchard plot
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
@@ -58,7 +59,7 @@ bubble_plot <- function(object, mod, group = NULL, xlab = "Moderator", ylab = "E
                                   "none"),
                         condition.nrow = 2,
                          #condition.lab = "Condition",
-                        weights = "prop", by = NULL, at = NULL)
+                        weights = "prop", by = NULL, at = NULL, cond_levels = NULL)
   {
   transfm <- match.arg(NULL, choices = transfm)
   legend.pos <- match.arg(NULL, choices = legend.pos)
@@ -147,14 +148,19 @@ bubble_plot <- function(object, mod, group = NULL, xlab = "Moderator", ylab = "E
 
   }else{
 
-  # making sure factor names match
-  data_trim$condition <- factor(data_trim$condition, levels = mod_table$condition, labels = mod_table$condition)
-
+    if(!is.null(cond_levels)){
+    data_trim$condition <- factor(data_trim$condition, levels = cond_levels, labels = cond_levels)
+    } else {
+    # making sure factor names match
+    data_trim$condition <- factor(data_trim$condition, levels = mod_table$condition, labels = mod_table$condition)
+    }
+  
   effect_num <- as.vector(by(data_trim, data_trim[,"condition"], function(x) base::length(x[,"yi"])))
 
   # Add in total levels of a grouping variable (e.g., study ID) within each moderator level.
   #group_num <- c(2,4)
   group_num <- as.vector(by(data_trim, data_trim[,"condition"], function(x) base::length(base::unique(x[,"stdy"]))))
+
 
   dat_text <- data.frame(K = effect_num, G = group_num, condition = as.vector(base::levels(data_trim$condition)))
   }

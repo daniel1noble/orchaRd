@@ -28,7 +28,8 @@ bubble_plot(
   condition.nrow = 2,
   weights = "prop",
   by = NULL,
-  at = NULL
+  at = NULL,
+  cond_levels = NULL
 )
 }
 \arguments{
@@ -77,6 +78,8 @@ bubble_plot(
 \item{by}{Character vector indicating the name that predictions should be conditioned on for the levels of the moderator.}
 
 \item{at}{List of levels one wishes to predict at for the corresponding variables in \code{by}. Used when one wants marginalised means. This argument can also be used to suppress levels of the moderator when argument \code{subset = TRUE}. Provide a list as follows: \code{list(mod = c("level1", "level2"))}.}
+
+\item{cond_levels}{Order of the levels of the condition variable in the order to plot. Defaults to NULL.}
 }
 \value{
 Orchard plot
