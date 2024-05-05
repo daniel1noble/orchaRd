@@ -16,7 +16,7 @@ orchard_plot(
   k = TRUE,
   g = TRUE,
   tree.order = NULL,
-  trunk.size = 1,
+  trunk.size = 0.5,
   branch.size = 1.2,
   twig.size = 0.5,
   transfm = c("none", "tanh", "invlogit", "percent", "percentr"),
