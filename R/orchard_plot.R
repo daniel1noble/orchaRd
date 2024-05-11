@@ -192,7 +192,7 @@ orchard_plot <- function(object, mod = "1", group, xlab, N = NULL,
 	     ggplot2::scale_shape_manual(values =  20 + (1:condition_no))  +
 	     ggplot2::theme_bw() +
 	     ggplot2::guides(fill = "none", colour = "none") +
-	     ggplot2::theme(legend.position= c(0, 1), legend.justification = c(0, 1)) +
+	     ggplot2::theme(legend.position = c(0, 1), legend.justification = c(0, 1)) +
 	     ggplot2::theme(legend.title = ggplot2::element_text(size = 9)) +
 	     ggplot2::theme(legend.direction="horizontal") +
 	     ggplot2::theme(legend.background = ggplot2::element_blank()) +
