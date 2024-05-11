@@ -71,7 +71,7 @@ model<-rma.mv(yi=yi, V=vi, mods= ~Environment*year, random=list(~1|Article,~1|Da
 #test <-emmeans(grid, specs = "year", by =  c("year", "Environment"))
 
 test <- mod_results(model, mod = "year", group = "Article", data = lim, weights = "prop", by = "Environment")
-bubble_plot(test, mod = "year", legend.pos = "top.left", group = "Article", g = T, data = lim)
+bubble_plot(test, mod = "year", legend.pos = "top.left", group = "Article", g = T, transfm = "percent")
 
 test2 <- mod_results(model, mod = "year", group = "Article", data = lim, weights = "prop")
 bubble_plot(test2, mod = "year", legend.pos = "top.left", group = "Article", g = T, data = lim)
@@ -79,18 +79,19 @@ bubble_plot(test2, mod = "year", legend.pos = "top.left", group = "Article", g =
 ######################
 ## Bubble plot and hetero
 data(lim)
+
 lim[, "year"] <- as.numeric(lim$year)
 lim$vi<- 1/(lim$N - 3)
-model<-metafor::rma.mv(yi=yi, V=vi, mods= ~Amniotes*year,
-                       random=list(~1|Article,~1+Amniotes|Datapoint), rho = 0, str="HCS", data=na.omit(lim))
+lim = na.omit(lim)
 
 model<-metafor::rma.mv(yi~Amniotes*year, V=vi,
-                       random=list(~1|Article,~1+Amniotes|Datapoint), rho = 0, str="HCS", data=na.omit(lim))
+                       random=list(~1|Article,~1+Amniotes|Datapoint), rho = 0, str="HCS", data=lim)
 
 lim_bubble <- orchaRd::mod_results(model, mod = "year", group = "Article",
-                                   data = lim, weights = "prop", by = "Amniotes")
+                                   weights = "prop", by = "Amniotes")
 
-orchaRd::bubble_plot(lim_bubble, data = lim, group = "Article", mod = "year", xlab = "Year", legend.pos = "top.left")
+p1_lim <- bubble_plot(lim_bubble, group = "Article", mod = "year", xlab = "Year", legend.pos = "top.left")
+p2_lim <- bubble_plot(lim_bubble, group = "Article", mod = "year", xlab = "Year", legend.pos = "top.left", cond_levels = c("Y", "N"))
 
 ## Testing if categorical interactions are a problem. Note here that we get Warning message:
 # Redundant predictors dropped from the model. And then this fails. So, I think emmeans just can't have a situation where levels of one variable are dropped because they don't fit in the model. Should be easy to fix this by creating a interaction between two variables and fitting the model differently

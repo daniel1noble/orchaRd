@@ -16,10 +16,10 @@ orchard_plot(
   k = TRUE,
   g = TRUE,
   tree.order = NULL,
-  trunk.size = 3,
+  trunk.size = 0.5,
   branch.size = 1.2,
   twig.size = 0.5,
-  transfm = c("none", "tanh", "invlogit"),
+  transfm = c("none", "tanh", "invlogit", "percent", "percentr"),
   condition.lab = "Condition",
   legend.pos = c("bottom.right", "bottom.left", "top.right", "top.left", "top.out",
     "bottom.out", "none"),
@@ -62,7 +62,7 @@ orchard_plot(
 
 \item{twig.size}{Size of the prediction intervals.}
 
-\item{transfm}{If set to \code{"tanh"}, a tanh transformation will be applied to effect sizes, converting Zr to a correlation or pulling in extreme values for other effect sizes (lnRR, lnCVR, SMD).  \code{"invlogit"} can be used to convert lnRR to the inverse logit scale. \code{"percent"} can convert to the percentage change scale when using response ratios. Defaults to \code{"none"}.}
+\item{transfm}{If set to \code{"tanh"}, a tanh transformation will be applied to effect sizes, converting Zr to a correlation or pulling in extreme values for other effect sizes (lnRR, lnCVR, SMD).  \code{"invlogit"} can be used to convert lnRR to the inverse logit scale. \code{"percentr"} can convert to the percentage change scale when using response ratios and \code{"percent"} can convert to the percentage change scale of an log transformed effect size. Defaults to \code{"none"}.}
 
 \item{condition.lab}{Label for the condition being marginalized over.}
 
@@ -114,7 +114,7 @@ lim$vi<- 1/(lim$N - 3)
 lim_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~Phylum-1, random=list(~1|Article,
 ~1|Datapoint), data=lim)
 orchard_plot(lim_MR, mod = "Phylum", group = "Article",
-xlab = "Correlation coefficient", transfm = "tanh", N = lim$N)
+xlab = "Correlation coefficient", transfm = "tanh", N = "N")
 }
 }
 \author{

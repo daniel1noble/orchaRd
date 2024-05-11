@@ -142,7 +142,7 @@ In @fig-Figure1, we simply add in the metafor model and it will create a default
 I2 <- orchaRd::i2_ml(english_MA)
 
 orchaRd::orchard_plot(model_results, mod="1", xlab = "Standardised mean difference") + 
-  annotate(geom="text", x= 0.80, y= 1, label= paste0("italic(I)^{2} == ", round(I2[1],4)), 
+  annotate(geom="text", x= 0.80, y= 1, label= paste0("italic(I)^{2} == ", round(I2[1],4), "*\"%\""), 
               color="black", parse = TRUE, size = 5) +
   scale_fill_manual(values="grey") +
   scale_colour_manual(values="grey")
@@ -306,13 +306,13 @@ orchaRd::caterpillars(eklof_MR_result, mod = "Grazer.type", group = "ExptID", xl
 ```
 Like last time, we compare between @fig-Figure7 and @fig-Figure8. Again, they both look quite informative. 
 
-The last thing we can do is transform these data using the percentage.
+The last thing we can do is transform these data to percentage. You can also make other transformation depending on what effect size that you are working with, see `?orchard_plot`.
 
 ```{r, echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE}
 #| label: fig-Figure7perc
 #| fig-cap: "Orchard plots of the effects of predation on benthic invertebrate communities using the percentage difference."
 
-p6_per <- orchaRd::orchard_plot(eklof_MR0, mod = "Grazer.type",  group = "ExptID", xlab = "Percentage Change (%)", angle = 45, N = "N", g = FALSE, transfm = "percent") 
+p6_per <- orchaRd::orchard_plot(eklof_MR0, mod = "Grazer.type",  group = "ExptID", xlab = "Percentage Change (%)", angle = 45, N = "N", g = FALSE, transfm = "percentr") 
 
 p6_per
 
