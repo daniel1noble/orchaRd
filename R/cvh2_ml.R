@@ -1,7 +1,7 @@
-#' @title m1_ml
-#' @description M1 for mulilevel meta-analytic models, based on Yang et al. (2023). Under multilevel models, we can have multiple M1 - TODO - we need to cite original M1 paper
+#' @title cvh2_ml
+#' @description CVH2 for mulilevel meta-analytic models, based on Yang et al. (2023). Under multilevel models, we can have multiple CVH2. TODO - we need to cite original CVH2 paper
 #' @param model Model object of class \code{rma.mv} or \code{rma}. Currently only model objects using the \code{mods} argument work (e.g., \code{mod = ~1}).
-#' @param boot Number of simulations to run to produce 95 percent confidence intervals for M1. Default is \code{NULL}, where only the point estimate is provided.
+#' @param boot Number of simulations to run to produce 95 percent confidence intervals for I2. Default is \code{NULL}, where only the point estimate is provided.
 #' @return A data frame containing all the model results including mean effect size estimate, confidence, and prediction intervals
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
@@ -15,8 +15,8 @@
 #' m2i = MeanE, var.names=c("SMD","vSMD"),data = english)
 #' english_MA <- rma.mv(yi = SMD, V = vSMD,
 #' random = list( ~ 1 | StudyNo, ~ 1 | EffectID), data = english)
-#' M1_eng_1 <- m1_ml(english_MA, boot = 10)
-#' M1_eng_2 <- m1_ml(english_MA)
+#' CVH2_eng_1 <- cvh2_ml(english_MA, boot = 10)
+#' CVH2_eng_2 <- cvh2_ml(english_MA)
 #'
 #' ## Fish example
 #' data(fish)
@@ -26,8 +26,8 @@
 #' mods = ~ experimental_design + trait.type + deg_dif + treat_end_days,
 #' method = "REML", test = "t", data = warm_dat,
 #' control=list(optimizer="optim", optmethod="Nelder-Mead"))
-#' M1_fish_1 <- m1_ml(model, boot = 10)
-#' M1_fish_2 <- m1_ml(model)
+#' CVH2_fish_1 <- cvh2_ml(model, boot = 10)
+#' CVH2_fish_2 <- cvh2_ml(model)
 #'
 #' # Lim example
 #' data(lim)
@@ -36,28 +36,28 @@
 #' # Lets fit a meta-regression - I will do Article non-independence.
 #' The phylogenetic model found phylogenetic effects, however, instead we could fit Phylum as a fixed effect and explore them with an Orchard Plot
 #' lim_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~Phylum-1, random=list(~1|Article, ~1|Datapoint), data=lim)
-#' M1_lim_1 <- m1_ml(lim_MR, boot = 10)
-#' M1_lim_2 <- m1_ml(lim_MR)
+#' CVH2_lim_1 <- cvh2_ml(lim_MR, boot = 10)
+#' CVH2_lim_2 <- cvh2_ml(lim_MR)
 #' }
 #' @references TODO
 #' @export
 
-m1_ml <- function(model,
+cvh2_ml <- function(model,
                   boot = NULL) {
 
   if(all(class(model) %in% c("robust.rma", "rma.mv", "rma", "rma.uni")) == FALSE) {stop("Sorry, you need to fit a metafor model of class robust.rma, rma.mv, rma, rma.uni")}
 
-  if(any(model$tau2 > 0)) { stop("Sorry. At the moment m1_ml cannot take models with heterogeneous variance.")}
+  if(any(model$tau2 > 0)) { stop("Sorry. At the moment cvh2_ml cannot take models with heterogeneous variance.")}
 
-  M1s <- ml_m1(model)
+    CVH2s <- ml_cvh2(model)
 
-  # Extract the data from the model object
-  data <- model$data
+    # Extract the data from the model object
+    data <- model$data
 
-  # Check if missing values exist and use complete case data
-  if(any(model$not.na == FALSE)){
-    data <- data[model$not.na,]
-  }
+    # Check if missing values exist and use complete case data
+    if(any(model$not.na == FALSE)){
+      data <- data[model$not.na,]
+    }
 
   if(!is.null(boot)){
     # Simulate the vector of effect sizes
@@ -73,15 +73,15 @@ m1_ml <- function(model,
                                      format = "Bootstrapping [:bar] :percent ETA: :eta",
                                      show_after = 0)
     if(is.null(mods_formula)){
-      M1_each <- sapply(sim, function(ysim) {
+      CVH2_each <- sapply(sim, function(ysim) {
         tmp <- tryCatch(metafor::rma.mv(ysim, vi,
                                         random = random_formula, data = data))
         pb$tick()
         Sys.sleep(1/boot)
-        M1 <- ml_m1(tmp)
+        CVH2 <- ml_cvh2(tmp)
       })
     } else{
-      M1_each <- sapply(sim, function(ysim) {
+      CVH2_each <- sapply(sim, function(ysim) {
 
         # The model
         tmp <- tryCatch(metafor::rma.mv( ysim, vi,
@@ -90,35 +90,35 @@ m1_ml <- function(model,
                                          data = data))
         pb$tick()
         Sys.sleep(1 / boot)
-        M1 <- ml_m1(tmp)
-        return(M1) })
+        CVH2 <- ml_cvh2(tmp)
+        return(CVH2) })
     }
     # Summarise the bootstrapped distribution.
-    M1s_each_95 <- data.frame(t(apply(M1_each, 1, stats::quantile, probs=c(0.5, .025, .975))))
-    M1s <-  round(M1s_each_95, digits = 3)
-    colnames(M1s) = c("Est.", "2.5%", "97.5%")
+    CVH2s_each_95 <- data.frame(t(apply(CVH2_each, 1, stats::quantile, probs=c(0.5, .025, .975))))
+    CVH2s <-  round(CVH2s_each_95, digits = 3)
+    colnames(CVH2s) = c("Est.", "2.5%", "97.5%")
   }
 
-  return(M1s)
+  return(CVH2s)
 }
 
 
-#' @title ml_m1
-#' @description Calculated CV for mulilevel meta-analytic models
+#' @title ml_cvh2
+#' @description Calculated CVH2 for mulilevel meta-analytic models
 #' @param model Model object of class \code{rma.mv} or \code{rma}.
 #' @export
 
-ml_m1 <- function(model){
+ml_cvh2 <- function(model){
 
-  # total m1
-  M1_total <- sqrt(sum(model$sigma2)) / (abs(model$beta[[1]]) + sqrt(sum(model$sigma2)))
-  # m1 at different levels
-  M1_each <-  sqrt(model$sigma2) / (abs(model$beta[[1]]) + sqrt(sum(model$sigma2)))
-  names(M1_each) <- paste0("M1_", model$s.names)
-  names(M1_total) <- "M1_Total"
+ # total cvh2
+ CVH2_total <- sum(model$sigma2) / (model$beta[[1]])^2
+ # cvh2 at different levels
+ CVH2_each <-  model$sigma2 / (model$beta[[1]])^2
+ names(CVH2_each) <- paste0("CVH2_", model$s.names)
+ names(CVH2_total) <- "CVH2_Total"
 
-  M1s <- c(M1_total, M1_each)
+ CVH2s <- c(CVH2_total, CVH2_each)
 
-  return(M1s)
+ return(CVH2s)
 }
 

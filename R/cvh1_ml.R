@@ -1,5 +1,5 @@
-#' @title cv_ml
-#' @description CV (I-squared) for mulilevel meta-analytic models, based on Yang et al. (2023). Under multilevel models, we can have multiple CV. TODO - we need to cite original CV paper
+#' @title cvh1_ml
+#' @description CVH1 for mulilevel meta-analytic models, based on Yang et al. (2023). Under multilevel models, we can have multiple CVH1. TODO - we need to cite original CVH1 paper
 #' @param model Model object of class \code{rma.mv} or \code{rma}. Currently only model objects using the \code{mods} argument work (e.g., \code{mod = ~1}).
 #' @param boot Number of simulations to run to produce 95 percent confidence intervals for I2. Default is \code{NULL}, where only the point estimate is provided.
 #' @return A data frame containing all the model results including mean effect size estimate, confidence, and prediction intervals
@@ -15,8 +15,8 @@
 #' m2i = MeanE, var.names=c("SMD","vSMD"),data = english)
 #' english_MA <- rma.mv(yi = SMD, V = vSMD,
 #' random = list( ~ 1 | StudyNo, ~ 1 | EffectID), data = english)
-#' CV_eng_1 <- cv_ml(english_MA, boot = 10)
-#' CV_eng_2 <- cv_ml(english_MA)
+#' CVH1_eng_1 <- cvh1_ml(english_MA, boot = 10)
+#' CVH1_eng_2 <- cvh1_ml(english_MA)
 #'
 #' ## Fish example
 #' data(fish)
@@ -26,8 +26,8 @@
 #' mods = ~ experimental_design + trait.type + deg_dif + treat_end_days,
 #' method = "REML", test = "t", data = warm_dat,
 #' control=list(optimizer="optim", optmethod="Nelder-Mead"))
-#' CV_fish_1 <- cv_ml(model, boot = 10)
-#' CV_fish_2 <- cv_ml(model)
+#' CVH1_fish_1 <- cvh1_ml(model, boot = 10)
+#' CVH1_fish_2 <- cvh1_ml(model)
 #'
 #' # Lim example
 #' data(lim)
@@ -36,20 +36,20 @@
 #' # Lets fit a meta-regression - I will do Article non-independence.
 #' The phylogenetic model found phylogenetic effects, however, instead we could fit Phylum as a fixed effect and explore them with an Orchard Plot
 #' lim_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~Phylum-1, random=list(~1|Article, ~1|Datapoint), data=lim)
-#' CV_lim_1 <- cv_ml(lim_MR, boot = 10)
-#' CV_lim_2 <- cv_ml(lim_MR)
+#' CVH1_lim_1 <- cvh1_ml(lim_MR, boot = 10)
+#' CVH1_lim_2 <- cvh1_ml(lim_MR)
 #' }
 #' @references TODO
 #' @export
 
-cv_ml <- function(model,
+cvh1_ml <- function(model,
                   boot = NULL) {
 
   if(all(class(model) %in% c("robust.rma", "rma.mv", "rma", "rma.uni")) == FALSE) {stop("Sorry, you need to fit a metafor model of class robust.rma, rma.mv, rma, rma.uni")}
 
-  if(any(model$tau2 > 0)) { stop("Sorry. At the moment cv_ml cannot take models with heterogeneous variance.")}
+  if(any(model$tau2 > 0)) { stop("Sorry. At the moment cvh1_ml cannot take models with heterogeneous variance.")}
 
-    CVs <- ml_cv(model)
+    CVH1s <- ml_cvh1(model)
 
     # Extract the data from the model object
     data <- model$data
@@ -73,15 +73,15 @@ cv_ml <- function(model,
                                      format = "Bootstrapping [:bar] :percent ETA: :eta",
                                      show_after = 0)
     if(is.null(mods_formula)){
-      CV_each <- sapply(sim, function(ysim) {
+      CVH1_each <- sapply(sim, function(ysim) {
         tmp <- tryCatch(metafor::rma.mv(ysim, vi,
                                         random = random_formula, data = data))
         pb$tick()
         Sys.sleep(1/boot)
-        CV <- ml_cv(tmp)
+        CVH1 <- ml_cvh1(tmp)
       })
     } else{
-      CV_each <- sapply(sim, function(ysim) {
+      CVH1_each <- sapply(sim, function(ysim) {
 
         # The model
         tmp <- tryCatch(metafor::rma.mv( ysim, vi,
@@ -90,35 +90,35 @@ cv_ml <- function(model,
                                          data = data))
         pb$tick()
         Sys.sleep(1 / boot)
-        CV <- ml_cv(tmp)
-        return(CV) })
+        CVH1 <- ml_cvh1(tmp)
+        return(CVH1) })
     }
     # Summarise the bootstrapped distribution.
-    CVs_each_95 <- data.frame(t(apply(CV_each, 1, stats::quantile, probs=c(0.5, .025, .975))))
-    CVs <-  round(CVs_each_95, digits = 3)
-    colnames(CVs) = c("Est.", "2.5%", "97.5%")
+    CVH1s_each_95 <- data.frame(t(apply(CVH1_each, 1, stats::quantile, probs=c(0.5, .025, .975))))
+    CVH1s <-  round(CVH1s_each_95, digits = 3)
+    colnames(CVH1s) = c("Est.", "2.5%", "97.5%")
   }
 
-  return(CVs)
+  return(CVH1s)
 }
 
 
-#' @title ml_cv
-#' @description Calculated CV for mulilevel meta-analytic models
+#' @title ml_cvh1
+#' @description Calculated CVH1 for mulilevel meta-analytic models
 #' @param model Model object of class \code{rma.mv} or \code{rma}.
 #' @export
 
-ml_cv <- function(model){
+ml_cvh1 <- function(model){
 
- # total cv
- CV_total <- sqrt(sum(model$sigma2)) / abs(model$beta[[1]])
- # cv at different levels
- CV_each <-  sqrt(model$sigma2) / abs(model$beta[[1]])
- names(CV_each) <- paste0("CV_", model$s.names)
- names(CV_total) <- "CV_Total"
+ # total cvh1
+ CVH1_total <- sqrt(sum(model$sigma2)) / abs(model$beta[[1]])
+ # cvh1 at different levels
+ CVH1_each <-  sqrt(model$sigma2) / abs(model$beta[[1]])
+ names(CVH1_each) <- paste0("CVH1_", model$s.names)
+ names(CVH1_total) <- "CVH1_Total"
 
- CVs <- c(CV_total, CV_each)
+ CVH1s <- c(CVH1_total, CVH1_each)
 
- return(CVs)
+ return(CVH1s)
 }
 
