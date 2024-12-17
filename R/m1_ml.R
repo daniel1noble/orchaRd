@@ -104,7 +104,7 @@ m1_ml <- function(model,
 
 
 #' @title ml_m1
-#' @description Calculated CV for mulilevel meta-analytic models
+#' @description Calculated M1 for mulilevel meta-analytic models
 #' @param model Model object of class \code{rma.mv} or \code{rma}.
 #' @export
 
