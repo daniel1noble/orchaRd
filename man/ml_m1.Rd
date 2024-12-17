@@ -10,5 +10,5 @@ ml_m1(model)
 \item{model}{Model object of class \code{rma.mv} or \code{rma}.}
 }
 \description{
-Calculated CV for mulilevel meta-analytic models
+Calculated M1 for mulilevel meta-analytic models
 }
