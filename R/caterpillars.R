@@ -129,7 +129,7 @@ caterpillars <- function(object, mod = "1",  group, xlab, overall = TRUE, transf
   plot <- ggplot2::ggplot(data = data, ggplot2::aes(x = yi, y = Y)) +
     # 95 % CI
     ggplot2::geom_errorbarh(ggplot2::aes(xmin = lower, xmax = upper),
-                            colour = colerrorbar, height = 0, show.legend = FALSE, size = 0.5, alpha = 0.6) +
+                            colour = colerrorbar, height = 0, show.legend = FALSE, linewidth = 0.5, alpha = 0.6) +
     ggplot2::geom_vline(xintercept = 0, linetype = 2, colour = "black", alpha = 0.5) +
     # creating dots for point estimates
     ggplot2::geom_point(colour = colpoint, size = 1) +

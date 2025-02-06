@@ -251,13 +251,13 @@ bubble_plot <- function(object, mod, group = NULL, xlab = "Moderator", ylab = "E
 
   # adding legend
   if(legend.pos == "bottom.right"){
-    plot <- plot + ggplot2::theme(legend.position= c(1, 0), legend.justification = c(1, 0))
+    plot <- plot + ggplot2::theme(legend.position.inside = c(1, 0), legend.justification = c(1, 0))
   } else if ( legend.pos == "bottom.left") {
-    plot <- plot + ggplot2::theme(legend.position= c(0, 0), legend.justification = c(0, 0))
+    plot <- plot + ggplot2::theme(legend.position.inside = c(0, 0), legend.justification = c(0, 0))
   } else if ( legend.pos == "top.right") {
-    plot <- plot + ggplot2::theme(legend.position= c(1, 1), legend.justification = c(1, 1))
+    plot <- plot + ggplot2::theme(legend.position.inside = c(1, 1), legend.justification = c(1, 1))
   } else if (legend.pos == "top.left") {
-    plot <- plot + ggplot2::theme(legend.position= c(0, 1), legend.justification = c(0, 1))
+    plot <- plot + ggplot2::theme(legend.position.inside = c(0, 1), legend.justification = c(0, 1))
   } else if (legend.pos == "top.out") {
     plot <- plot + ggplot2::theme(legend.position="top")
   } else if (legend.pos == "bottom.out") {
