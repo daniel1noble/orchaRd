@@ -250,21 +250,16 @@ bubble_plot <- function(object, mod, group = NULL, xlab = "Moderator", ylab = "E
   }
 
   # adding legend
-  if(legend.pos == "bottom.right"){
-    plot <- plot + ggplot2::theme(legend.position.inside = c(1, 0), legend.justification = c(1, 0))
-  } else if ( legend.pos == "bottom.left") {
-    plot <- plot + ggplot2::theme(legend.position.inside = c(0, 0), legend.justification = c(0, 0))
-  } else if ( legend.pos == "top.right") {
-    plot <- plot + ggplot2::theme(legend.position.inside = c(1, 1), legend.justification = c(1, 1))
-  } else if (legend.pos == "top.left") {
-    plot <- plot + ggplot2::theme(legend.position.inside = c(0, 1), legend.justification = c(0, 1))
-  } else if (legend.pos == "top.out") {
-    plot <- plot + ggplot2::theme(legend.position="top")
-  } else if (legend.pos == "bottom.out") {
-    plot <- plot + ggplot2::theme(legend.position="bottom")
-  } else if (legend.pos == "none") {
-    plot <- plot + ggplot2::theme(legend.position="none")
-  }
+  plot <- switch(legend.pos,
+    "bottom.right" = plot + ggplot2::theme(legend.position = "inside", legend.justification = c(1, 0)),
+    "bottom.left"  = plot + ggplot2::theme(legend.position = "inside", legend.justification = c(0, 0)),
+    "top.right"    = plot + ggplot2::theme(legend.position = "inside", legend.justification = c(1, 1)),
+    "top.left"     = plot + ggplot2::theme(legend.position = "inside", legend.justification = c(0, 1)),
+    "top.out"      = plot + ggplot2::theme(legend.position = "top"),
+    "bottom.out"   = plot + ggplot2::theme(legend.position = "bottom"),
+    "none"         = plot + ggplot2::theme(legend.position = "none"),
+    plot
+  )
 
   # putting k and g in
   # c("top.right", "top.left", "bottom.right", "bottom.left","none")
