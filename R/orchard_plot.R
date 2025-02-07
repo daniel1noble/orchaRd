@@ -241,22 +241,17 @@ orchard_plot <- function(object, mod = "1", group, xlab, N = NULL,
 	}
 	 }
 
-	   # adding legend
-	 if(legend.pos == "bottom.right"){
-	   plot <- plot + ggplot2::theme(legend.position= c(1, 0), legend.justification = c(1, 0))
-	 } else if ( legend.pos == "bottom.left") {
-	   plot <- plot + ggplot2::theme(legend.position= c(0, 0), legend.justification = c(0, 0))
-	 } else if ( legend.pos == "top.right") {
-	   plot <- plot + ggplot2::theme(legend.position= c(1, 1), legend.justification = c(1, 1))
-	 } else if (legend.pos == "top.left") {
-	   plot <- plot + ggplot2::theme(legend.position= c(0, 1), legend.justification = c(0, 1))
-	 } else if (legend.pos == "top.out") {
-	   plot <- plot + ggplot2::theme(legend.position="top")
-	 } else if (legend.pos == "bottom.out") {
-	   plot <- plot + ggplot2::theme(legend.position="bottom")
-	 } else if (legend.pos == "none") {
-	   plot <- plot + ggplot2::theme(legend.position="none")
-	 }
+	 # Add legend
+	 plot <- switch(legend.pos,
+	                "bottom.right" = plot + ggplot2::theme(legend.position = "inside", legend.justification = c(1, 0)),
+	                "bottom.left"  = plot + ggplot2::theme(legend.position = "inside", legend.justification = c(0, 0)),
+	                "top.right"    = plot + ggplot2::theme(legend.position = "inside", legend.justification = c(1, 1)),
+	                "top.left"     = plot + ggplot2::theme(legend.position = "inside", legend.justification = c(0, 1)),
+	                "top.out"      = plot + ggplot2::theme(legend.position = "top"),
+	                "bottom.out"   = plot + ggplot2::theme(legend.position = "bottom"),
+	                "none"         = plot + ggplot2::theme(legend.position = "none"),
+	                plot
+	 )
 
 	  # putting colors in
 	  if(cb == TRUE){
