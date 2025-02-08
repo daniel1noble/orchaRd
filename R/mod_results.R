@@ -193,41 +193,44 @@ if(any(model$not.na == FALSE)){
 #' @export
 
 
-pred_interval_esmeans <- function(model, mm, mod, ...){
+pred_interval_esmeans <- function(model, mm, mod, ...) {
+  tmp <- summary(mm)
+  tmp <- tmp[ , ]
+  test.stat <- qt(0.975, tmp$df[[1]])
 
-        tmp <- summary(mm)
-        tmp <- tmp[ , ]
-  test.stat <- stats::qt(0.975, tmp$df[[1]])
+  # NOTE: this should fix #46.
+  # Other issue is how this plays with different rma. objects.
+  # uni models will treat slots for gamma NULL and we need to deal with this.
 
-  if(length(model$tau2) <= 1 | length(model$gamma2) <= 1){ # Note this should fix #46 but code is repetitive and needs to be cleaned up. Other issue is how this plays with different rma. objects. uni models will treat slots for gamma NULL and we need to deal with this. 
-                 sigmas <- sum(model$sigma2)
-                 taus   <- model$tau2
-                 gamma2 <- ifelse(is.null(model$gamma2), 0, model$gamma2)
-                     PI <- test.stat * base::sqrt(tmp$SE^2 + sigmas + taus + gamma2)
-        } else {
-                 sigmas <- sum(model$sigma2)
-                 taus   <- model$tau2
-                 gammas <- model$gamma2
-                  w_tau <- model$g.levels.k
-                w_gamma <- model$g.levels.k
+  se2    <- tmp$SE^2
+  sigmas <- sum(model$sigma2)
+  taus   <- model$tau2
+  gammas <- model$gamma2
 
-            if(mod == "1"){
-                tau <- weighted_var(taus, weights = w_tau)
-              gamma <- weighted_var(gamma, weights = w_gamma)
-                     PI <- test.stat * sqrt(tmp$SE^2 + sigmas + tau + gamma)
+  if (length(taus) <= 1 || length(gammas) <= 1) {
+    tau_val   <- taus
+    gamma_val <- ifelse(is.null(gammas), 0, gammas)
+  } else {
+    if (mod == "1") {
+      tau_val   <- weighted_var(taus,   weights = model$g.levels.k)
+      gamma_val <- weighted_var(gammas, weights = model$g.levels.k)
+    } else {
+      tau_val   <- taus
+      gamma_val <- gammas
+    }
+  }
 
-            } else {
-               PI <- test.stat * sqrt(tmp$SE^2 + sigmas + taus + gammas)
-            }
-        }
+  PI <- test.stat * sqrt(se2 + sigmas + tau_val + gamma_val)
 
   tmp$lower.PI <- tmp$emmean - PI
   tmp$upper.PI <- tmp$emmean + PI
 
   # renaming "overall" to ""
-  if(tmp[1,1] == "overall"){tmp[,1] <- "intrcpt"}
+  if (tmp[1, 1] == "overall") {
+    tmp[, 1] <- "intrcpt"
+  }
 
-return(tmp)
+  return(tmp)
 }
 
 #' @title get_data_raw
@@ -424,16 +427,15 @@ weighted_var <- function(x, weights){
 #' num_studies(model$data, experimental_design, group_ID)
 #' }
 
-num_studies <- function(data, mod, group){
-
+num_studies <- function(data, mod, group) {
   # Summarize the number of studies within each level of moderator
-   table <- data        %>%
-            dplyr::group_by({{mod}}) %>%
-            dplyr::summarise(stdy = length(unique({{group}})))
+  table <- data |>
+    dplyr::group_by({{mod}}) |>
+    dplyr::summarise(stdy = length(unique({{group}})))
 
-   table <- table[!is.na(table$moderator),]
+  table <- table[!is.na(table$moderator), ]
   # Rename, and return
-    colnames(table) <- c("Parameter", "Num_Studies")
-      return(data.frame(table))
+  colnames(table) <- c("Parameter", "Num_Studies")
 
+  return(data.frame(table))
 }
