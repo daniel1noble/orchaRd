@@ -29,7 +29,7 @@ res_loo %>%
                   xmin = -Inf, xmax = Inf,  # Covers all paper IDs (after coord_flip)
                   ymin = res$ci.lb[1], 
                   ymax = res$ci.ub[1], 
-                  alpha = 0.5, fill = "gray")
+                  alpha = 0.2, fill = "gray") +
   # Add solid line for the estimated overall effect
   ggplot2::geom_hline(yintercept = res$b[1], linetype = "solid") +
   # Add dotted lines for the estimated confidence interval
@@ -40,10 +40,30 @@ res_loo %>%
   ggplot2::theme_bw() +
   ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1),
                  panel.grid  = ggplot2::element_blank()) +
-  ggplot2::coord_flip() +
+  ggplot2::coord_flip() 
 
 
 load_all()
 
 
-loo_plot(res, res_loo)
+loo_plot(res, res_loo, order = "descend")
+
+
+
+
+dat <- metafor::escalc(measure="RR", ai=tpos, bi=tneg, ci=cpos, di=cneg, data=dat.bcg)
+
+res <- metafor::rma(yi, vi, data=dat)
+
+labels_df <- dat.bcg %>%
+  dplyr::distinct(trial, .keep_all = TRUE) %>%
+  dplyr::mutate(left_out = trial, 
+                label    = paste(author, year, sep=", ")) %>%
+  dplyr::select(left_out, label)
+
+
+res_loo <- leave_one_out(res, group = "trial")
+
+loo_plot(res, res_loo, order = "alphabetic", labels = labels_df) +
+  geom_hline(yintercept = 0, linetype = "dotted") 
+

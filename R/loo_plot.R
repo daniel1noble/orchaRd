@@ -1,4 +1,4 @@
-#' Leave-One-Out Plot
+#' Leave-One-Out plot
 #'
 #' Create a leave-one-out sensitivity plot for a meta-analytic model.
 #'
@@ -51,19 +51,14 @@ loo_plot <- function(model, loo_dataframe,
   
   order <- match.arg(order)
   
-  # If a mapping data frame is provided, merge it with the main data.
+  # If a 'labels' data frame is provided, merge it with the main data.
   if (!is.null(labels)) {
     if (!is.data.frame(labels) || !all(c("left_out", "label") %in% names(labels))) {
-      stop("When provided, 'labels' must be a data frame with columns 'left_out' and 'label'.")
+      stop("'labels' must be a data frame with columns 'left_out' and 'label'. See ?loo_plot")
     }
-    # Merge using base R merge for simplicity.
+    # Merge the labels data frame and replace left_out values with the friendly labels.
     loo_dataframe <- merge(loo_dataframe, labels, by = "left_out", all.x = TRUE)
-    # Replace left_out values with the friendly labels when available.
-    loo_dataframe$left_out <- ifelse(is.na(loo_dataframe$label),
-                                     as.character(loo_dataframe$left_out),
-                                     loo_dataframe$label)
-    # Drop the extra label column.
-    loo_dataframe$label <- NULL
+    loo_dataframe$left_out <- as.character(loo_dataframe$label)
   } else {
     # Default cleaning if no mapping is provided: replace underscores with spaces and convert to title case.
     loo_dataframe$left_out <- as.character(loo_dataframe$left_out)
