@@ -27,7 +27,7 @@ res
 
 ```{r}
 # This gives the same result than leave1out from metafor, but only includes
-# beta and confidence interval. Also, the output is a data frame (not like leave1out),
+# beta and confidence interval. Also, the output is a data frame (not like metafor's leave1out),
 # so it is ready for plotting.
 res_loo <- leave_one_out(res, group = "trial")
 res_loo
