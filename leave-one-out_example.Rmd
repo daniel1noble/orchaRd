@@ -1,0 +1,92 @@
+---
+title: "Leave-one-out test"
+author: "fd"
+date: "2025-02-14"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(metafor)
+library(devtools)
+```
+
+
+```{r}
+load_all() # Load dev package
+```
+
+# Example using the BCG vaccine data from metafor
+
+```{r}
+dat <- metafor::escalc(measure = "RR", ai = tpos, bi = tneg, ci = cpos, di = cneg, data = dat.bcg)
+res <- metafor::rma(yi, vi, data = dat)
+res
+```
+
+```{r}
+# This gives the same result than leave1out from metafor, but only includes
+# beta and confidence interval. Also, the output is a data frame (not like leave1out),
+# so it is ready for plotting.
+res_loo <- leave_one_out(res, group = "trial")
+res_loo
+```
+
+
+```{r}
+# Create a mapping of trial codes to friendly labels.
+# This step could also be done in a spreadsheet and read in as a CSV.
+labels_df <- dat.bcg %>%
+  dplyr::distinct(trial, .keep_all = TRUE) %>%
+  dplyr::mutate(left_out = trial,
+                label = paste(author, year, sep = ", ")) %>%
+  dplyr::select(left_out, label)
+
+# Create the leave-one-out plot using custom labels and descending order.
+loo_plot(res, res_loo, order = "descending", labels = labels_df) +
+  ggplot2::labs(x = "Risk ratio", y = "Trial") 
+```
+
+# Example with multilevel meta-analytic model and variance-covariance matrix
+
+```{r}
+VCV <- vcalc(vi      = lnrr_vi,
+             cluster = paper_ID,
+             obs     = es_ID,
+             rho     = 0.5,
+             data    = fish)
+
+res <- rma.mv(lnrr, VCV,
+              random = list( ~ 1 | es_ID,
+                             ~ 1 | paper_ID),
+              data = fish)
+
+res
+```
+
+```{r}
+# Pass a list of arguments so it can compute the variance-covariance matrix
+# in each iteration. This could be more user-friendly
+
+vcv_args = list(vi      = "lnrr_vi",
+                cluster = "paper_ID",
+                obs     = "es_ID",
+                rho     = 0.5)
+
+
+# This takes more time...
+loo_res <- leave_one_out(res, group = "paper_ID", vcalc = vcv_args)
+```
+
+```{r}
+head(loo_res)
+```
+
+
+```{r}
+loo_plot(res, loo_res, order = "ascending", labels = NULL) +
+  ggplot2::labs(x = "lnRR", y = "Paper ID")
+```
+
+
