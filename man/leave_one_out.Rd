@@ -4,7 +4,7 @@
 \alias{leave_one_out}
 \title{Leave-One-Out Analysis for Meta-Analytic Models}
 \usage{
-leave_one_out(model, group)
+leave_one_out(model, group, vcalc = NULL)
 }
 \arguments{
 \item{model}{A meta-analytic model fitted using **metafor**.}

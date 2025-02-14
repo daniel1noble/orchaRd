@@ -26,7 +26,7 @@
 #'
 #' @export
 
-leave_one_out <- function(model, group) {
+leave_one_out <- function(model, group, vcalc = NULL) {
   # Validate inputs
   if (!inherits(model, c("rma.mv", "rma", "rma.uni"))) {
     stop("Model must be a metafor rma object", call. = FALSE)
@@ -35,7 +35,17 @@ leave_one_out <- function(model, group) {
     stop(sprintf("Group variable '%s' not found in model data", group), call. = FALSE) 
   }
 
-  models_outputs <- run_leave1out(model, group)
+  #
+  # TODO: Should validate vcalc here!!
+  #
+  if (!is.null(vcalc)) {
+    if (!is.list(vcalc)) {
+      stop("vcalc must be a list with the arguments for the 'vcalc' function: e.g., vcalc = list(vi = lnrr_vi, cluster = 'paper_ID', obs = 'es_ID', rho = 0.5)",
+           call. = FALSE)
+    }
+  }
+
+  models_outputs <- run_leave1out(model, group, vcalc)
   loo_dataframe <- models_to_dataframe(models_outputs)
   return(loo_dataframe)
 }
@@ -60,7 +70,7 @@ leave_one_out <- function(model, group) {
 #'
 #' @keywords internal
 
-run_leave1out <- function(model, group) {
+run_leave1out <- function(model, group, vcalc = NULL) {
   group_ids <- unique(model$data[[group]])
   if (length(group_ids) < 2) {
     stop("Need at least 2 groups for leave-one-out analysis", call. = FALSE)
@@ -72,7 +82,25 @@ run_leave1out <- function(model, group) {
     new_data <- subset(model$data, model$data[[group]] != id_left_out)
 
     tmp_res <- tryCatch({
-      update(tmp_model, data = new_data)
+      # If vcalc is provided, calculate the VCV matrix
+      if (!is.null(vcalc)) {
+        #
+        #
+        # TODO: This part is a mess, should be cleaned up
+        # WARNING: 
+        # There is no validation of the vcalc arguments, so careful with that axe eugene!
+        #
+        tmp_VCV <- vcalc(vi      = new_data[[vcv_args$vi]],
+                         cluster = new_data[[vcv_args$cluster]],
+                         obs     = new_data[[vcv_args$obs]],
+                         data    = new_data,
+                         rho     = vcv_args$rho)
+        update(tmp_model, data = new_data, V = tmp_VCV)
+
+      } else {
+        # If no variance-covariance matrix is needed, just update the model
+        update(tmp_model, data = new_data)
+      }
     }, error = function(e) {
       warning(sprintf("Error fitting model when leaving out '%s': %s",
                       id_left_out,

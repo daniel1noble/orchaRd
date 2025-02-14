@@ -1,69 +1,80 @@
 library(devtools)
 library(metafor)
+library(tidyverse)
 
 
 load_all()
 
-res <- rma.mv(lnrr, lnrr_vi,
+# Let's see if by changhin the model data, the VCV should be computed again or not
+
+VCV <- vcalc(lnrr_vi,
+             cluster = fish$paper_ID,
+             obs     = fish$es_ID,
+             data    = fish,
+             rho     = 0.5)
+
+res <- rma.mv(lnrr, VCV,
+              random = ~ 1 | paper_ID,
+              data = fish)
+
+res2 <- rma.mv(lnrr, lnrr_vi,
               random = ~ 1 | paper_ID,
               data = fish)
 
 
+
 res
 
+res2
 
-res$ci.lb[1]
+# Both models had different results.
 
-res$ci.ub[1]
+head(res$vi)
 
+head(res2$vi)
 
-#res_loo <- leave_one_out(res, group = "paper_ID")
+identical(res$vi, res2$vi)
 
-res_loo %>%
-  ggplot2::ggplot(ggplot2::aes(x = left_out,
-                               y = b,
-                               ymin = ci_lb,
-                               ymax = ci_ub)) +
-  # Add a rectangle to highlight the overall effect and its confidence interval
-  ggplot2::annotate("rect", 
-                  xmin = -Inf, xmax = Inf,  # Covers all paper IDs (after coord_flip)
-                  ymin = res$ci.lb[1], 
-                  ymax = res$ci.ub[1], 
-                  alpha = 0.2, fill = "gray") +
-  # Add solid line for the estimated overall effect
-  ggplot2::geom_hline(yintercept = res$b[1], linetype = "solid") +
-  # Add dotted lines for the estimated confidence interval
-  ggplot2::geom_hline(yintercept = res$ci.lb[1], linetype = "dotted") +
-  ggplot2::geom_hline(yintercept = res$ci.ub[1], linetype = "dotted") +
-  # Add shaded area for the estimated confidence interval
-  ggplot2::geom_pointrange(alpha = 0.7, color = "darkorange") +
-  ggplot2::theme_bw() +
-  ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1),
-                 panel.grid  = ggplot2::element_blank()) +
-  ggplot2::coord_flip() 
+res$vi - res2$vi
+
+# And different sampling variances
 
 
-load_all()
+# Let's check if we can update the data from a model that uses VCV
+
+# 1: Meta analysis removing the first paper
+
+fish_1 <- fish %>% filter(paper_ID != "p047")
+
+VCV1 <- vcalc(lnrr_vi,
+             cluster = paper_ID,
+             obs     = es_ID,
+             data    = fish_1,
+             rho     = 0.5)
+
+res1 <- rma.mv(lnrr, VCV1,
+              random = ~ 1 | paper_ID,
+              data = fish_1)
+
+mod_results(res1, group = "paper_ID")
 
 
-loo_plot(res, res_loo, order = "descend")
+# 2: Meta analysis but updating the model
+
+# --------------------------------
+
+# test!
+
+vcv_args <- list(vi      = "lnrr_vi",
+                 cluster = "paper_ID",
+                 obs     = "es_ID",
+                 rho     = 0.5)
 
 
 
+loo <- leave_one_out(res, group = "paper_ID", vcalc = vcv_args)
 
-dat <- metafor::escalc(measure="RR", ai=tpos, bi=tneg, ci=cpos, di=cneg, data=dat.bcg)
+loo
 
-res <- metafor::rma(yi, vi, data=dat)
-
-labels_df <- dat.bcg %>%
-  dplyr::distinct(trial, .keep_all = TRUE) %>%
-  dplyr::mutate(left_out = trial, 
-                label    = paste(author, year, sep=", ")) %>%
-  dplyr::select(left_out, label)
-
-
-res_loo <- leave_one_out(res, group = "trial")
-
-loo_plot(res, res_loo, order = "alphabetic", labels = labels_df) +
-  geom_hline(yintercept = 0, linetype = "dotted") 
-
+loo |>
+  filter(left_out == "p047") 
