@@ -144,59 +144,47 @@ mod_results <- function(model, mod = "1", group,  N = NULL,  weights = "prop", b
 
   mm_pi <- pred_interval_esmeans(model, mm, mod = mod)
 
+  # ----------------------------------------
+  # Create model table for output
 
-  if(is.character(data[[mod]]) | is.factor(data[[mod]]) | is.null(data[[mod]])) {
-    if(is.null(by)){
-      mod_table <- data.frame(name = firstup(as.character(mm_pi[,1]), upper = upper),
-                              estimate = mm_pi[,"emmean"],
-                              lowerCL = mm_pi[,"lower.CL"],
-                              upperCL = mm_pi[,"upper.CL"],
-                              lowerPR = mm_pi[,"lower.PI"],
-                              upperPR = mm_pi[,"upper.PI"])
+  common_columns <- data.frame(estimate = mm_pi[, "emmean"],
+                               lowerCL  = mm_pi[, "lower.CL"],
+                               upperCL  = mm_pi[, "upper.CL"],
+                               lowerPR  = mm_pi[, "lower.PI"],
+                               upperPR  = mm_pi[, "upper.PI"])
 
-    } else{
-      mod_table <- data.frame(name = firstup(as.character(mm_pi[,1]), upper = upper),
-                              condition = mm_pi[,2], estimate = mm_pi[,"emmean"],
-                              lowerCL = mm_pi[,"lower.CL"],
-                              upperCL = mm_pi[,"upper.CL"],
-                              lowerPR = mm_pi[,"lower.PI"],
-                              upperPR = mm_pi[,"upper.PI"])
+  if (is_categorical(mod_vector)) {
+    if (is.null(by)) {
+      mod_table <- cbind(name = firstup(as.character(mm_pi[, 1]), upper = upper),
+                         common_columns)
+    } else {
+      mod_table <- cbind(name = firstup(as.character(mm_pi[, 1]), upper = upper),
+                         condition = mm_pi[, 2],
+                         common_columns)
     }
-
     # Extract data
     data2 <- get_data_raw(model, mod, group, N, at = at, subset)
-
     mod_table$name <- factor(mod_table$name,
                              levels = mod_table$name,
                              labels = mod_table$name)
 
-  } else{
-    if(is.null(by)){
-      mod_table <- data.frame(moderator = mm_pi[,1],
-                              estimate = mm_pi[,"emmean"],
-                              lowerCL = mm_pi[,"lower.CL"],
-                              upperCL = mm_pi[,"upper.CL"],
-                              lowerPR = mm_pi[,"lower.PI"],
-                              upperPR = mm_pi[,"upper.PI"])
-    } else{
-      mod_table <- data.frame(moderator = mm_pi[,1],
-                              condition = mm_pi[,2],
-                              estimate = mm_pi[,"emmean"],
-                              lowerCL = mm_pi[,"lower.CL"],
-                              upperCL = mm_pi[,"upper.CL"],
-                              lowerPR = mm_pi[,"lower.PI"],
-                              upperPR = mm_pi[,"upper.PI"])
+  } else {
+    # if `mod` is quantitative:
+    if (is.null(by)) {
+      mod_table <- cbind(moderator = mm_pi[, 1],
+                         common_columns)
+    } else {
+      mod_table <- cbind(moderator = mm_pi[, 1],
+                         condition = mm_pi[, 2],
+                         common_columns)
     }
 
-    # extract data
+    # Extract data
     data2 <- get_data_raw_cont(model, mod, group, N, by = by)
 
   }
 
-
-  output <- list(mod_table = mod_table,
-                 data = data2)
-
+  output <- list(mod_table = mod_table, data = data2)
   class(output) <- c("orchard", "data.frame")
 
   return(output)
