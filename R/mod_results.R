@@ -64,22 +64,17 @@
 
 mod_results <- function(model, mod = "1", group,  N = NULL,  weights = "prop", by = NULL, at = NULL, subset = FALSE, upper = TRUE, ...){
 
+  stopifnot(model_is_valid(model),
+            mod_is_valid  (model, mod),
+            group_is_valid(model, group)
+  )
+
   if(any(grepl("-1|0", as.character(model$formula.mods)))){
     warning("It is recommended that you fit the model with an intercept. Unanticipated errors can occur otherwise.")
   }
 
   if(any(model$struct %in% c("GEN", "HCS"))){
     warning("We noticed you're fitting an ~inner|outer rma model ('random slope'). There are circumstances where the prediction intervals for such models are calculated incorrectly. Please check your results carefully.")
-  }
-
-  if(missing(model)){
-    stop("Please specify the 'model' argument by providing rma.mv or rma model object. See ?mod_results")
-  }
-
-  if(all(class(model) %in% c("robust.rma", "rma.mv", "rma", "rma.uni")) == FALSE) {stop("Sorry, you need to fit a metafor model of class rma.mv, rma, or robust.rma")}
-
-  if(missing(group)){
-    stop("Please specify the 'group' argument by providing the name of the grouping variable. See ?mod_results")
   }
 
 
@@ -471,5 +466,102 @@ is_categorical <- function(x) {
   } else {
     return(FALSE)
   }
+}
+
+
+
+#' 
+#' Validate 'model'
+#'
+#' Checks if `model` is a valid metafor model object.
+#' The model must be one of the following classes: `robust.rma`, `rma.mv`, `rma`, or `rma.uni`.
+#'
+#' @param model An object representing a fitted metafor model. It should be of class
+#'   `robust.rma`, `rma.mv`, `rma`, or `rma.uni`.
+#'
+#' @return Logical `TRUE` if the `model` argument is valid. If the model is missing or
+#'   not of an accepted class, the function stops with an error message.
+#'
+#' @keywords internal
+
+model_is_valid <- function(model) {
+  if (missing(model)) {
+    stop("Incorrect argument 'model'. Please specify the 'model' argument by providing rma.mv or rma model object.",
+         call. = FALSE)
+  } 
+
+  if (all(class(model) %in% c("robust.rma", "rma.mv", "rma", "rma.uni")) == FALSE) {
+    stop("Incorrect argument 'model'. Sorry, you need to fit a metafor model of class rma.mv, rma, or robust.rma",
+         call. = FALSE)
+  }
+
+  return(TRUE)
+}
+
+
+#' 
+#' Validate 'mod'
+#'
+#' Checks if `mod` argument is valid. This argument must be either
+#' `"1"` (indicating an intercept-only model) or a moderator that is included in the
+#' meta-analytic model (as specified in `model$formula.mods`).
+#'
+#' @param model A meta-analytic model from the \pkg{metafor} package.
+#' @param mod A string specifying the moderator to check. Must be `"1"` or one of 
+#'   the moderators included in \code{model$formula.mods}.
+#'
+#' @return A logical value: \code{TRUE} if `mod` is valid, strop and throw an error otherwise.
+#'
+#' @keywords internal
+
+mod_is_valid <- function(model, mod) {
+  if (mod == "1" || mod %in% all.vars(model$formula.mods)) {
+    return(TRUE)
+  } else {
+    stop(sprintf("Incorrect argument 'mod'. '%s' is not one of the moderators of the model.", mod),
+         call. = FALSE)
+  }
+
+  return(TRUE)
+}
+
+
+#' 
+#' Validate 'group'
+#'
+#' Checks if grouping variable is valid within the model's dataset. 
+#' Ensures that the `group` argument is provided, exists as a column 
+#' in the model's data, and is not a numeric continuous variable.
+#'
+#' @param model A meta-analytic model from the \code{metafor} package.
+#' @param group A character string specifying the name of the grouping variable 
+#'   within the model's dataset.
+#'
+#' @return Logical `TRUE` if the group variable is valid. Otherwise, the function 
+#' throws an error.
+#'
+#' @seealso \code{\link{mod_results}}
+#' 
+#' @keywords internal
+
+group_is_valid <- function(model, group) {
+  if (missing(group) || is.null(group)) {
+    stop("Please specify the 'group' argument by providing the name of the grouping variable.",
+         call. = FALSE)
+  }
+
+  # Check whether 'group' is a valid column
+  if (!group %in% colnames(model$data)) {
+    stop(sprintf("Incorrect argument 'group'. '%s' is not a column in the models data.", group),
+         call. = FALSE)
+  }
+
+  # Check that 'group' is not a continuous variable
+  if (is.double(model$data[[group]])) {
+    stop(sprintf("Incorrect argument 'group'. '%s' is a numeric continuous variable, it can't be used for grouping.", group),
+         call. = FALSE)
+  }
+   
+  return(TRUE)
 }
 
