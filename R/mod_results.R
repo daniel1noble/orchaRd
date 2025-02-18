@@ -96,25 +96,19 @@ mod_results <- function(model, mod = "1", group,  N = NULL,  weights = "prop", b
     df_mod = 1.0e6 # almost identical to z value
   }
 
-# Extract the data from the model object
-data <- model$data 
-
-# Check if missing values exist and use complete case data
-if(any(model$not.na == FALSE)){
-	data <- data[model$not.na,]
-}
-
+  # Extract the data from the model object, use only complete cases
+  data <- model$data[model$not.na, ]
   mod_vector <- data[[mod]]
 
   # Get grid for emmeans
   grid_args <- list(formula = stats::formula(model),
                     data    = data,
-		    coef    = model$b,
-		    vcov    = stats::vcov(model),
-		    df      = model$k - 1)
+                    coef    = model$b,
+                    vcov    = stats::vcov(model),
+                    df      = model$k - 1)
 
   # If mod is categorical:
-  if(is.character(mod_vector) | is.factor(mod_vector) | is.null(mod_vector)) {
+  if (is_categorical(mod_vector)) {
     grid_args$at <- at
   } else {
     # If mod is quantitative:
@@ -458,3 +452,23 @@ num_studies <- function(data, mod, group){
       return(data.frame(table))
 
 }
+
+
+#' 
+#' Check if an Object is Categorical
+#'
+#' Determines whether the given object is categorical, defined as a character
+#' vector, a factor, or `NULL`.
+#'
+#' @param x An object to check.
+#' @return A logical value: `TRUE` if `x` is a character vector, a factor, or `NULL`; otherwise, `FALSE`.
+#' @keywords internal
+
+is_categorical <- function(x) {
+  if (is.character(x) || is.factor(x) || is.null(x)) {
+    return(TRUE)
+  } else {
+    return(FALSE)
+  }
+}
+
