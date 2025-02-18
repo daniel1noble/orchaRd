@@ -104,9 +104,31 @@ if(any(model$not.na == FALSE)){
 	data <- data[model$not.na,]
 }
 
+  mod_vector <- data[[mod]]
+
+  # Get grid for emmeans
+  grid_args <- list(formula = stats::formula(model),
+                    data    = data,
+		    coef    = model$b,
+		    vcov    = stats::vcov(model),
+		    df      = model$k - 1)
+
+  # If mod is categorical:
+  if(is.character(mod_vector) | is.factor(mod_vector) | is.null(mod_vector)) {
+    grid_args$at <- at
+  } else {
+    # If mod is quantitative:
+    # Getting 100 points. Fixing this to make it more general
+    at2 <- list(mod = seq(min(mod_vector, na.rm = TRUE),
+			  max(mod_vector, na.rm = TRUE),
+			  length.out = 100))
+    names(at2) <- mod
+    grid_args$at <- c(at2, at)
+  }
+
+  grid <- do.call(emmeans::qdrg, grid_args)
+
   if(is.character(data[[mod]]) | is.factor(data[[mod]]) | is.null(data[[mod]])) {
-    grid <- emmeans::qdrg(formula = stats::formula(model), at = at, data = data, coef = model$b,
-                          vcov = stats::vcov(model), df = model$k-1) ## NOTE: Added data argument emmeans >vers 1.7.4. Object is unstable so feeding in the relevant arguments from model object directly. Note, we should think about df!
     mm <- emmeans::emmeans(grid, specs = mod, df = df_mod, by = by, weights = weights, ...)
 
     # getting prediction intervals
@@ -137,10 +159,6 @@ if(any(model$not.na == FALSE)){
                              labels = mod_table$name)
 
   } else{
-    at2 <- list(mod = seq(min(data[,mod], na.rm = TRUE), max(data[,mod], na.rm = TRUE), length.out = 100))
-    names(at2) <- mod
-    grid <- emmeans::qdrg(formula =  stats::formula(model), data = data, coef = model$b,
-                          vcov = stats::vcov(model), df = model$k-1, at = c(at2, at))  # getting 100 points. Fixing this to make it more general
     mm <- emmeans::emmeans(grid, specs = mod, by = c(mod, by), weights = weights, df = df_mod)
 
     # getting prediction intervals
