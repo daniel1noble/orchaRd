@@ -64,22 +64,17 @@
 
 mod_results <- function(model, mod = "1", group,  N = NULL,  weights = "prop", by = NULL, at = NULL, subset = FALSE, upper = TRUE, ...){
 
+  stopifnot(model_is_valid(model),
+            mod_is_valid  (model, mod),
+            group_is_valid(model, group)
+  )
+
   if(any(grepl("-1|0", as.character(model$formula.mods)))){
     warning("It is recommended that you fit the model with an intercept. Unanticipated errors can occur otherwise.")
   }
 
   if(any(model$struct %in% c("GEN", "HCS"))){
     warning("We noticed you're fitting an ~inner|outer rma model ('random slope'). There are circumstances where the prediction intervals for such models are calculated incorrectly. Please check your results carefully.")
-  }
-
-  if(missing(model)){
-    stop("Please specify the 'model' argument by providing rma.mv or rma model object. See ?mod_results")
-  }
-
-  if(all(class(model) %in% c("robust.rma", "rma.mv", "rma", "rma.uni")) == FALSE) {stop("Sorry, you need to fit a metafor model of class rma.mv, rma, or robust.rma")}
-
-  if(missing(group)){
-    stop("Please specify the 'group' argument by providing the name of the grouping variable. See ?mod_results")
   }
 
 
@@ -96,100 +91,95 @@ mod_results <- function(model, mod = "1", group,  N = NULL,  weights = "prop", b
     df_mod = 1.0e6 # almost identical to z value
   }
 
-# Extract the data from the model object
-data <- model$data 
-
-# Check if missing values exist and use complete case data
-if(any(model$not.na == FALSE)){
-	data <- data[model$not.na,]
-}
-
+  # Extract the data from the model object, use only complete cases
+  data <- model$data[model$not.na, ]
   mod_vector <- data[[mod]]
 
+  # ---------------------------
   # Get grid for emmeans
   grid_args <- list(formula = stats::formula(model),
                     data    = data,
-		    coef    = model$b,
-		    vcov    = stats::vcov(model),
-		    df      = model$k - 1)
+                    coef    = model$b,
+                    vcov    = stats::vcov(model),
+                    df      = model$k - 1)
 
   # If mod is categorical:
-  if(is.character(mod_vector) | is.factor(mod_vector) | is.null(mod_vector)) {
+  if (is_categorical(mod_vector)) {
     grid_args$at <- at
   } else {
     # If mod is quantitative:
     # Getting 100 points. Fixing this to make it more general
     at2 <- list(mod = seq(min(mod_vector, na.rm = TRUE),
-			  max(mod_vector, na.rm = TRUE),
-			  length.out = 100))
+                          max(mod_vector, na.rm = TRUE),
+                          length.out = 100))
     names(at2) <- mod
     grid_args$at <- c(at2, at)
   }
 
   grid <- do.call(emmeans::qdrg, grid_args)
 
-  if(is.character(data[[mod]]) | is.factor(data[[mod]]) | is.null(data[[mod]])) {
-    mm <- emmeans::emmeans(grid, specs = mod, df = df_mod, by = by, weights = weights, ...)
+  # ---------------------------
+  # Get the marginal means 
 
-    # getting prediction intervals
-    mm_pi <- pred_interval_esmeans(model, mm, mod = mod)
+  emmeans_args <- list(object  = grid,
+                       specs   = mod,
+                       df      = df_mod,
+                       weights = weights)
 
-    if(is.null(by)){
-      mod_table <- data.frame(name = firstup(as.character(mm_pi[,1]), upper = upper),
-                              estimate = mm_pi[,"emmean"],
-                              lowerCL = mm_pi[,"lower.CL"],
-                              upperCL = mm_pi[,"upper.CL"],
-                              lowerPR = mm_pi[,"lower.PI"],
-                              upperPR = mm_pi[,"upper.PI"])
+  if (is_categorical(mod_vector)) {
+    emmeans_args$by <- by
+  } else {
+    emmeans_args$by <- c(mod, by)
+  }
 
-    } else{
-      mod_table <- data.frame(name = firstup(as.character(mm_pi[,1]), upper = upper),
-                              condition = mm_pi[,2], estimate = mm_pi[,"emmean"],
-                              lowerCL = mm_pi[,"lower.CL"],
-                              upperCL = mm_pi[,"upper.CL"],
-                              lowerPR = mm_pi[,"lower.PI"],
-                              upperPR = mm_pi[,"upper.PI"])
+  mm <- do.call(emmeans::emmeans, emmeans_args)
+
+  # ----------------------------------------
+  # Get prediction intervals
+
+  mm_pi <- pred_interval_esmeans(model, mm, mod = mod)
+
+  # ----------------------------------------
+  # Create model table for output
+
+  common_columns <- data.frame(estimate = mm_pi[, "emmean"],
+                               lowerCL  = mm_pi[, "lower.CL"],
+                               upperCL  = mm_pi[, "upper.CL"],
+                               lowerPR  = mm_pi[, "lower.PI"],
+                               upperPR  = mm_pi[, "upper.PI"])
+
+  if (is_categorical(mod_vector)) {
+    if (is.null(by)) {
+      mod_table <- cbind(name = firstup(as.character(mm_pi[, 1]), upper = upper),
+                         common_columns)
+    } else {
+      mod_table <- cbind(name = firstup(as.character(mm_pi[, 1]), upper = upper),
+                         condition = mm_pi[, 2],
+                         common_columns)
     }
-
     # Extract data
     data2 <- get_data_raw(model, mod, group, N, at = at, subset)
-
     mod_table$name <- factor(mod_table$name,
                              levels = mod_table$name,
                              labels = mod_table$name)
 
-  } else{
-    mm <- emmeans::emmeans(grid, specs = mod, by = c(mod, by), weights = weights, df = df_mod)
-
-    # getting prediction intervals
-    mm_pi <- pred_interval_esmeans(model, mm, mod = mod)
-
-    if(is.null(by)){
-      mod_table <- data.frame(moderator = mm_pi[,1],
-                              estimate = mm_pi[,"emmean"],
-                              lowerCL = mm_pi[,"lower.CL"],
-                              upperCL = mm_pi[,"upper.CL"],
-                              lowerPR = mm_pi[,"lower.PI"],
-                              upperPR = mm_pi[,"upper.PI"])
-    } else{
-      mod_table <- data.frame(moderator = mm_pi[,1],
-                              condition = mm_pi[,2],
-                              estimate = mm_pi[,"emmean"],
-                              lowerCL = mm_pi[,"lower.CL"],
-                              upperCL = mm_pi[,"upper.CL"],
-                              lowerPR = mm_pi[,"lower.PI"],
-                              upperPR = mm_pi[,"upper.PI"])
+  } else {
+    # if `mod` is quantitative:
+    if (is.null(by)) {
+      mod_table <- cbind(moderator = mm_pi[, 1],
+                         common_columns)
+    } else {
+      mod_table <- cbind(moderator = mm_pi[, 1],
+                         condition = mm_pi[, 2],
+                         common_columns)
     }
 
-    # extract data
+    # Extract data
     data2 <- get_data_raw_cont(model, mod, group, N, by = by)
 
   }
 
-
-  output <- list(mod_table = mod_table,
-                 data = data2)
-
+  output <- list(mod_table = mod_table, data = data2)
   class(output) <- c("orchard", "data.frame")
 
   return(output)
@@ -458,3 +448,120 @@ num_studies <- function(data, mod, group){
       return(data.frame(table))
 
 }
+
+
+#' 
+#' Check if an Object is Categorical
+#'
+#' Determines whether the given object is categorical, defined as a character
+#' vector, a factor, or `NULL`.
+#'
+#' @param x An object to check.
+#' @return A logical value: `TRUE` if `x` is a character vector, a factor, or `NULL`; otherwise, `FALSE`.
+#' @keywords internal
+
+is_categorical <- function(x) {
+  if (is.character(x) || is.factor(x) || is.null(x)) {
+    return(TRUE)
+  } else {
+    return(FALSE)
+  }
+}
+
+
+
+#' 
+#' Validate 'model'
+#'
+#' Checks if `model` is a valid metafor model object.
+#' The model must be one of the following classes: `robust.rma`, `rma.mv`, `rma`, or `rma.uni`.
+#'
+#' @param model An object representing a fitted metafor model. It should be of class
+#'   `robust.rma`, `rma.mv`, `rma`, or `rma.uni`.
+#'
+#' @return Logical `TRUE` if the `model` argument is valid. If the model is missing or
+#'   not of an accepted class, the function stops with an error message.
+#'
+#' @keywords internal
+
+model_is_valid <- function(model) {
+  if (missing(model)) {
+    stop("Incorrect argument 'model'. Please specify the 'model' argument by providing rma.mv or rma model object.",
+         call. = FALSE)
+  } 
+
+  if (all(class(model) %in% c("robust.rma", "rma.mv", "rma", "rma.uni")) == FALSE) {
+    stop("Incorrect argument 'model'. Sorry, you need to fit a metafor model of class rma.mv, rma, or robust.rma",
+         call. = FALSE)
+  }
+
+  return(TRUE)
+}
+
+
+#' 
+#' Validate 'mod'
+#'
+#' Checks if `mod` argument is valid. This argument must be either
+#' `"1"` (indicating an intercept-only model) or a moderator that is included in the
+#' meta-analytic model (as specified in `model$formula.mods`).
+#'
+#' @param model A meta-analytic model from the \pkg{metafor} package.
+#' @param mod A string specifying the moderator to check. Must be `"1"` or one of 
+#'   the moderators included in \code{model$formula.mods}.
+#'
+#' @return A logical value: \code{TRUE} if `mod` is valid, strop and throw an error otherwise.
+#'
+#' @keywords internal
+
+mod_is_valid <- function(model, mod) {
+  if (mod == "1" || mod %in% all.vars(model$formula.mods)) {
+    return(TRUE)
+  } else {
+    stop(sprintf("Incorrect argument 'mod'. '%s' is not one of the moderators of the model.", mod),
+         call. = FALSE)
+  }
+
+  return(TRUE)
+}
+
+
+#' 
+#' Validate 'group'
+#'
+#' Checks if grouping variable is valid within the model's dataset. 
+#' Ensures that the `group` argument is provided, exists as a column 
+#' in the model's data, and is not a numeric continuous variable.
+#'
+#' @param model A meta-analytic model from the \code{metafor} package.
+#' @param group A character string specifying the name of the grouping variable 
+#'   within the model's dataset.
+#'
+#' @return Logical `TRUE` if the group variable is valid. Otherwise, the function 
+#' throws an error.
+#'
+#' @seealso \code{\link{mod_results}}
+#' 
+#' @keywords internal
+
+group_is_valid <- function(model, group) {
+  if (missing(group) || is.null(group)) {
+    stop("Please specify the 'group' argument by providing the name of the grouping variable.",
+         call. = FALSE)
+  }
+
+  # Check whether 'group' is a valid column
+  if (!group %in% colnames(model$data)) {
+    stop(sprintf("Incorrect argument 'group'. '%s' is not a column in the models data.", group),
+         call. = FALSE)
+  }
+
+  # Check that 'group' is not a continuous variable
+  if (is.double(model$data[[group]])) {
+    stop(sprintf("Incorrect argument 'group'. '%s' is a numeric continuous variable, it can't be used for grouping.", group),
+         call. = FALSE)
+  }
+   
+  return(TRUE)
+}
+
