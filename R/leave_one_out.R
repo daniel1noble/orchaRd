@@ -7,16 +7,8 @@
 #' @param model A meta-analytic model fitted using **metafor**.
 #' @param group A factor or categorical variable specifying the leave-one-out groups.
 #'
-#' @return A data frame with:
-#'   - `left_out`: The removed group.
-#'   - `b`: The estimated coefficient.
-#'   - `ci_lb`: The lower confidence bound.
-#'   - `ci_ub`: The upper confidence bound.
-#'
-#' @details Uses `run_leave1out()` for model refitting and `models_to_dataframe()`
-#'   to structure the results.
-#'
-#' @seealso [metafor::rma()]
+#' @return Same as `mod_results()`, but with the estimates from each model ran
+#'   in the leave-one-out analysis, and the effect sizes from each model.
 #'
 #' @examples
 #' \dontrun{
@@ -41,12 +33,23 @@ leave_one_out <- function(model, group, vcalc_args = NULL) {
   }
   # Check if vcalc is provided. If so, validate the arguments
   if (!is.null(vcalc_args)) {
-    .validate_vcalc_args(model$data, vcalc_args)
+    validate_vcalc_args(model$data, vcalc_args)
   } 
 
+  # Run leave-one-out analysis
   models_outputs <- run_leave1out(model, group, vcalc_args)
-  loo_dataframe <- models_to_dataframe(models_outputs)
-  return(loo_dataframe)
+  # Extract estimates
+  estimates      <- get_estimates(models_outputs, group)
+  # Extract effect sizes from each run
+  effect_sizes   <- get_effectsizes(models_outputs, group)
+
+  # Immitates the output of mod_results.
+  #   - mod_table: Here are are the estimates from each model ran
+  #   - data:  The effect sizes from each model
+  output <- list(mod_table = estimates, data = effect_sizes)
+  class(output) <- c("orchard", "data.frame")
+
+  return(output)
 }
 
 
@@ -105,9 +108,64 @@ run_leave1out <- function(model, group, vcalc_args = NULL) {
   models_outputs
 }
 
+#' Orchard Plot for Leave-One-Out Analysis
+#'
+#' Performs a leave-one-out analysis on a meta-analytic model and produces an orchard plot.
+#'
+#' @param model A meta-analytic model from the metafor package.
+#' @param mod Character string specifying the model version (default "1").
+#' @param group Character string naming the column in model$data to omit iteratively.
+#' @param ylab Optional label for the y-axis.
+#' @param vcalc_args Optional list of parameters for computing the variance-covariance matrix.
+#' @param alpha Numeric value for plot element transparency (default 0.1).
+#' @param angle Numeric value for x-axis label angle (default 0).
+#' @param g Logical; whether to apply grouping in the plot (default FALSE).
+#' @param ... Additional arguments passed to \code{orchard_plot}.
+#'
+#' @return A ggplot2 object displaying the leave-one-out analysis with reference lines
+#'   for the original model's confidence limits.
+#'
+#' @examples
+#' \dontrun{
+#'   res <- metafor::rma.mv(lnrr, lnrr_vi, random = ~ 1 | paper_ID, data = fish)
+#'   orchard_leave1out(res, group = "paper_ID", ylab = "Study left out")
+#' }
+#'
+#' @export
+orchard_leave1out <- function(model,
+                              mod = "1", 
+                              group,
+                              ylab = NULL,
+                              vcalc_args = NULL,
+                              alpha = 0.1, 
+                              angle = 0,
+                              g = FALSE,
+                              ...) {
+
+  # Extract original model estimates (point estimate and confidence limits)
+  orig_table <- mod_results(model, group = group)$mod_table
+  orig_results <- orig_table[, c("estimate", "lowerCL", "upperCL"), drop = FALSE]
+  
+  # Run leave-one-out analysis. Each iteration omits one element from 'group'
+  leave1out_results <- leave_one_out(model = model, group = group, vcalc_args = vcalc_args)
+
+  # Plot each result and include reference lines for the original model's confidence limits.
+  p <- orchard_plot(leave1out_results,
+                    alpha = alpha,
+                    angle = angle,
+                    g = g,
+                    ...)
+
+  p <- p +
+    ggplot2::xlab(ylab) +    # xlab uses ylab? Yes. It is confusing, but because of the coord_flip it is like this.
+    ggplot2::geom_hline(yintercept = orig_results$lowerCL, linetype = 2, color = "red") +
+    ggplot2::geom_hline(yintercept = orig_results$upperCL, linetype = 2, color = "red")
+
+  return(p)
+}
 
 
-.validate_vcalc_args <- function(model_data, vcalc_args) {
+validate_vcalc_args <- function(model_data, vcalc_args) {
   if (!is.list(vcalc_args)) {
     stop("vcalc must be a list with the arguments for the 'vcalc' function: e.g., vcalc_args = list(vi = 'lnrr_vi', cluster = 'paper_ID', obs = 'es_ID', rho = 0.5)",
          call. = FALSE)
@@ -118,8 +176,7 @@ run_leave1out <- function(model, group, vcalc_args = NULL) {
     stop("vcalc_args must contain at list the following elements: 'vi', 'cluster', 'obs', 'rho'", call. = FALSE)
   }
 
-
-  # NOTE: This is not a compelte check, but it's a start
+  # TODO: This is not a compelte check, but it's a start
   # Check if the vcalc arguments are present in the model data
   if (is.null(model_data[[vcalc_args$vi]]) || is.null(model_data[[vcalc_args$cluster]]) || is.null(model_data[[vcalc_args$obs]])) {
     stop("One or more of the vcalc arguments are not found in the model data", call. = FALSE)
@@ -129,45 +186,50 @@ run_leave1out <- function(model, group, vcalc_args = NULL) {
 }
 
 
-#' Convert List Of Model Outputs To Data Frame
+#' Get Leave-One-Out Model Estimates
 #'
-#' Extracts the first coefficient and its confidence interval
-#' from a list of model outputs and converts them into a structured data frame.
+#' Extracts and combines the model estimates from each leave-one-out iteration.
 #'
-#' @param models_outputs A named list of models, where each model is expected to 
-#'   have elements `b`, `ci.lb`, and `ci.ub` representing the coefficient and
-#'   its confidence interval.
+#' @param outputs A named list of model objects from leave-one-out analysis.
+#' @param group A string specifying the grouping variable used in the analysis.
 #'
-#' @return A data frame with the following columns:
-#'   - `left_out`: Names of the models (from `models_outputs`).
-#'   - `b`: The extracted coefficient.
-#'   - `ci_lb`: The lower bound of the confidence interval.
-#'   - `ci_ub`: The upper bound of the confidence interval.
+#' @return A data frame of model estimates with an added column indicating the omitted group.
 #'
-#' @details The function assumes that each model in `models_outputs` has
-#'   a structure with elements `b`, `ci.lb`, and `ci.ub`. The function extracts
-#'   the first coefficient and its corresponding confidence interval and
-#'   returns them in a tidy format.
 #' @keywords internal
+get_estimates <- function(outputs, group) {
+   # Call `mod_results` for each model ran in the leave-one-out,
+   # transform its output to a dataframe, and then rbind()  
+   # to create a long data frame with the estimates of all the models.
+    estimates <- do.call(rbind, lapply(names(outputs), function(name) {
+        res <- mod_results(outputs[[name]], group = group)
+        df <- res$mod_table
+        df$name <- name
+        df
+    }))
 
-models_to_dataframe <- function(models_outputs) {
+    row.names(estimates) <- NULL
+    return(estimates)
+}
 
-  # NOTE: Must transpose to get the right shape
-  coef_matrix <- t(
-    sapply(models_outputs, function(model) {
-      c(b     = model$b[1],
-        ci_lb = model$ci.lb[1],
-        ci_ub = model$ci.ub[1])
-    })
-  )
 
-  # Create dataframe with proper column names
-  outputs_dataframe <- data.frame(
-    left_out = names(models_outputs),
-    coef_matrix,
-    row.names = NULL,
-    stringsAsFactors = FALSE
-  )
+#' Get Leave-One-Out Effect Sizes
+#'
+#' Extracts and aggregates effect size data from each leave-one-out iteration.
+#'
+#' @param outputs A named list of model objects from leave-one-out analysis.
+#' @param group A string specifying the grouping variable used in the analysis.
+#'
+#' @return A data frame of effect sizes with a column indicating the omitted group.
+#'
+#' @keywords internal
+get_effectsizes <- function(outputs, group) {
+    effect_sizes <- do.call(rbind, lapply(names(outputs), function(name) {
+        res <- mod_results(outputs[[name]], group = group)
+        df <- res$data
+        df$moderator <- name  
+        df
+    }))
 
-  return(outputs_dataframe)
+    row.names(effect_sizes) <- NULL
+    return(effect_sizes)
 }

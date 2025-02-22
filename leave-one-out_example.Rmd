@@ -1,92 +1,151 @@
 ---
 title: "Leave-one-out test"
 author: "fd"
-date: "2025-02-14"
+date: "2025-02-22"
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r, message=FALSE, warning=FALSE}
 library(tidyverse)
 library(metafor)
 library(devtools)
-```
-
-
-```{r}
 load_all() # Load dev package
 ```
 
-# Example using the BCG vaccine data from metafor
+### Example with Eklof data
+
+```{r}
+data(eklof)
+
+# Calculate the effect size
+eklof <- escalc(measure = "ROM",
+                n1i = N_control,
+                sd1i = SD_control,
+                m1i = mean_control, 
+                n2i = N_treatment,
+                sd2i = SD_treatment,
+                m2i = mean_treatment,
+                var.names = c("lnRR", "vlnRR"),
+                data = eklof)
+
+# Add the observation level factor
+eklof$Datapoint <- as.factor(seq(1, dim(eklof)[1], 1))
+
+# Also, we can get the sample size, which we can use for weighting if we would like
+eklof$N <- rowSums(eklof[, c("N_control", "N_treatment")])
+```
+
+Create **Authors** column with first author and year, to make it pretty
+
+```{r}
+eklof <- eklof %>% 
+  mutate(Author = paste(First.author, Publication.year, sep = ", "))
+```
+
+
+```{r}
+# fit a meta-regression with the intercept (contrast)
+eklof_MR0 <- rma.mv(yi = lnRR,
+                    V = vlnRR,
+                    mods = ~Grazer.type,
+                    random = list(~1 | ExptID,
+                                  ~1 | Datapoint),
+                    data = eklof)
+
+results <- mod_results(eklof_MR0, group = "Author")
+results
+```
+
+## leave-one-out plot
+
+Accepts all the arguments from orchard_plot()
+
+```{r}
+orchard_leave1out(eklof_MR0,
+                  group = "Author",
+                  xlab = "lnRR",
+                  ylab = "Study left out",
+                  trunk.size = 1.2,
+                  branch.size = 1.5,
+                  legend.pos = "top.out") 
+
+```
+
+
+## Example with BCG vaccine data from metafor
 
 ```{r}
 dat <- metafor::escalc(measure = "RR", ai = tpos, bi = tneg, ci = cpos, di = cneg, data = dat.bcg)
+
+dat <- dat %>% 
+  mutate(reference = paste(author, year, sep = ", ")) 
+  
 res <- metafor::rma(yi, vi, data = dat)
-res
 ```
 
+Add a lot of arguments just to see if they work
+
 ```{r}
-# This gives the same result than leave1out from metafor, but only includes
-# beta and confidence interval. Also, the output is a data frame (not like metafor's leave1out),
-# so it is ready for plotting.
-res_loo <- leave_one_out(res, group = "trial")
+orchard_leave1out(res,
+                  group = "reference",
+                  xlab = "lnRR",
+                  ylab = "Study left out",
+                  legend.pos = "bottom.out", 
+                  trunk.size = 1.2,
+                  branch.size = 1.3,
+                  twig.size = 0,
+                  k.pos = "none",
+                  alpha = 0.2,
+                  cb = FALSE) +
+  scale_fill_viridis_d()
+```
+
+
+
+## Function leave_one_out()
+
+The function leave_one_out() returns the results, imitating the output from mod_results(). It could be useful if someone wants to use the results for something else.
+
+```{r}
+res_loo <- leave_one_out(res, group = "reference")
 res_loo
 ```
 
+For comparison, this is the output from metafor's leave1out:
 
 ```{r}
-# Create a mapping of trial codes to friendly labels.
-# This step could also be done in a spreadsheet and read in as a CSV.
-labels_df <- dat.bcg %>%
-  dplyr::distinct(trial, .keep_all = TRUE) %>%
-  dplyr::mutate(left_out = trial,
-                label = paste(author, year, sep = ", ")) %>%
-  dplyr::select(left_out, label)
-
-# Create the leave-one-out plot using custom labels and descending order.
-loo_plot(res, res_loo, order = "descending", labels = labels_df) +
-  ggplot2::labs(x = "Risk ratio", y = "Trial") 
+metafor::leave1out(res)
 ```
 
-# Example with multilevel meta-analytic model and variance-covariance matrix
+The results from leave_one_out() can be used for custom ggplot2 plots, for example:
 
 ```{r}
-VCV <- vcalc(vi      = lnrr_vi,
-             cluster = paper_ID,
-             obs     = es_ID,
-             rho     = 0.5,
-             data    = fish)
-
-res <- rma.mv(lnrr, VCV,
-              random = list( ~ 1 | es_ID,
-                             ~ 1 | paper_ID),
-              data = fish)
-
-res
-```
-
-```{r}
-# Pass a list of arguments so it can compute the variance-covariance matrix
-# in each iteration. This could be more user-friendly
-
-vcv_args = list(vi      = "lnrr_vi",
-                cluster = "paper_ID",
-                obs     = "es_ID",
-                rho     = 0.5)
-
-
-# This takes more time...
-loo_res <- leave_one_out(res, group = "paper_ID", vcalc = vcv_args)
-```
-
-```{r}
-head(loo_res)
+res_loo$mod_table %>% 
+  ggplot(aes(x = reorder(name, -estimate),
+             y = estimate,
+             ymin = lowerCL,
+             ymax = upperCL)) +
+  geom_pointrange() +
+  coord_flip() +
+  geom_hline(yintercept = res$beta, linetype = 2, color = "blue") +
+  geom_hline(yintercept = 0, linetype = 2, color = "black") +
+  xlab("Study left out") +
+  ylab("lnRR") +
+  ylim(-1.5, 0.5) +
+  theme_minimal()
 ```
 
 
-```{r}
-loo_plot(res, loo_res, order = "ascending", labels = NULL) +
-  ggplot2::labs(x = "lnRR", y = "Paper ID")
-```
 
+## To-do
 
+- **orchard_plot()**: There are only 20 colors, but they are not recycled. This is a problem when there are more than 20 studies (or whatever group is used)
+- Transformation is not working yet. This is because the transformation is handled inside orchard_plot() and the lines for 95% CI are added on top of the orchard plot. Maybe move the transformation out of orchard_plot() to a separate function?
+- Only works for intercepts, No mod, no 'by' argument. Fix this
+- Make inner lines optional
+- Add some arguments to modify the 95% confidence lines and also add the overall estimate
