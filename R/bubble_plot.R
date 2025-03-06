@@ -110,7 +110,7 @@ bubble_plot <- function(object, mod, group = NULL, xlab = "Moderator", ylab = "E
     # Works slightly different than orchard_plot, because here not all numeric columns are transformed.
     # For example, moderator is numeric, but we don't want to transform it.
     excluded_cols <- which(colnames(mod_table) %in% c("condition", "moderator"))
-    mod_table[,-excluded_cols] <- transform_data(mod_table[,-excluded_cols], transfm)
+    mod_table[, -excluded_cols] <- transform_data(mod_table[, -excluded_cols], transfm)
     data_trim$yi <- transform_data(data_trim$yi, transfm)
   }
 
