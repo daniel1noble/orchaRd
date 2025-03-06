@@ -65,7 +65,7 @@ bubble_plot <- function(object, mod, group = NULL, xlab = "Moderator", ylab = "E
   legend.pos <- match.arg(NULL, choices = legend.pos)
   k.pos <- match.arg(NULL, choices = k.pos)
   #facet <- match.arg(NULL, choices = facet)
-	label <- xlab
+  label <- xlab
 
 
   if(missing(group)){
