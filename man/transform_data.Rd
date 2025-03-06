@@ -2,7 +2,7 @@
 % Please edit documentation in R/transf.R
 \name{transform_data}
 \alias{transform_data}
-\title{Apply a Transformation to Data}
+\title{Apply a Transformation to Vector}
 \usage{
 transform_data(
   x,
@@ -27,7 +27,9 @@ A numeric vector with the applied transformation.
 This function applies a specified transformation to a numeric vector.
 }
 \examples{
+\dontrun{
 transform_data(c(-1, 0, 1), "tanh")
 transform_data(c(-1, 0, 1), "invlogit")
+}
 }
 \keyword{internal}

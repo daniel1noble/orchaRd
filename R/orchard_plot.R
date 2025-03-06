@@ -71,9 +71,11 @@ orchard_plot <- function(object, mod = "1", group, xlab, N = NULL,
                          weights = "prop", by = NULL, at = NULL, upper = TRUE, flip = TRUE)
 {
   ## evaluate choices, if not specified it takes the first choice
-     transfm <- match.arg(NULL, choices = transfm)
+  transfm <- match.arg(NULL, choices = transfm)
   legend.pos <- match.arg(NULL, choices = legend.pos)
-       k.pos <- match.arg(NULL, choices = k.pos)
+  k.pos <- match.arg(NULL, choices = k.pos)
+  label <- xlab
+
 
 	if(any(class(object) %in% c("robust.rma", "rma.mv", "rma", "rma.uni"))){
 
@@ -116,40 +118,13 @@ orchard_plot <- function(object, mod = "1", group, xlab, N = NULL,
 		  #latex2exp::TeX()
 	}
 
-	if(transfm == "tanh"){
-		                   cols <- sapply(mod_table, is.numeric)
-		mod_table[,cols] <- Zr_to_r(mod_table[,cols])
-		data_trim$yi <- Zr_to_r(data_trim$yi)
-		                  label <- xlab
-	}
 
-	if(transfm == "invlogit"){
-
-	  cols <- sapply(mod_table, is.numeric)
-	  mod_table[,cols] <- lapply(mod_table[,cols], function(x) metafor::transf.ilogit(x))
-	  data_trim$yi <- metafor::transf.ilogit(data_trim$yi)
-	  label <- xlab
-	}
-
-	if(transfm == "percentr"){
-
-	  cols <- sapply(mod_table, is.numeric)
-	  mod_table[,cols] <- lapply(mod_table[,cols], function(x) (exp(x) - 1)*100)
-	  data_trim$yi <- (exp(data_trim$yi) - 1)*100
-	  label <- xlab
-	} 
-	
-
-	
-	if(transfm == "percent"){
-
-	  cols <- sapply(mod_table, is.numeric)
-	  mod_table[,cols] <- lapply(mod_table[,cols], function(x) exp(x)*100)
-	  data_trim$yi <- (exp(data_trim$yi)*100)
-	  label <- xlab
-	} else{
-	  label <- xlab
-	}
+  # Transform data if needed
+  if (transfm != "none") {
+    numeric_cols <- sapply(mod_table, is.numeric)
+    mod_table[, numeric_cols] <- transform_data(mod_table[, numeric_cols], transfm)
+    data_trim$yi <- transform_data(data_trim$yi, transfm)
+  }
 
 	# Add in total effect sizes for each level
 	 mod_table$K <- as.vector(by(data_trim, data_trim[,"moderator"], function(x) length(x[,"yi"])))

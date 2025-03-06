@@ -65,6 +65,8 @@ bubble_plot <- function(object, mod, group = NULL, xlab = "Moderator", ylab = "E
   legend.pos <- match.arg(NULL, choices = legend.pos)
   k.pos <- match.arg(NULL, choices = k.pos)
   #facet <- match.arg(NULL, choices = facet)
+	label <- xlab
+
 
   if(missing(group)){
     stop("Please specify the 'group' argument by providing the name of the grouping variable. See ?bubble_plot")
@@ -103,38 +105,14 @@ bubble_plot <- function(object, mod, group = NULL, xlab = "Moderator", ylab = "E
     legend <- paste0("Sample Size ($\\textit{N}$)") # we want to use italic
   }
 
-  if(transfm == "tanh"){
-		  cols <- which(colnames(mod_table) %in% c("condition", "moderator"))
-		mod_table[,-cols] <- Zr_to_r(mod_table[,-cols])
-		data_trim$yi <- Zr_to_r(data_trim$yi)
-		                  label <- xlab
-	}
-
-	if(transfm == "invlogit"){
-
-	  cols <- which(colnames(mod_table) %in% c("condition", "moderator"))
-	  mod_table[,-cols] <- lapply(mod_table[,-cols], function(x) metafor::transf.ilogit(x))
-	  data_trim$yi <- metafor::transf.ilogit(data_trim$yi)
-	  label <- xlab
-	}
-
-	if(transfm == "percentr"){
-
-	  cols <- which(colnames(mod_table) %in% c("condition", "moderator"))
-	  mod_table[,-cols] <- lapply(mod_table[,-cols], function(x) (exp(x) - 1)*100)
-	  data_trim$yi <- (exp(data_trim$yi) - 1)*100
-	  label <- xlab
-	} 
-	
-	if(transfm == "percent"){
-
-	  cols <- which(colnames(mod_table) %in% c("condition", "moderator"))
-	  mod_table[,-cols] <- lapply(mod_table[,-cols], function(x) exp(x)*100)
-	  data_trim$yi <- (exp(data_trim$yi)*100)
-	  label <- xlab
-	} else{
-	  label <- xlab
-	}
+  # Transform data if needed
+  if (transfm != "none") {
+    # Works slightly different than orchard_plot, because here not all numeric columns are transformed.
+    # For example, moderator is numeric, but we don't want to transform it.
+    excluded_cols <- which(colnames(mod_table) %in% c("condition", "moderator"))
+    mod_table[,-excluded_cols] <- transform_data(mod_table[,-excluded_cols], transfm)
+    data_trim$yi <- transform_data(data_trim$yi, transfm)
+  }
 
   if(is.null(data_trim$condition) == TRUE){
 

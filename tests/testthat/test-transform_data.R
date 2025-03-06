@@ -17,7 +17,7 @@ test_that("transform_data applies the correct transformations", {
   expect_equal(transform_data(x, "percent"), exp(x) * 100)
 })
 
-test_that("transformation functions work independently", {
+test_that("internal transformation functions work independently", {
   x <- c(-2, -1, 0, 1, 2)
   
   expect_equal(transf_tanh(x), tanh(x))
