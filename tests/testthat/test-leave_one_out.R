@@ -1,4 +1,4 @@
-test_that("leave_one_out gives the same result as a for loop", {
+test_that("leave_one_out gives estimates and CI like a for loop", {
   res <- metafor::rma.mv(lnrr, lnrr_vi,
                          random = list(~ 1 | es_ID,
                                        ~ 1 | paper_ID),
@@ -8,9 +8,9 @@ test_that("leave_one_out gives the same result as a for loop", {
 
   # Initialice data frame to save the results from the models
   loo_loop <- data.frame(left_out = papers_ids,
-                        b        = NA,
-                        ci_lb    = NA,
-                        ci_ub    = NA)
+                         estimate = NA,
+                         lowerCL  = NA,
+                         upperCL  = NA)
 
   for (i in seq_along(papers_ids)) {
     # Subset the data an rerun the model
@@ -21,15 +21,16 @@ test_that("leave_one_out gives the same result as a for loop", {
                                              ~ 1 | paper_ID),
                                data = fish_sub)
 
-    loo_loop$b[i]     <- res_sub$b[1]
-    loo_loop$ci_lb[i] <- res_sub$ci.lb[1]
-    loo_loop$ci_ub[i] <- res_sub$ci.ub[1]
+    loo_loop$estimate[i] <- res_sub$b[1]
+    loo_loop$lowerCL[i]  <- res_sub$ci.lb[1]
+    loo_loop$upperCL[i]  <- res_sub$ci.ub[1]
   }
 
-  loo_mine <- leave_one_out(res, group = "paper_ID")
+  loo_orchard <- leave_one_out(res, group = "paper_ID")
 
-  expect_equal(names(loo_loop), names(loo_mine))
-  expect_equal(loo_loop, loo_mine)
+  expect_equal(round(loo_loop$estimate, 4), round(loo_orchard$mod_table$estimate, 4))
+  expect_equal(round(loo_loop$lowerCL, 4), round(loo_orchard$mod_table$lowerCL, 4))
+  expect_equal(round(loo_loop$upperCL, 4), round(loo_orchard$mod_table$upperCL, 4))
 })
 
 
@@ -43,11 +44,10 @@ test_that("our leave_one_out gives the same result that metafor::leave1out", {
 
   # Leave One Out:
   loo_metafor <- metafor::leave1out(res)
-  loo_mine <- leave_one_out(res, group = "study")   
+  loo_orchard <- leave_one_out(res, group = "study")   
   
   # Metafor output has a lot of column, we only use the estimate, ci.lb and ci.ub
-  expect_equal(
-               round(cbind(loo_metafor$estimate, loo_metafor$ci.lb, loo_metafor$ci.ub), 4),
-               round(cbind(loo_mine$b, loo_mine$ci_lb, loo_mine$ci_ub), 4)
-               )
+  expect_equal(round(loo_metafor$estimate, 4), round(loo_orchard$mod_table$estimate, 4))
+  expect_equal(round(loo_metafor$ci.lb, 4), round(loo_orchard$mod_table$lowerCL, 4))
+  expect_equal(round(loo_metafor$ci.ub, 4), round(loo_orchard$mod_table$upperCL, 4))
 })

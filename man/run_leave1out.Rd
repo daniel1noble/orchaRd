@@ -4,7 +4,7 @@
 \alias{run_leave1out}
 \title{Fit Meta-Analytic Models While Omitting Each Group}
 \usage{
-run_leave1out(model, group, vcalc = NULL)
+run_leave1out(model, group, vcalc_args = NULL)
 }
 \arguments{
 \item{model}{A fitted model object containing a \code{data} element, which must be 

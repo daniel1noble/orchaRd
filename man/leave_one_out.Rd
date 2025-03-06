@@ -4,7 +4,7 @@
 \alias{leave_one_out}
 \title{Leave-One-Out Analysis for Meta-Analytic Models}
 \usage{
-leave_one_out(model, group, vcalc = NULL)
+leave_one_out(model, group, vcalc_args = NULL)
 }
 \arguments{
 \item{model}{A meta-analytic model fitted using **metafor**.}
@@ -12,20 +12,13 @@ leave_one_out(model, group, vcalc = NULL)
 \item{group}{A factor or categorical variable specifying the leave-one-out groups.}
 }
 \value{
-A data frame with:
-  - `left_out`: The removed group.
-  - `b`: The estimated coefficient.
-  - `ci_lb`: The lower confidence bound.
-  - `ci_ub`: The upper confidence bound.
+Same as `mod_results()`, but with the estimates from each model ran
+  in the leave-one-out analysis, and the effect sizes from each model.
 }
 \description{
 Performs a leave-one-out (LOO) analysis on a meta-analytic model from
 the **metafor** package by iteratively removing each level of a grouping
 variable and refitting the model.
-}
-\details{
-Uses `run_leave1out()` for model refitting and `models_to_dataframe()`
-  to structure the results.
 }
 \examples{
 \dontrun{
@@ -33,7 +26,4 @@ res <- metafor::rma.mv(lnrr, lnrr_vi, random = ~ 1 | paper_ID, data = fish)
 loo_results <- leave_one_out(res, group = "paper_ID")
 }
 
-}
-\seealso{
-[metafor::rma()]
 }
