@@ -10,6 +10,8 @@
 #' @return Same as `mod_results()`, but with the estimates from each model ran
 #'   in the leave-one-out analysis, and the effect sizes from each model.
 #'
+#' @author Facundo Decunta - fdecunta@agro.uba.ar
+#'
 #' @examples
 #' \dontrun{
 #' res <- metafor::rma.mv(lnrr, lnrr_vi, random = ~ 1 | paper_ID, data = fish)
@@ -70,6 +72,8 @@ leave_one_out <- function(model, group, vcalc_args = NULL) {
 #' @return A named list of models, each fitted after omitting one group. Names correspond 
 #'   to the omitted group IDs.
 #'
+#' @author Facundo Decunta - fdecunta@agro.uba.ar
+#'
 #' @keywords internal
 
 run_leave1out <- function(model, group, vcalc_args = NULL) {
@@ -108,62 +112,6 @@ run_leave1out <- function(model, group, vcalc_args = NULL) {
   models_outputs
 }
 
-#' Orchard Plot for Leave-One-Out Analysis
-#'
-#' Performs a leave-one-out analysis on a meta-analytic model and produces an orchard plot.
-#'
-#' @param model A meta-analytic model from the metafor package.
-#' @param mod Character string specifying the model version (default "1").
-#' @param group Character string naming the column in model$data to omit iteratively.
-#' @param ylab Optional label for the y-axis.
-#' @param vcalc_args Optional list of parameters for computing the variance-covariance matrix.
-#' @param alpha Numeric value for plot element transparency (default 0.1).
-#' @param angle Numeric value for x-axis label angle (default 0).
-#' @param g Logical; whether to apply grouping in the plot (default FALSE).
-#' @param ... Additional arguments passed to \code{orchard_plot}.
-#'
-#' @return A ggplot2 object displaying the leave-one-out analysis with reference lines
-#'   for the original model's confidence limits.
-#'
-#' @examples
-#' \dontrun{
-#'   res <- metafor::rma.mv(lnrr, lnrr_vi, random = ~ 1 | paper_ID, data = fish)
-#'   orchard_leave1out(res, group = "paper_ID", ylab = "Study left out")
-#' }
-#'
-#' @export
-orchard_leave1out <- function(model,
-                              mod = "1", 
-                              group,
-                              ylab = NULL,
-                              vcalc_args = NULL,
-                              alpha = 0.1, 
-                              angle = 0,
-                              g = FALSE,
-                              ...) {
-
-  # Extract original model estimates (point estimate and confidence limits)
-  orig_table <- mod_results(model, group = group)$mod_table
-  orig_results <- orig_table[, c("estimate", "lowerCL", "upperCL"), drop = FALSE]
-  
-  # Run leave-one-out analysis. Each iteration omits one element from 'group'
-  leave1out_results <- leave_one_out(model = model, group = group, vcalc_args = vcalc_args)
-
-  # Plot each result and include reference lines for the original model's confidence limits.
-  p <- orchard_plot(leave1out_results,
-                    alpha = alpha,
-                    angle = angle,
-                    g = g,
-                    ...)
-
-  p <- p +
-    ggplot2::xlab(ylab) +    # xlab uses ylab? Yes. It is confusing, but because of the coord_flip it is like this.
-    ggplot2::geom_hline(yintercept = orig_results$lowerCL, linetype = 2, color = "red") +
-    ggplot2::geom_hline(yintercept = orig_results$upperCL, linetype = 2, color = "red")
-
-  return(p)
-}
-
 
 validate_vcalc_args <- function(model_data, vcalc_args) {
   if (!is.list(vcalc_args)) {
@@ -195,6 +143,8 @@ validate_vcalc_args <- function(model_data, vcalc_args) {
 #'
 #' @return A data frame of model estimates with an added column indicating the omitted group.
 #'
+#' @author Facundo Decunta - fdecunta@agro.uba.ar
+#'
 #' @keywords internal
 get_estimates <- function(outputs, group) {
    # Call `mod_results` for each model ran in the leave-one-out,
@@ -220,6 +170,8 @@ get_estimates <- function(outputs, group) {
 #' @param group A string specifying the grouping variable used in the analysis.
 #'
 #' @return A data frame of effect sizes with a column indicating the omitted group.
+#'
+#' @author Facundo Decunta - fdecunta@agro.uba.ar
 #'
 #' @keywords internal
 get_effectsizes <- function(outputs, group) {
