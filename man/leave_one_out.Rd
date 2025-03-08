@@ -27,3 +27,6 @@ loo_results <- leave_one_out(res, group = "paper_ID")
 }
 
 }
+\author{
+Facundo Decunta - fdecunta@agro.uba.ar
+}

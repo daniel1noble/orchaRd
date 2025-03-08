@@ -26,4 +26,7 @@ The function removes each unique group from \code{model$data} one at a time,
   refitting the model using \code{update()}. If an update fails, a warning is issued, 
   and \code{NULL} is returned for that group.
 }
+\author{
+Facundo Decunta - fdecunta@agro.uba.ar
+}
 \keyword{internal}

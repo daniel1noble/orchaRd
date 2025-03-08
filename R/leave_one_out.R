@@ -22,28 +22,25 @@
 
 leave_one_out <- function(model, group, vcalc_args = NULL) {
   # Check model is a metafor object
-  if (!inherits(model, c("rma.mv", "rma", "rma.uni"))) {
-    stop("Model must be a metafor rma object", call. = FALSE)
-  }
+  .is_metafor_object(model)
   # Check if group is in model data
-  if (!(group %in% names(model$data))) {
-    stop(sprintf("Group variable '%s' not found in model data", group), call. = FALSE) 
-  }
+  .is_group_valid(model$data, group)
+
   # Check if we have at least 2 groups
   if (length(unique(model$data[[group]])) < 2) {
-  stop("Need at least 2 groups for leave-one-out analysis", call. = FALSE)
+    stop("Need at least 2 groups for leave-one-out analysis", call. = FALSE)
   }
   # Check if vcalc is provided. If so, validate the arguments
   if (!is.null(vcalc_args)) {
-    validate_vcalc_args(model$data, vcalc_args)
+    .validate_vcalc_args(model$data, vcalc_args)
   } 
 
   # Run leave-one-out analysis
   models_outputs <- run_leave1out(model, group, vcalc_args)
   # Extract estimates
-  estimates      <- get_estimates(models_outputs, group)
+  estimates      <- .get_estimates(models_outputs, group)
   # Extract effect sizes from each run
-  effect_sizes   <- get_effectsizes(models_outputs, group)
+  effect_sizes   <- .get_effectsizes(models_outputs, group)
 
   # Immitates the output of mod_results.
   #   - mod_table: Here are are the estimates from each model ran
@@ -77,6 +74,10 @@ leave_one_out <- function(model, group, vcalc_args = NULL) {
 #' @keywords internal
 
 run_leave1out <- function(model, group, vcalc_args = NULL) {
+  # Validate inputs
+  .is_metafor_object(model)
+  .is_group_valid(model$data, group)
+
   tmp_model <- model
   group_ids <- unique(model$data[[group]])
 
@@ -113,7 +114,10 @@ run_leave1out <- function(model, group, vcalc_args = NULL) {
 }
 
 
-validate_vcalc_args <- function(model_data, vcalc_args) {
+#' Validate vcalc_args
+#'
+#'
+.validate_vcalc_args <- function(model_data, vcalc_args) {
   if (!is.list(vcalc_args)) {
     stop("vcalc must be a list with the arguments for the 'vcalc' function: e.g., vcalc_args = list(vi = 'lnrr_vi', cluster = 'paper_ID', obs = 'es_ID', rho = 0.5)",
          call. = FALSE)
@@ -146,7 +150,7 @@ validate_vcalc_args <- function(model_data, vcalc_args) {
 #' @author Facundo Decunta - fdecunta@agro.uba.ar
 #'
 #' @keywords internal
-get_estimates <- function(outputs, group) {
+.get_estimates <- function(outputs, group) {
    # Call `mod_results` for each model ran in the leave-one-out,
    # transform its output to a dataframe, and then rbind()  
    # to create a long data frame with the estimates of all the models.
@@ -174,7 +178,7 @@ get_estimates <- function(outputs, group) {
 #' @author Facundo Decunta - fdecunta@agro.uba.ar
 #'
 #' @keywords internal
-get_effectsizes <- function(outputs, group) {
+.get_effectsizes <- function(outputs, group) {
     effect_sizes <- do.call(rbind, lapply(names(outputs), function(name) {
         res <- mod_results(outputs[[name]], group = group)
         df <- res$data
