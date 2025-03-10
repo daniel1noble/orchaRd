@@ -86,6 +86,58 @@ test_that(".run_leave1out leaves out the correct number of observations", {
 })
 
 
+test_that(".run_leave1out works with robust.rma models", {
+  # Create data with known two grouping variables: 'study_ID' and 'species'
+  set.seed(123)
+
+  studies_ids <- c(1, 2, 3)
+  studies_obs <- c(2, 5, 6)
+  id_col <- rep(studies_ids, times = studies_obs)
+
+  species_names <- c("Foo ficticium", "Bar magnificum")
+  species_obs <- c(8, 5)
+  spp_col <- rep(species_names, times = species_obs)
+
+  mock_data <- data.frame(study_ID = id_col,
+                          species = spp_col,
+                          yi = rnorm(length(id_col)),
+                          vi = abs(rnorm(length(id_col))))
+  no_study_1 <- subset(mock_data, study_ID != 1)
+  no_study_2 <- subset(mock_data, study_ID != 2)
+  no_study_3 <- subset(mock_data, study_ID != 3)
+
+  mock_model_base <- rma.mv(yi, vi, random = ~ 1 | study_ID, data = mock_data)
+  mock_model_1 <- rma.mv(yi, vi, random = ~ 1 | study_ID, data = no_study_1)
+  mock_model_2 <- rma.mv(yi, vi, random = ~ 1 | study_ID, data = no_study_2)
+  mock_model_3 <- rma.mv(yi, vi, random = ~ 1 | study_ID, data = no_study_3)
+
+  rob_1 <- robust(mock_model_1, cluster = no_study_1$study_ID)
+  rob_2 <- robust(mock_model_2, cluster = no_study_2$study_ID)
+  rob_3 <- robust(mock_model_3, cluster = no_study_3$study_ID)
+
+  test_results_study <- .run_leave1out(mock_model_base, group = "study_ID", robust = list(cluster = "study_ID"))
+
+  expect_equal(rob_1$beta, test_results_study[[1]]$beta)
+  expect_equal(rob_1$ci.lb, test_results_study[[1]]$ci.lb)
+  expect_equal(rob_1$ci.ub, test_results_study[[1]]$ci.ub)
+
+  expect_equal(rob_2$beta, test_results_study[[2]]$beta)
+  expect_equal(rob_2$ci.lb, test_results_study[[2]]$ci.lb)
+  expect_equal(rob_2$ci.ub, test_results_study[[2]]$ci.ub)
+
+  expect_equal(rob_3$beta, test_results_study[[3]]$beta)
+  expect_equal(rob_3$ci.lb, test_results_study[[3]]$ci.lb)
+  expect_equal(rob_3$ci.ub, test_results_study[[3]]$ci.ub)
+})
+
+
+#test_that(".run_leave1out works with vcalc arguments", {
+#
+# TODO: This!!
+#
+#})
+
+
 test_that(".get_estimates get the correct values", {
   # Run toy model and a leave-one-out using 'species'
     

@@ -29,6 +29,7 @@ orchard_leave1out <- function(model,
                               group,
                               ylab = NULL,
                               vcalc_args = NULL,
+                              robust_args = NULL,
                               angle = 0,
                               g = FALSE,
                               transfm = c("none", "tanh", "invlogit", "percent", "percentr"),
@@ -46,7 +47,10 @@ orchard_leave1out <- function(model,
   }
   
   # Run leave-one-out analysis. Each iteration omits one element from 'group'
-  leave1out_results <- leave_one_out(model = model, group = group, vcalc_args = vcalc_args)
+  leave1out_results <- leave_one_out(model = model,
+                                     group = group,
+                                     vcalc_args = vcalc_args,
+                                     robust_args)
 
   # Plot each result and include reference lines for the original model's confidence limits.
   p <- orchard_plot(leave1out_results,
