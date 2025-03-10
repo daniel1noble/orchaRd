@@ -22,12 +22,6 @@
 
 leave_one_out <- function(model, group, vcalc_args = NULL, robust_args = NULL) {
 
-#  # NOTE: For the moment it can't handle robust models.
-#  # this is because the method 'update' doens't work with 'robust.rma'.
-#  if (class(model)[1] == "robust.rma") {
-#    stop("Sorry, but this function doesn't support robust.rma models.", call. = FALSE)
-#  }
-
   # Check model is a metafor object
   .is_model_valid(model)
   # Check if group is in model data
@@ -122,45 +116,6 @@ leave_one_out <- function(model, group, vcalc_args = NULL, robust_args = NULL) {
 
   return(models_outputs)
 }
-
-
-
-# .run_leave1out <- function(model, group, vcalc_args = NULL) {
-#   # Validate inputs
-#   .is_model_valid(model)
-#   .is_group_valid(model$data, group)
-# 
-#   tmp_model <- model
-#   group_ids <- unique(model$data[[group]])
-# 
-#   models_outputs <- lapply(group_ids, function(id_left_out) {
-#     new_data <- subset(model$data, model$data[[group]] != id_left_out)
-# 
-#     tmp_res <- tryCatch({
-# 
-#       # If vcalc is provided, calculate the VCV matrix
-#       if (!is.null(vcalc_args)) {
-#         tmp_VCV <- .create_tmp_vcv(new_data, vcalc_args)
-#         update(tmp_model, data = new_data, V = tmp_VCV)
-# 
-#       } else {
-#         # If no variance-covariance matrix is needed, just update the model
-#         update(tmp_model, data = new_data)
-#       }
-#     }, error = function(e) {
-#       warning(sprintf("Error fitting model when leaving out '%s': %s",
-#                       id_left_out,
-#                       e$message))
-#       return(NULL)
-#     })
-# 
-#     tmp_res
-#   })
-# 
-#   names(models_outputs) <- group_ids
-#   models_outputs
-# }
- 
 
 .create_tmp_vcv <- function(data, vcalc_args) {
   metafor::vcalc(vi      = data[[vcalc_args$vi]],
