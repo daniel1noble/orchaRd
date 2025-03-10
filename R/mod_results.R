@@ -66,7 +66,8 @@ mod_results <- function(model, mod = "1", group,  N = NULL,  weights = "prop", b
 
   stopifnot(model_is_valid(model),
             mod_is_valid  (model, mod),
-            group_is_valid(model, group)
+            .is_group_valid(model$data, group)
+#            group_is_valid(model, group)
   )
 
   if(any(grepl("-1|0", as.character(model$formula.mods)))){

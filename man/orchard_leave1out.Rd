@@ -10,9 +10,9 @@ orchard_leave1out(
   group,
   ylab = NULL,
   vcalc_args = NULL,
-  alpha = 0.1,
   angle = 0,
   g = FALSE,
+  transfm = c("none", "tanh", "invlogit", "percent", "percentr"),
   ...
 )
 }
@@ -27,13 +27,13 @@ orchard_leave1out(
 
 \item{vcalc_args}{Optional list of parameters for computing the variance-covariance matrix.}
 
-\item{alpha}{Numeric value for plot element transparency (default 0.1).}
-
 \item{angle}{Numeric value for x-axis label angle (default 0).}
 
 \item{g}{Logical; whether to apply grouping in the plot (default FALSE).}
 
 \item{...}{Additional arguments passed to \code{orchard_plot}.}
+
+\item{alpha}{Numeric value for plot element transparency (default 0.1).}
 }
 \value{
 A ggplot2 object displaying the leave-one-out analysis with reference lines

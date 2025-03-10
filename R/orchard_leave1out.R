@@ -29,22 +29,29 @@ orchard_leave1out <- function(model,
                               group,
                               ylab = NULL,
                               vcalc_args = NULL,
-                              alpha = 0.1, 
                               angle = 0,
                               g = FALSE,
+                              transfm = c("none", "tanh", "invlogit", "percent", "percentr"),
                               ...) {
+
+  transfm <- match.arg(transfm)
 
   # Extract original model estimates (point estimate and confidence limits)
   orig_table <- mod_results(model, group = group)$mod_table
   orig_results <- orig_table[, c("estimate", "lowerCL", "upperCL"), drop = FALSE]
+
+  # Apply transformation if needed
+  if (transfm != "none") {
+    orig_results <- transform_data(orig_results, transf = transfm)
+  }
   
   # Run leave-one-out analysis. Each iteration omits one element from 'group'
   leave1out_results <- leave_one_out(model = model, group = group, vcalc_args = vcalc_args)
 
   # Plot each result and include reference lines for the original model's confidence limits.
   p <- orchard_plot(leave1out_results,
-                    alpha = alpha,
                     angle = angle,
+                    transfm = transfm,
                     g = g,
                     ...)
 

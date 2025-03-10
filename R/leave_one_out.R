@@ -21,8 +21,15 @@
 #' @export
 
 leave_one_out <- function(model, group, vcalc_args = NULL) {
+
+  # NOTE: For the moment it can't handle robust models.
+  # this is because the method 'update' doens't work with 'robust.rma'.
+  if (class(model)[1] == "robust.rma") {
+    stop("Sorry, but this function doesn't support robust.rma models.", call. = FALSE)
+  }
+
   # Check model is a metafor object
-  .is_metafor_object(model)
+  .is_model_valid(model)
   # Check if group is in model data
   .is_group_valid(model$data, group)
 
@@ -36,7 +43,7 @@ leave_one_out <- function(model, group, vcalc_args = NULL) {
   } 
 
   # Run leave-one-out analysis
-  models_outputs <- run_leave1out(model, group, vcalc_args)
+  models_outputs <- .run_leave1out(model, group, vcalc_args)
   # Extract estimates
   estimates      <- .get_estimates(models_outputs, group)
   # Extract effect sizes from each run
@@ -73,9 +80,9 @@ leave_one_out <- function(model, group, vcalc_args = NULL) {
 #'
 #' @keywords internal
 
-run_leave1out <- function(model, group, vcalc_args = NULL) {
+.run_leave1out <- function(model, group, vcalc_args = NULL) {
   # Validate inputs
-  .is_metafor_object(model)
+  .is_model_valid(model)
   .is_group_valid(model$data, group)
 
   tmp_model <- model
@@ -88,11 +95,7 @@ run_leave1out <- function(model, group, vcalc_args = NULL) {
 
       # If vcalc is provided, calculate the VCV matrix
       if (!is.null(vcalc_args)) {
-        tmp_VCV <- vcalc(vi      = new_data[[vcalc_args$vi]],
-                         cluster = new_data[[vcalc_args$cluster]],
-                         obs     = new_data[[vcalc_args$obs]],
-                         data    = new_data,
-                         rho     = vcalc_args$rho)
+        tmp_VCV <- .create_tmp_vcv(new_data, vcalc_args)
         update(tmp_model, data = new_data, V = tmp_VCV)
 
       } else {
@@ -111,6 +114,15 @@ run_leave1out <- function(model, group, vcalc_args = NULL) {
 
   names(models_outputs) <- group_ids
   models_outputs
+}
+
+
+.create_tmp_vcv <- function(data, vcalc_args) {
+  metafor::vcalc(vi      = data[[vcalc_args$vi]],
+                 cluster = data[[vcalc_args$cluster]],
+                 obs     = data[[vcalc_args$obs]],
+                 data    = data,
+                 rho     = vcalc_args$rho)
 }
 
 
