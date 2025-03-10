@@ -67,7 +67,6 @@ mod_results <- function(model, mod = "1", group,  N = NULL,  weights = "prop", b
   stopifnot(model_is_valid(model),
             mod_is_valid  (model, mod),
             .is_group_valid(model$data, group)
-#            group_is_valid(model, group)
   )
 
   if(any(grepl("-1|0", as.character(model$formula.mods)))){
@@ -525,46 +524,3 @@ mod_is_valid <- function(model, mod) {
 
   return(TRUE)
 }
-
-
-#' 
-#' Validate 'group'
-#'
-#' Checks if grouping variable is valid within the model's dataset. 
-#' Ensures that the `group` argument is provided, exists as a column 
-#' in the model's data, and is not a numeric continuous variable.
-#'
-#' @param model A meta-analytic model from the \code{metafor} package.
-#' @param group A character string specifying the name of the grouping variable 
-#'   within the model's dataset.
-#'
-#' @return Logical `TRUE` if the group variable is valid. Otherwise, the function 
-#' throws an error.
-#'
-#' @seealso \code{\link{mod_results}}
-#' 
-#' @keywords internal
-
-group_is_valid <- function(model, group) {
-  if (missing(group) || is.null(group)) {
-    stop("Please specify the 'group' argument by providing the name of the grouping variable.",
-         call. = FALSE)
-  }
-
-  # Check whether 'group' is a valid column
-  if (!group %in% colnames(model$data)) {
-    stop(sprintf("Incorrect argument 'group'. '%s' is not a column in the models data.", group),
-         call. = FALSE)
-  }
-
-  # Check that 'group' is not a continuous variable, but don't stop if it is.
-  # It is not rare to use ID numbers as grouping variables and sometimes they are 'numeric'
-  # instead of 'factor' or 'character'.
-  if (is.double(model$data[[group]])) {
-    warning(sprintf("Group '%s' is a numeric variable.", group),
-         call. = FALSE)
-  }
-   
-  return(TRUE)
-}
-

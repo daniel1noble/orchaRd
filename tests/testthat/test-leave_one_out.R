@@ -24,12 +24,12 @@ eklof_res <- rma.mv(yi = lnRR,
                     data = eklof)
 
 
-test_that("run_leave1out is effectively leaving-out cases and running the expected models", {
+test_that(".run_leave1out is effectively leaving-out cases and running the expected models", {
   # Creates a model leaving out the studies manually
   # Then compares the parameters with the ones returned by
-  # run_leave1out()
+  # .run_leave1out()
 
-  test_outputs <- run_leave1out(eklof_res, group = "paper_ID")
+  test_outputs <- .run_leave1out(eklof_res, group = "paper_ID")
 
   unique_ids <- unique(eklof[["paper_ID"]])
 
@@ -52,7 +52,7 @@ test_that("run_leave1out is effectively leaving-out cases and running the expect
 })
 
 
-test_that("run_leave1out leaves out the correct number of observations", {
+test_that(".run_leave1out leaves out the correct number of observations", {
   # Create data with known two grouping variables: 'study_ID' and 'species'
   set.seed(123)
 
@@ -73,14 +73,14 @@ test_that("run_leave1out leaves out the correct number of observations", {
 
   # Test grouping by 'study_ID'
   # Data has 3 studies with 2, 5 and 6 observations each.
-  test_results_study <- run_leave1out(mock_model, group = "study_ID")
+  test_results_study <- .run_leave1out(mock_model, group = "study_ID")
   expect_equal(test_results_study[[1]]$k, (5 + 6))
   expect_equal(test_results_study[[2]]$k, (2 + 6))
   expect_equal(test_results_study[[3]]$k, (2 + 5))
 
   # Test grouping by 'species'
   # Data has 2 species with 8 and 5 observations
-  test_results_spp <- run_leave1out(mock_model, group = "species")
+  test_results_spp <- .run_leave1out(mock_model, group = "species")
   expect_equal(test_results_spp[[1]]$k, 5)
   expect_equal(test_results_spp[[2]]$k, 8)
 })
@@ -106,7 +106,7 @@ test_that(".get_estimates get the correct values", {
   mock_model <- rma.mv(yi, vi, data = mock_data)
 
   # Results from .get_estimates
-  outputs <- run_leave1out(mock_model, group = "species")
+  outputs <- .run_leave1out(mock_model, group = "species")
   test_mod_tables <- .get_estimates(outputs, group = "species")
 
   ## Results from mod_results manually excluding species
@@ -145,7 +145,7 @@ test_that(".get_effectsizes gets the correct data", {
                             vi = abs(rnorm(length(id_col))))
 
     mock_model <- rma.mv(yi, vi, data = mock_data)
-    leave1out_models <- run_leave1out(mock_model, group = "species")
+    leave1out_models <- .run_leave1out(mock_model, group = "species")
 
     test_output <- .get_effectsizes(leave1out_models, group = "species")
 
