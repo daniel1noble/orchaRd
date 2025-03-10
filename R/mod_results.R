@@ -556,9 +556,11 @@ group_is_valid <- function(model, group) {
          call. = FALSE)
   }
 
-  # Check that 'group' is not a continuous variable
+  # Check that 'group' is not a continuous variable, but don't stop if it is.
+  # It is not rare to use ID numbers as grouping variables and sometimes they are 'numeric'
+  # instead of 'factor' or 'character'.
   if (is.double(model$data[[group]])) {
-    stop(sprintf("Incorrect argument 'group'. '%s' is a numeric continuous variable, it can't be used for grouping.", group),
+    warning(sprintf("Group '%s' is a numeric variable.", group),
          call. = FALSE)
   }
    
