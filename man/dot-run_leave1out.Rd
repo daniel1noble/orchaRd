@@ -2,7 +2,7 @@
 % Please edit documentation in R/leave_one_out.R
 \name{.run_leave1out}
 \alias{.run_leave1out}
-\title{Fit Meta-Analytic Models While Omitting Each Group}
+\title{Fit Multiple Meta-Analytic Models For Leave-One-Out Analysis}
 \usage{
 .run_leave1out(model, group, vcalc_args = NULL, robust_args = NULL)
 }
@@ -12,6 +12,12 @@ a data frame with all model variables.}
 
 \item{group}{A character string specifying the column in \code{model$data} that 
 defines the groups to be omitted one at a time.}
+
+\item{vcalc_args}{Optional list of arguments for the variance-covariance calculation using 
+metafor's vcalc function. Must include 'vi', 'cluster', 'obs', and 'rho' elements.}
+
+\item{robust_args}{Optional list of arguments for robust variance estimation using
+metafor's robust function. Must include a 'cluster' element.}
 }
 \value{
 A named list of models, each fitted after omitting one group. Names correspond 

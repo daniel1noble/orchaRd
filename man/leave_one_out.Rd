@@ -10,6 +10,12 @@ leave_one_out(model, group, vcalc_args = NULL, robust_args = NULL)
 \item{model}{A meta-analytic model fitted using **metafor**.}
 
 \item{group}{A factor or categorical variable specifying the leave-one-out groups.}
+
+\item{vcalc_args}{Optional list of arguments for the variance-covariance calculation using 
+metafor's vcalc function. Must include 'vi', 'cluster', 'obs', and 'rho' elements.}
+
+\item{robust_args}{Optional list of arguments for robust variance estimation using
+metafor's robust function. Must include a 'cluster' element.}
 }
 \value{
 Same as `mod_results()`, but with the estimates from each model ran
@@ -24,6 +30,17 @@ variable and refitting the model.
 \dontrun{
 res <- metafor::rma.mv(lnrr, lnrr_vi, random = ~ 1 | paper_ID, data = fish)
 loo_results <- leave_one_out(res, group = "paper_ID")
+
+# With variance-covariance calculation
+loo_results <- leave_one_out(res, group = "paper_ID", 
+                             vcalc_args = list(vi = "lnrr_vi", 
+                                              cluster = "paper_ID", 
+                                              obs = "es_ID", 
+                                              rho = 0.5))
+                                              
+# With robust variance estimation
+loo_results <- leave_one_out(res, group = "paper_ID", 
+                             robust_args = list(cluster = "paper_ID"))
 }
 
 }

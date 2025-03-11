@@ -6,6 +6,10 @@
 #'
 #' @param model A meta-analytic model fitted using **metafor**.
 #' @param group A factor or categorical variable specifying the leave-one-out groups.
+#' @param vcalc_args Optional list of arguments for the variance-covariance calculation using 
+#'   metafor's vcalc function. Must include 'vi', 'cluster', 'obs', and 'rho' elements.
+#' @param robust_args Optional list of arguments for robust variance estimation using
+#'   metafor's robust function. Must include a 'cluster' element.
 #'
 #' @return Same as `mod_results()`, but with the estimates from each model ran
 #'   in the leave-one-out analysis, and the effect sizes from each model.
@@ -16,12 +20,22 @@
 #' \dontrun{
 #' res <- metafor::rma.mv(lnrr, lnrr_vi, random = ~ 1 | paper_ID, data = fish)
 #' loo_results <- leave_one_out(res, group = "paper_ID")
+#' 
+#' # With variance-covariance calculation
+#' loo_results <- leave_one_out(res, group = "paper_ID", 
+#'                              vcalc_args = list(vi = "lnrr_vi", 
+#'                                               cluster = "paper_ID", 
+#'                                               obs = "es_ID", 
+#'                                               rho = 0.5))
+#'                                               
+#' # With robust variance estimation
+#' loo_results <- leave_one_out(res, group = "paper_ID", 
+#'                              robust_args = list(cluster = "paper_ID"))
 #' }
 #'
 #' @export
 
 leave_one_out <- function(model, group, vcalc_args = NULL, robust_args = NULL) {
-
   # Check model is a metafor object
   .is_model_valid(model)
   # Check if group is in model data
@@ -31,20 +45,22 @@ leave_one_out <- function(model, group, vcalc_args = NULL, robust_args = NULL) {
   if (length(unique(model$data[[group]])) < 2) {
     stop("Need at least 2 groups for leave-one-out analysis", call. = FALSE)
   }
-  # Check if vcalc is provided. If so, validate the arguments
+
   if (!is.null(vcalc_args)) {
     .validate_vcalc_args(model$data, vcalc_args)
   } 
 
+  if (!is.null(robust_args)) {
+    .validate_robust_args(model$data, robust_args)
+  }
+
   # Run leave-one-out analysis
   models_outputs <- .run_leave1out(model, group, vcalc_args, robust_args)
-  # Extract estimates
   estimates      <- .get_estimates(models_outputs, group)
-  # Extract effect sizes from each run
   effect_sizes   <- .get_effectsizes(models_outputs, group)
 
-  # Immitates the output of mod_results.
-  #   - mod_table: Here are are the estimates from each model ran
+  # Immitates the output of mod_results().
+  #   - mod_table: In this case, the estimates from each model ran
   #   - data:  The effect sizes from each model
   output <- list(mod_table = estimates, data = effect_sizes)
   class(output) <- c("orchard", "data.frame")
@@ -53,7 +69,7 @@ leave_one_out <- function(model, group, vcalc_args = NULL, robust_args = NULL) {
 }
 
 
-#' Fit Meta-Analytic Models While Omitting Each Group
+#' Fit Multiple Meta-Analytic Models For Leave-One-Out Analysis
 #'
 #' Iteratively refits a meta-analytic model, leaving out one level of a specified 
 #' grouping variable in each iteration.
@@ -62,6 +78,10 @@ leave_one_out <- function(model, group, vcalc_args = NULL, robust_args = NULL) {
 #'   a data frame with all model variables.
 #' @param group A character string specifying the column in \code{model$data} that 
 #'   defines the groups to be omitted one at a time.
+#' @param vcalc_args Optional list of arguments for the variance-covariance calculation using 
+#'   metafor's vcalc function. Must include 'vi', 'cluster', 'obs', and 'rho' elements.
+#' @param robust_args Optional list of arguments for robust variance estimation using
+#'   metafor's robust function. Must include a 'cluster' element.
 #'
 #' @details The function removes each unique group from \code{model$data} one at a time, 
 #'   refitting the model using \code{update()}. If an update fails, a warning is issued, 
@@ -75,7 +95,6 @@ leave_one_out <- function(model, group, vcalc_args = NULL, robust_args = NULL) {
 #' @keywords internal
 
 .run_leave1out <- function(model, group, vcalc_args = NULL, robust_args = NULL) {
-  # Validate inputs
   .is_model_valid(model)
   .is_group_valid(model$data, group)
 
@@ -117,18 +136,46 @@ leave_one_out <- function(model, group, vcalc_args = NULL, robust_args = NULL) {
   return(models_outputs)
 }
 
+#' Create Temporary Variance-Covariance Matrix
+#'
+#' Creates a variance-covariance matrix for a subset of data using metafor's vcalc function.
+#'
+#' @param data A data frame containing the variables specified in vcalc_args.
+#' @param vcalc_args A list of arguments for metafor::vcalc function, including:
+#'   \itemize{
+#'     \item vi: Name of the variance column
+#'     \item cluster: Name of the clustering variable column
+#'     \item obs: Name of the observation ID column
+#'     \item rho: Correlation coefficient
+#'   }
+#'
+#' @return A variance-covariance matrix for use in meta-analytic models.
+#'
+#' @keywords internal
 .create_tmp_vcv <- function(data, vcalc_args) {
-  metafor::vcalc(vi      = data[[vcalc_args$vi]],
-                 cluster = data[[vcalc_args$cluster]],
-                 obs     = data[[vcalc_args$obs]],
-                 data    = data,
-                 rho     = vcalc_args$rho)
+  tryCatch({
+    metafor::vcalc(vi      = data[[vcalc_args$vi]],
+                   cluster = data[[vcalc_args$cluster]],
+                   obs     = data[[vcalc_args$obs]],
+                   data    = data,
+                   rho     = vcalc_args$rho)
+  }, error = function(e) {
+    stop(sprintf("Error creating VCV: %s", e$message))
+  })
 }
 
 
-#' Validate vcalc_args
+#' Validate Variance-Covariance Calculation Arguments
 #'
+#' Ensures that the arguments provided for variance-covariance calculation are
+#' valid and refer to existing variables in the model data.
 #'
+#' @param model_data A data frame containing the variables used in the model.
+#' @param vcalc_args A list of arguments for the metafor::vcalc function.
+#'
+#' @return The validated vcalc_args list.
+#'
+#' @keywords internal
 .validate_vcalc_args <- function(model_data, vcalc_args) {
   if (!is.list(vcalc_args)) {
     stop("vcalc must be a list with the arguments for the 'vcalc' function: e.g., vcalc_args = list(vi = 'lnrr_vi', cluster = 'paper_ID', obs = 'es_ID', rho = 0.5)",
@@ -137,7 +184,7 @@ leave_one_out <- function(model, group, vcalc_args = NULL, robust_args = NULL) {
 
   # Check if required arguments for vcalc are present
   if (!all(c("vi", "cluster", "obs", "rho") %in% names(vcalc_args))) {
-    stop("vcalc_args must contain at list the following elements: 'vi', 'cluster', 'obs', 'rho'", call. = FALSE)
+    stop("vcalc_args must contain at least the following elements: 'vi', 'cluster', 'obs', 'rho'", call. = FALSE)
   }
 
   # TODO: This is not a compelte check, but it's a start
@@ -147,6 +194,35 @@ leave_one_out <- function(model, group, vcalc_args = NULL, robust_args = NULL) {
   }
 
   return(vcalc_args)
+}
+
+#' Validate robust_args
+#'
+#' Validates that robust_args contains the required parameters and that they
+#' reference valid columns in the data.
+#'
+#' @param model_data A data frame containing the variables used in the model.
+#' @param robust_args A list of arguments for the metafor::robust function.
+#'
+#' @return The validated robust_args list.
+#'
+#' @keywords internal
+.validate_robust_args <- function(model_data, robust_args) {
+  if (!is.list(robust_args)) {
+    stop("robust_args must be a list with the arguments for the 'robust' function: e.g., robust_args = list(cluster = 'paper_ID')",
+         call. = FALSE)
+  }
+
+  if (!("cluster" %in% names(robust_args))) {
+    stop("robust_args must contain at least the following elements: 'cluster'", call. = FALSE)
+  }
+
+  # Check if the cluster variable is present in the model data
+  if (is.null(model_data[[robust_args$cluster]])) {
+    stop("The cluster variable specified in robust_args is not found in the model data", call. = FALSE)
+  }
+
+  return(robust_args)
 }
 
 

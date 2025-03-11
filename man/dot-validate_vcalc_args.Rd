@@ -2,10 +2,20 @@
 % Please edit documentation in R/leave_one_out.R
 \name{.validate_vcalc_args}
 \alias{.validate_vcalc_args}
-\title{Validate vcalc_args}
+\title{Validate Variance-Covariance Calculation Arguments}
 \usage{
 .validate_vcalc_args(model_data, vcalc_args)
 }
-\description{
-Validate vcalc_args
+\arguments{
+\item{model_data}{A data frame containing the variables used in the model.}
+
+\item{vcalc_args}{A list of arguments for the metafor::vcalc function.}
 }
+\value{
+The validated vcalc_args list.
+}
+\description{
+Ensures that the arguments provided for variance-covariance calculation are
+valid and refer to existing variables in the model data.
+}
+\keyword{internal}
