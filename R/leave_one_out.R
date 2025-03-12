@@ -122,7 +122,6 @@ leave_one_out <- function(model, group, vcalc_args = NULL, robust_args = NULL) {
     })
 
     if(!is.null(robust_args)) {
-      robust_args$x <- quote(tmp_res)
       cluster_var <- tmp_model_call$data[[robust_args$cluster]]
       tmp_res <- metafor::robust(tmp_res, cluster = cluster_var)
     }
