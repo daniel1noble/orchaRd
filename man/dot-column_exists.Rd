@@ -17,4 +17,7 @@ logical. TRUE if the column exists, FALSE otherwise
 \description{
 Verifies if a specified column exists in the data frame
 }
+\author{
+Facundo Decunta - fdecunta@agro.uba.ar
+}
 \keyword{internal}

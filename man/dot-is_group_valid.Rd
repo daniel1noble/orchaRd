@@ -21,4 +21,7 @@ Checks if a group variable meets the requirements for analysis:
 - It is a categorical variable
 - It has no missing values
 }
+\author{
+Facundo Decunta - fdecunta@agro.uba.ar
+}
 \keyword{internal}

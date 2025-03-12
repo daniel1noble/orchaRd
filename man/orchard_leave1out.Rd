@@ -6,13 +6,14 @@
 \usage{
 orchard_leave1out(
   model,
-  mod = "1",
+  loo_output = NULL,
   group,
   ylab = NULL,
   vcalc_args = NULL,
   robust_args = NULL,
+  ci_lines = TRUE,
+  ci_lines_color = "red",
   ghost_points = TRUE,
-  colour = TRUE,
   angle = 0,
   g = FALSE,
   transfm = c("none", "tanh", "invlogit", "percent", "percentr"),
@@ -20,35 +21,72 @@ orchard_leave1out(
 )
 }
 \arguments{
-\item{model}{A meta-analytic model from the metafor package.}
+\item{model}{A meta-analytic model object from the \pkg{metafor} package.}
 
-\item{mod}{Character string specifying the model version (default "1").}
+\item{loo_output}{Optional data frame output from \code{leave_one_out()}. If provided, the function uses
+these pre-computed results instead of re-running the leave-one-out analysis.}
 
-\item{group}{Character string naming the column in model$data to omit iteratively.}
+\item{group}{Character string naming the column in \code{model$data} that indicates the grouping variable.
+The analysis iteratively omits each unique element of this variable.}
 
-\item{ylab}{Optional label for the y-axis.}
+\item{ylab}{Optional label for the y-axis, which lists the elements left out.}
 
 \item{vcalc_args}{Optional list of parameters for computing the variance-covariance matrix.}
 
-\item{angle}{Numeric value for x-axis label angle (default 0).}
+\item{robust_args}{Optional list of parameters for running \code{metafor::robust}.}
 
-\item{g}{Logical; whether to apply grouping in the plot (default FALSE).}
+\item{ci_lines}{Logical indicating whether to add horizontal reference lines (default is \code{TRUE})
+representing the original model's 95\% confidence intervals.}
+
+\item{ci_lines_color}{Character string specifying the color for the confidence interval lines (default is \code{"red"}).}
+
+\item{ghost_points}{Logical indicating whether to add "ghost points" for the effect sizes that were left out.
+These are plotted as empty points (default is \code{TRUE}).}
 
 \item{...}{Additional arguments passed to \code{orchard_plot}.}
-
-\item{alpha}{Numeric value for plot element transparency (default 0.1).}
 }
 \value{
 A ggplot2 object displaying the leave-one-out analysis with reference lines
   for the original model's confidence limits.
 }
 \description{
-Performs a leave-one-out analysis on a meta-analytic model and produces an orchard plot.
+This function iteratively omits each element defined in a specified grouping variable from a meta-analytic model.
+For each iteration, a new meta-analytic model is fitted and the resulting effect sizes are visualized using
+an orchard plot. The plot displays the effect sizes, overall effect estimate (with confidence and prediction intervals),
+and optionally, the effect sizes left out ("ghost points") in each iteration. In addition, the original model's
+95\% confidence limits are shown as reference lines.
+}
+\details{
+This function is useful to see how sensitive are the estimates from 'model' to the absence of each element from \code{group}.
+
+It fits multiple meta-analytic models using \code{model} as a template. In each iteration it leaves out one element of \code{group}.
+The y-axis shows the elements from \code{group}. Each y-label indicates the element from \code{group} that was left-out in that model.
+For each model, the plot shows the effect sizes, overall effect estimate with confidence and prediction intervals, and "ghost points". 
+This "ghost points" are the effect sizes left out and they are shown as empty points. They can be ommited setting 'ghost_points' to FALSE
+
+The plot also shows 95% confidence interval for the estimated overall effect by \code{model}. This is shown
+as red dotted lines. The arguments 'ci_lines' and 'ci_lines_color' allow to remove this lines or select their color.
+
+The function can be slow because it has to fit various meta-analytic models. 
+This can be a problem if you need to repeatedly call \code{orchard_leave1out()}, 
+for example when trying to make aesthetic changes to the plot. 
+To avoid this problem, you can pass the result from a \code{orchaRd::leave_one_out()} so
+the function doesn't have to re-run it every time. Note that you still has to pass \code{model} and \code{group}.
+
+The function internally sets a color palette for the plot. If more than 20 elements are in the \code{group}, a viridis
+palette is used. Otherwise, a color-blind friendly palette is applied by default.
 }
 \examples{
 \dontrun{
+  # Fit a multivariate meta-analytic model using the metafor package
   res <- metafor::rma.mv(lnrr, lnrr_vi, random = ~ 1 | paper_ID, data = fish)
-  orchard_leave1out(res, group = "paper_ID", ylab = "Study left out")
+
+  # Generate an orchard plot using leave-one-out analysis
+  orchard_leave1out(model = res, group = "paper_ID", xlab = "lnRR")
+
+  # Alternatively, precompute the leave-one-out results for faster re-plotting
+  loo_res <- orchaRd::leave_one_out(res, group = "paper_ID")
+  orchard_leave1out(model = res, loo_output = loo_res, group = "paper_ID", xlab = "lnRR")
 }
 
 }

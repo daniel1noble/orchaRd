@@ -15,6 +15,9 @@
 #' @param column_name character. The name of the column to check
 #'
 #' @return logical. TRUE if the group variable is valid, otherwise stops with an error message
+#'
+#' @author Facundo Decunta - fdecunta@agro.uba.ar
+#'
 #' @keywords internal
 .is_group_valid <- function(data, column_name) {
   if (missing(column_name) || is.null(column_name)) {
@@ -52,6 +55,9 @@
 #' @param column_name character. The name of the column to look for
 #'
 #' @return logical. TRUE if the column exists, FALSE otherwise
+#'
+#' @author Facundo Decunta - fdecunta@agro.uba.ar
+#'
 #' @keywords internal
 .column_exists <- function(data, column_name) {
     if (column_name %in% names(data)) {
@@ -72,6 +78,9 @@
 #' @param col vector. A vector to check (character, factor, or numeric)
 #'
 #' @return logical. TRUE if the column can be used as a category, FALSE otherwise
+#'
+#' @author Facundo Decunta - fdecunta@agro.uba.ar
+#'
 #' @keywords internal
 .column_is_categorical <- function(col) {
     # Check if a column can be used as a category.
@@ -97,6 +106,9 @@
 #' @param model object. A model object from the metafor package (rma.mv, rma, rma.uni, or robust.rma)
 #'
 #' @return logical. TRUE if the model is valid, otherwise stops with an error message
+#'
+#' @author Facundo Decunta - fdecunta@agro.uba.ar
+#'
 #' @keywords internal
 .is_model_valid <- function(model) {
   if (missing(model) || is.null(model)) {
@@ -119,6 +131,9 @@
 #' @param obj object. An R object to check for metafor class inheritance
 #'
 #' @return logical. TRUE if the object is from metafor package, FALSE otherwise
+#'
+#' @author Facundo Decunta - fdecunta@agro.uba.ar
+#'
 #' @keywords internal
 .is_metafor_object <- function(obj) {
   if (!inherits(obj, c("rma.mv", "rma", "rma.uni", "robust.rma"))) {

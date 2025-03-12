@@ -18,4 +18,7 @@ The validated vcalc_args list.
 Ensures that the arguments provided for variance-covariance calculation are
 valid and refer to existing variables in the model data.
 }
+\author{
+Facundo Decunta - fdecunta@agro.uba.ar
+}
 \keyword{internal}

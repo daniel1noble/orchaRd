@@ -18,4 +18,7 @@ The validated robust_args list.
 Validates that robust_args contains the required parameters and that they
 reference valid columns in the data.
 }
+\author{
+Facundo Decunta - fdecunta@agro.uba.ar
+}
 \keyword{internal}

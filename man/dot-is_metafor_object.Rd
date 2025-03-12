@@ -15,4 +15,7 @@ logical. TRUE if the object is from metafor package, FALSE otherwise
 \description{
 Verifies if an object is of class rma.mv, rma, rma.uni, or robust.rma
 }
+\author{
+Facundo Decunta - fdecunta@agro.uba.ar
+}
 \keyword{internal}

@@ -17,4 +17,7 @@ Checks if a model argument is valid for meta-analysis:
 - It is not missing or NULL
 - It is a metafor package object (rma.mv, rma, etc.)
 }
+\author{
+Facundo Decunta - fdecunta@agro.uba.ar
+}
 \keyword{internal}

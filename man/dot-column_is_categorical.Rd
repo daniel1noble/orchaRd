@@ -19,4 +19,7 @@ Valid categorical variables include:
 - Factors
 - Integer values (common for ID numbers used as factors)
 }
+\author{
+Facundo Decunta - fdecunta@agro.uba.ar
+}
 \keyword{internal}

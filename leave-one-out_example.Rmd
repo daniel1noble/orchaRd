@@ -1,7 +1,7 @@
 ---
 title: "Leave-one-out test"
 author: "fd"
-date: "2025-02-22"
+date: "2025-03-13"
 output: html_document
 ---
 
@@ -17,7 +17,15 @@ library(devtools)
 load_all() # Load dev package
 ```
 
-### Example with Eklof data
+## orchard_leave1out()
+
+orchard_leave1out() is a function that creates an orchard plot with the results from a leave-one-out analysis. It is useful to see how the overall estimate changes when each study is left out.
+
+For each left-out study, the plot shows the effect sizes, the model estimate, along with c
+confidence and prediction intervals. Also, it show the points left out in that analysis as 'ghost points'.
+
+
+### Example 1: Eklof data
 
 ```{r}
 data(eklof)
@@ -61,20 +69,66 @@ results <- mod_results(eklof_MR0, group = "Author")
 results
 ```
 
-## leave-one-out plot
+You can create the default leave-one-out plot like this:
 
-Accepts all the arguments from orchard_plot()
+```{r}
+orchard_leave1out(model = eklof_MR0,
+                  group = "Author",
+                  xlab  = "lnRR")
+```
+
+But you may want to make changes to the plot. Most of the changes can be done using the arguments from orchard_plot():
 
 ```{r}
 orchard_leave1out(eklof_MR0,
                   group = "Author",
                   xlab = "lnRR",
-                  ylab = "Study left out",
                   trunk.size = 1.2,
                   branch.size = 1.5,
-                  legend.pos = "top.out") 
-
+                  alpha = 0.1,
+                  legend.pos = "top.out")
 ```
+
+And there are also a few arguments that are specific to 'orchard_leave1out()':
+
+- ylab: String. with the label for the y-axis. 
+
+- ci_lines: Logical. If TRUE, the 95% CI lines are added to the plot. Default is TRUE.
+
+- ci_lines_color: String. Color for the 95% CI lines. Default is "black".
+
+- ghost_points: Logical. If TRUE, the points for the studies left out are added to the plot. Default is TRUE.
+
+```{r}
+orchard_leave1out(eklof_MR0,
+                  group = "Author",
+                  xlab = "lnRR",
+                  trunk.size = 1.2,
+                  branch.size = 1.5,
+                  alpha = 0.1,
+                  legend.pos = "top.out",
+                  ylab = "Study left out",
+                  ci_lines_color = "darkorchid")
+```
+
+You can also remove 'ghost_points'. 
+They help to see the points that are left out, but they can be removed:
+
+
+```{r}
+orchard_leave1out(eklof_MR0,
+                  group = "Author",
+                  xlab = "lnRR",
+                  trunk.size = 1.2,
+                  branch.size = 1.5,
+                  alpha = 0.1,
+                  legend.pos = "top.out",
+                  ylab = "Study left out",
+                  ci_lines_color = "darkorchid",
+                  ghost_points = FALSE)
+```
+
+
 
 
 ## Example with BCG vaccine data from metafor
@@ -100,14 +154,40 @@ orchard_leave1out(res,
                   branch.size = 1.3,
                   twig.size = 0,
                   k.pos = "none",
-                  alpha = 0.2,
-                  cb = FALSE) +
-  scale_fill_viridis_d()
+                  alpha = 0.2) 
+```
+
+Sometimes the first plot is not good enough, so you have to make some changes.
+
+orchard_leave1out() can be slow because it runs all the meta-analytic models needed for the leave-one-out.
+For those cases, it is possible to run leave_one_out(),
+save the result and use it for orchard_leave1out(), so you don't have to refit 
+a lot of models each time you want to make a tweak in the plot.
+
+Note that orchard_leave1out() still needs the 'model' and 'group' arguments to get the overall estimate and 95% CI
+and to know how to group the effect sizes.
+
+The output from leave_one_out() is passed as 'loo_output':
+
+```{r}
+res_loo <- leave_one_out(res, group = "reference")
 ```
 
 
+```{r}
+orchard_leave1out(model = res,
+                  loo_output = res_loo,
+                  group = "reference",
+                  xlab = "lnRR",
+                  ylab = "Study left out",
+                  trunk.size = 1.2,
+                  branch.size = 1.5,
+                  alpha = 0.1,
+                  legend.pos = "top.out",
+                  k.pos = "none")
+```
 
-## Function leave_one_out()
+## leave_one_out()
 
 The function leave_one_out() returns the results, imitating the output from mod_results(). It could be useful if someone wants to use the results for something else.
 
@@ -142,10 +222,10 @@ res_loo$mod_table %>%
 
 
 
-## To-do
+## Notes and to-do
 
 - **orchard_plot()**: There are only 20 colors, but they are not recycled. This is a problem when there are more than 20 studies (or whatever group is used)
 - Transformation is not working yet. This is because the transformation is handled inside orchard_plot() and the lines for 95% CI are added on top of the orchard plot. Maybe move the transformation out of orchard_plot() to a separate function?
 - Only works for intercepts, No mod, no 'by' argument. Fix this
-- Make inner lines optional
+- Maybe there should be separate argument for `group` called `leave_out_goup` or something like that. For example, if a user want to leave out one species at a time and still plot the results using group by paper. 
 - Add some arguments to modify the 95% confidence lines and also add the overall estimate

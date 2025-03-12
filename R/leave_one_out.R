@@ -61,7 +61,7 @@ leave_one_out <- function(model, group, vcalc_args = NULL, robust_args = NULL) {
 
   # Immitates the output of mod_results().
   #   - mod_table: In this case, the estimates from each model ran
-  #   - data:  The effect sizes from each model
+  #   - data:  Effect sizes and sampling variances from each model
   output <- list(mod_table = estimates, data = effect_sizes)
   class(output) <- c("orchard", "data.frame")
 
@@ -151,6 +151,8 @@ leave_one_out <- function(model, group, vcalc_args = NULL, robust_args = NULL) {
 #'
 #' @return A variance-covariance matrix for use in meta-analytic models.
 #'
+#' @author Facundo Decunta - fdecunta@agro.uba.ar
+#'
 #' @keywords internal
 .create_tmp_vcv <- function(data, vcalc_args) {
   tryCatch({
@@ -174,6 +176,8 @@ leave_one_out <- function(model, group, vcalc_args = NULL, robust_args = NULL) {
 #' @param vcalc_args A list of arguments for the metafor::vcalc function.
 #'
 #' @return The validated vcalc_args list.
+#'
+#' @author Facundo Decunta - fdecunta@agro.uba.ar
 #'
 #' @keywords internal
 .validate_vcalc_args <- function(model_data, vcalc_args) {
@@ -205,6 +209,8 @@ leave_one_out <- function(model, group, vcalc_args = NULL, robust_args = NULL) {
 #' @param robust_args A list of arguments for the metafor::robust function.
 #'
 #' @return The validated robust_args list.
+#'
+#' @author Facundo Decunta - fdecunta@agro.uba.ar
 #'
 #' @keywords internal
 .validate_robust_args <- function(model_data, robust_args) {

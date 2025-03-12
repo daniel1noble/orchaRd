@@ -23,4 +23,7 @@ A variance-covariance matrix for use in meta-analytic models.
 \description{
 Creates a variance-covariance matrix for a subset of data using metafor's vcalc function.
 }
+\author{
+Facundo Decunta - fdecunta@agro.uba.ar
+}
 \keyword{internal}
