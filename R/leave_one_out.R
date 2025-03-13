@@ -122,8 +122,18 @@ leave_one_out <- function(model, group, vcalc_args = NULL, robust_args = NULL) {
     })
 
     if(!is.null(robust_args)) {
+      # TODO: This way of calling robust must be simpler
+
+      # cluster_var has to be a vector, not a string. robust_args$cluster is a string.
       cluster_var <- tmp_model_call$data[[robust_args$cluster]]
-      tmp_res <- metafor::robust(tmp_res, cluster = cluster_var)
+
+      if(!is.null(robust_args$clubSandwich)) {
+        clubSandwich_arg <- robust_args$clubSandwich
+      } else {
+        clubSandwich_arg <- FALSE
+      }
+
+      tmp_res <- metafor::robust(tmp_res, cluster = cluster_var, clubSandwich = clubSandwich_arg)
     }
 
     # Return the model output so it is saved in 'models_outputs' list

@@ -1,5 +1,5 @@
 ---
-title: "Leave-one-out test"
+title: "leave_one_out() and orchard_leave1out() demo"
 author: "fd"
 date: "2025-03-13"
 output: html_document
@@ -14,16 +14,14 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(metafor)
 library(devtools)
+library(clubSandwich)
 load_all() # Load dev package
 ```
 
 ## orchard_leave1out()
 
-orchard_leave1out() is a function that creates an orchard plot with the results from a leave-one-out analysis. It is useful to see how the overall estimate changes when each study is left out.
-
-For each left-out study, the plot shows the effect sizes, the model estimate, along with c
-confidence and prediction intervals. Also, it show the points left out in that analysis as 'ghost points'.
-
+`orchard_leave1out()` creates an orchard plot with the results from a leave-one-out analysis. 
+For each element left-out, the plot shows effect sizes, the model estimate, 95% confidence intervals and prediction intervals. Also, it shows the left-out effect sizes as 'ghost points' (this is experimental, of course).
 
 ### Example 1: Eklof data
 
@@ -48,7 +46,7 @@ eklof$Datapoint <- as.factor(seq(1, dim(eklof)[1], 1))
 eklof$N <- rowSums(eklof[, c("N_control", "N_treatment")])
 ```
 
-Create **Authors** column with first author and year, to make it pretty
+Create **Authors** column with first author and year. This is going to be used as the `group` from which leave-one-out.
 
 ```{r}
 eklof <- eklof %>% 
@@ -57,10 +55,9 @@ eklof <- eklof %>%
 
 
 ```{r}
-# fit a meta-regression with the intercept (contrast)
 eklof_MR0 <- rma.mv(yi = lnRR,
                     V = vlnRR,
-                    mods = ~Grazer.type,
+                    mods = ~ Grazer.type,
                     random = list(~1 | ExptID,
                                   ~1 | Datapoint),
                     data = eklof)
@@ -69,7 +66,7 @@ results <- mod_results(eklof_MR0, group = "Author")
 results
 ```
 
-You can create the default leave-one-out plot like this:
+You can create the basic leave-one-out plot like this:
 
 ```{r}
 orchard_leave1out(model = eklof_MR0,
@@ -77,7 +74,7 @@ orchard_leave1out(model = eklof_MR0,
                   xlab  = "lnRR")
 ```
 
-But you may want to make changes to the plot. Most of the changes can be done using the arguments from orchard_plot():
+But you may want to make changes to the plot. You can customize it using the arguments from `orchard_plot()`:
 
 ```{r}
 orchard_leave1out(eklof_MR0,
@@ -85,19 +82,19 @@ orchard_leave1out(eklof_MR0,
                   xlab = "lnRR",
                   trunk.size = 1.2,
                   branch.size = 1.5,
-                  alpha = 0.1,
+                  alpha = 0.2,
                   legend.pos = "top.out")
 ```
 
-And there are also a few arguments that are specific to 'orchard_leave1out()':
+There are a few arguments for aesthetic changes that are specific to `orchard_leave1out()`:
 
-- ylab: String. with the label for the y-axis. 
+- `ylab`: String. Label for the y-axis. 
 
-- ci_lines: Logical. If TRUE, the 95% CI lines are added to the plot. Default is TRUE.
+- `ci_lines`: Logical. If TRUE, the 95% CI lines are added to the plot. Default is TRUE.
 
-- ci_lines_color: String. Color for the 95% CI lines. Default is "black".
+- `ci_lines_color`: String. Color for the 95% CI lines. Default is "red".
 
-- ghost_points: Logical. If TRUE, the points for the studies left out are added to the plot. Default is TRUE.
+- `ghost_points`: Logical. If TRUE, the points from the study left out are added to the plot. Default is TRUE.
 
 ```{r}
 orchard_leave1out(eklof_MR0,
@@ -105,14 +102,14 @@ orchard_leave1out(eklof_MR0,
                   xlab = "lnRR",
                   trunk.size = 1.2,
                   branch.size = 1.5,
-                  alpha = 0.1,
+                  alpha = 0.2,
+                  k.pos = "none",
                   legend.pos = "top.out",
                   ylab = "Study left out",
                   ci_lines_color = "darkorchid")
 ```
 
-You can also remove 'ghost_points'. 
-They help to see the points that are left out, but they can be removed:
+You can remove `ghost_points` or `ci_lines` if you don't want them:
 
 
 ```{r}
@@ -124,14 +121,11 @@ orchard_leave1out(eklof_MR0,
                   alpha = 0.1,
                   legend.pos = "top.out",
                   ylab = "Study left out",
-                  ci_lines_color = "darkorchid",
+                  ci_lines = FALSE,
                   ghost_points = FALSE)
 ```
 
-
-
-
-## Example with BCG vaccine data from metafor
+### Example 2: BCG vaccine data from metafor
 
 ```{r}
 dat <- metafor::escalc(measure = "RR", ai = tpos, bi = tneg, ci = cpos, di = cneg, data = dat.bcg)
@@ -142,36 +136,69 @@ dat <- dat %>%
 res <- metafor::rma(yi, vi, data = dat)
 ```
 
-Add a lot of arguments just to see if they work
+You can use **transformations** in `orchard_leave1out()` using the `transfm` argument, just like in `orchard_plot()`:
+
+```{r, fig.height=2}
+# Simple orchard plot just for comparison
+orchard_plot(res, group = "reference", transfm = "percentr", xlab = "%")
+```
 
 ```{r}
+# Leave one out using transformation and lot of args
 orchard_leave1out(res,
                   group = "reference",
-                  xlab = "lnRR",
+                  xlab = "%",
                   ylab = "Study left out",
                   legend.pos = "bottom.out", 
                   trunk.size = 1.2,
                   branch.size = 1.3,
                   twig.size = 0,
+                  transfm = "percentr",
                   k.pos = "none",
-                  alpha = 0.2) 
+                  alpha = 0.2,
+                  ci_lines_color = "black")
 ```
 
-Sometimes the first plot is not good enough, so you have to make some changes.
+The plot is build on ggplot2, so there are some thing that you can modify using ggplot2 functions:
 
-orchard_leave1out() can be slow because it runs all the meta-analytic models needed for the leave-one-out.
-For those cases, it is possible to run leave_one_out(),
-save the result and use it for orchard_leave1out(), so you don't have to refit 
-a lot of models each time you want to make a tweak in the plot.
+```{r}
+orchard_leave1out(res,
+                  group = "reference",
+                  xlab = "%",
+                  ylab = "Study left out",
+                  legend.pos = "bottom.out", 
+                  trunk.size = 1.2,
+                  branch.size = 1.3,
+                  twig.size = 0,
+                  transfm = "percentr",
+                  k.pos = "none",
+                  alpha = 0.2,
+                  ci_lines_color = "black") +
+  theme_minimal() +
+  labs(title = "BCG vaccine data",
+       subtitle = "Leave-one-out analysis") +
+  scale_fill_discrete() + 
+  scale_color_discrete()
+```
 
-Note that orchard_leave1out() still needs the 'model' and 'group' arguments to get the overall estimate and 95% CI
-and to know how to group the effect sizes.
 
-The output from leave_one_out() is passed as 'loo_output':
+**Note on colors**: By default, orchard_leave1out() uses a color-blind-friendly palette. But this palette has only 20 colors.
+If there are more than 20 elements in 'group', the palette is set to Viridis.
+
+
+## leave_one_out() 
+
+Very often the first plot is not good enough and you want to make changes. The workflow is: run `orchard_leave1out()`, make changes, run it again, and repeat. But `orchard_leave1out()` can be slow because it fits all the meta-analytic models for the leave-one-out.
+
+You can avoid this by running the leave-one-out analysis once, storing the results, and then passing them to `orchard_leave1out()`.
 
 ```{r}
 res_loo <- leave_one_out(res, group = "reference")
+res_loo
 ```
+
+
+The output from `leave_one_out()` can be passed to `orchard_leave1out` with the argument `loo_output`. Note that `orchard_leave1out()` still needs the `model` and `group` arguments:
 
 
 ```{r}
@@ -187,24 +214,14 @@ orchard_leave1out(model = res,
                   k.pos = "none")
 ```
 
-## leave_one_out()
+### Using leave_one_out() alone
 
-The function leave_one_out() returns the results, imitating the output from mod_results(). It could be useful if someone wants to use the results for something else.
+The function `leave_one_out()` returns the results, imitating the output from mod_results(). So it can be used for any other purpose, like custom plots or tables.
+
 
 ```{r}
 res_loo <- leave_one_out(res, group = "reference")
-res_loo
-```
 
-For comparison, this is the output from metafor's leave1out:
-
-```{r}
-metafor::leave1out(res)
-```
-
-The results from leave_one_out() can be used for custom ggplot2 plots, for example:
-
-```{r}
 res_loo$mod_table %>% 
   ggplot(aes(x = reorder(name, -estimate),
              y = estimate,
@@ -217,15 +234,98 @@ res_loo$mod_table %>%
   xlab("Study left out") +
   ylab("lnRR") +
   ylim(-1.5, 0.5) +
-  theme_minimal()
+  theme_minimal() + 
+  scale_color_discrete()
 ```
 
+
+## For more complex models
+
+
+For more complex meta-analytic models, it is common to use approximate variance-covariance matrix and/or cluster robust variance estimation. Both `leave_one_out()` and `orchard_leave1out()` can handle this:
+
+- `vcalc_args`: List. Arguments to be passed to `metafor::vcalc()`. Must include 'vi', 'cluster', 'obs', and 'rho' elements.
+
+- `robust_args`: List. Arguments to be passed to `metafor::robust()`. For the moment, only accepts 'cluster' and 'clubSandwich`.
+
+
+It is a little bit more complicated, but it is a solution. For example:
+
+
+```{r}
+# Didn't try to be a correct analysis, just an example
+VCV <- vcalc(vi = vlnRR,
+             cluster = ExptID,
+             obs = Datapoint,
+             rho = 0.5,
+             data = eklof)
+
+eklof_res2 <- rma.mv(yi = lnRR,
+                     V = VCV,
+                     mods = ~ Grazer.type,
+                     random = list(~1 | ExptID,
+                                   ~1 | Datapoint),
+                     data = eklof)
+
+rob.eklof <- robust(eklof_res2, cluster = ExptID, clubSandwich = TRUE)
+```
+
+
+```{r}
+# Define arguments for metafor::vcalc. They are passed as strings, except for rho.
+vcalc_args = list(vi = "vlnRR",
+                  cluster = "ExptID",
+                  obs = "Datapoint",
+                  rho = 0.5)
+
+# Define arguments for metafor::robust.
+robust_args = list(cluster = "ExptID", clubSandwich = TRUE)
+
+
+orchard_leave1out(rob.eklof, 
+                  group = 'Author',
+                  xlab = "lnRR",
+                  ylab = "Study left out",
+                  vcalc_args = vcalc_args,    # vcalc arguments
+                  robust_args = robust_args,    # robust arguments
+                  k.pos = "none",
+                  alpha = 0.2,
+                  legend.pos = "top.out")
+```
+
+
+The same works for `leave_one_out()`:
+
+```{r}
+loo_outputs <- leave_one_out(rob.eklof,
+                             group = "Author",
+                             vcalc_args = vcalc_args,
+                             robust_args = robust_args)
+
+loo_outputs
+```
+
+This is an internal function, but just to check that it is actually using robust with clubSandwich (there are tests to check that robust is working):
+
+```{r}
+raw_output <- .run_leave1out(rob.eklof,
+              group = "Author",
+              vcalc_args = vcalc_args,
+              robust_args = robust_args)
+
+# show the results when leaving out Richardsson 1998
+raw_output$`Richardsson, 1998`
+```
 
 
 ## Notes and to-do
 
-- **orchard_plot()**: There are only 20 colors, but they are not recycled. This is a problem when there are more than 20 studies (or whatever group is used)
-- Transformation is not working yet. This is because the transformation is handled inside orchard_plot() and the lines for 95% CI are added on top of the orchard plot. Maybe move the transformation out of orchard_plot() to a separate function?
-- Only works for intercepts, No mod, no 'by' argument. Fix this
-- Maybe there should be separate argument for `group` called `leave_out_goup` or something like that. For example, if a user want to leave out one species at a time and still plot the results using group by paper. 
-- Add some arguments to modify the 95% confidence lines and also add the overall estimate
+- For the moment, it only works shows the intercept. 
+
+- The `ghost_points` are experimental. I'm not sure if they are useful or not.
+
+- The `robust_args` and `vcalc_args` were tested with simple cases, but I should work a little more on this. 
+
+- If the user pass a model that used variance covariance matrix but then don't pass `vcalc_args`, the function should give an appropriate error. Same for robust. 
+
+- This kind of plots always had lot of points. Maybe `alpha` should be 0.2 or 0.1 by default.

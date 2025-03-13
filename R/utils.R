@@ -136,9 +136,9 @@
 #'
 #' @keywords internal
 .is_metafor_object <- function(obj) {
-  if (!inherits(obj, c("rma.mv", "rma", "rma.uni", "robust.rma"))) {
-    return(FALSE)
-  } else {
+  if (inherits(obj, c("rma.mv", "rma", "rma.uni", "robust.rma"))) {
     return(TRUE)
+  } else {
+    return(FALSE)
   }
 }
