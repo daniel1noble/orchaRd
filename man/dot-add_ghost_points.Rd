@@ -4,13 +4,15 @@
 \alias{.add_ghost_points}
 \title{Add Ghost Points to Orchard Plot}
 \usage{
-.add_ghost_points(model, group)
+.add_ghost_points(model, group, transfm)
 }
 \arguments{
 \item{model}{A meta-analytic model object from the \pkg{metafor} package.}
 
 \item{group}{Character string specifying the column name in \code{model$data} that
 identifies the grouping variable. Each unique value in this variable is omitted in turn.}
+
+\item{transfm}{Character string with the transformation to be applied}
 }
 \value{
 A \pkg{ggplot2} layer (via \code{geom_quasirandom}) displaying the ghost points.

@@ -111,7 +111,7 @@ orchard_leave1out <- function(model,
   }
 
   if (ghost_points) {
-    p <- p + .add_ghost_points(model, group)
+    p <- p + .add_ghost_points(model, group, transfm)
   }
 
   p <- p +
@@ -197,6 +197,7 @@ orchard_leave1out <- function(model,
 #' @param model A meta-analytic model object from the \pkg{metafor} package.
 #' @param group Character string specifying the column name in \code{model$data} that
 #'   identifies the grouping variable. Each unique value in this variable is omitted in turn.
+#' @param transfm Character string with the transformation to be applied
 #'
 #' @return A \pkg{ggplot2} layer (via \code{geom_quasirandom}) displaying the ghost points.
 #'
@@ -208,12 +209,19 @@ orchard_leave1out <- function(model,
 #' @author Facundo Decunta - fdecunta@agro.uba.ar
 #'
 #' @keywords internal
-.add_ghost_points <- function(model, group) {
+.add_ghost_points <- function(model, group, transfm) {
   # Add the removed points from each study in red
   removed_points <- mod_results(model, group = group)$data 
-  
+
   removed_points$stdy <- as.factor(removed_points$stdy)
   removed_points$scale <- 1/sqrt(removed_points$vi)
+
+  if (!is.null(transfm)) {
+    # NOTE: For some reason 'scale' should not be transformed. It makes the points too small.
+    # I should inspect how it is done in orchard_plot()
+    numeric_col <- c("yi", "vi")
+    removed_points[, numeric_col] <- transform_data(removed_points[, numeric_col], transfm)
+  }
   
   ggbeeswarm::geom_quasirandom(data = removed_points,
                                ggplot2::aes(x = stdy, y = yi, size = scale),
