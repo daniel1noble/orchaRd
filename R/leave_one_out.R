@@ -35,7 +35,7 @@
 #'
 #' @export
 
-leave_one_out <- function(model, group, vcalc_args = NULL, robust_args = NULL) {
+leave_one_out <- function(model, group, vcalc_args = NULL, robust_args = NULL, phylo_args = NULL) {
   # Check model is a metafor object
   .is_model_valid(model)
   # Check if group is in model data
@@ -54,8 +54,15 @@ leave_one_out <- function(model, group, vcalc_args = NULL, robust_args = NULL) {
     .validate_robust_args(model$data, robust_args)
   }
 
+  # TODO: Validate phylogenetic args
+  # phylo_args must be a list with the phylogenetic tree and
+  # the name of the column in the data tha is linked to the phylo matrix (species names).
+  if (!is.null(phylo_args)) {
+    .validate_phylo_args(model, phylo_args) 
+  }
+
   # Run leave-one-out analysis
-  models_outputs <- .run_leave1out(model, group, vcalc_args, robust_args)
+  models_outputs <- .run_leave1out(model, group, vcalc_args, robust_args, phylo_args)
   estimates      <- .get_estimates(models_outputs, group)
   effect_sizes   <- .get_effectsizes(models_outputs, group)
 
@@ -94,7 +101,7 @@ leave_one_out <- function(model, group, vcalc_args = NULL, robust_args = NULL) {
 #'
 #' @keywords internal
 
-.run_leave1out <- function(model, group, vcalc_args = NULL, robust_args = NULL) {
+.run_leave1out <- function(model, group, vcalc_args = NULL, robust_args = NULL, phylo_args = NULL) {
   .is_model_valid(model)
   .is_group_valid(model$data, group)
 
@@ -106,8 +113,16 @@ leave_one_out <- function(model, group, vcalc_args = NULL, robust_args = NULL) {
 
     tmp_model_call <- model$call
     tmp_model_call$data <- subset(model$data, model$data[[group]] != id_left_out)
+
+    # If vcalc_args are provided, create a temporary VCV matrix
     if (!is.null(vcalc_args)) {
       tmp_model_call$V <- .create_tmp_vcv(tmp_model_call$data, vcalc_args)
+    }
+
+    # TODO: TEST THIS!!!!
+    # If the model uses phylogenetic matrix, recalculate it using the original tree
+    if (!is.null(phylo_args)) {
+     tmp_model_call$R <- .create_tmp_phylo_matrix(tmp_model_call$data, phylo_args)
     }
 
     # Evaluate the new call. If something happens, return NULL.
@@ -291,4 +306,52 @@ leave_one_out <- function(model, group, vcalc_args = NULL, robust_args = NULL) {
 
     row.names(effect_sizes) <- NULL
     return(effect_sizes)
+}
+
+#' Prune Tree For Leave-One-Out
+#' 
+#' @param tree A phylogenetic tree object.
+#' @param species_names A vector of species names.
+#' 
+#' @author Daniel Noble  - daniel.noble@anu.edu.au
+#' @author Facundo Decunta - fdecunta@agro.uba.ar
+#'
+.prune_tree <- function(tree, species_names) {
+  tree_species <- tree$tip.label
+  data_species <- unique(species_names)
+
+  species_to_prune <- setdiff(tree_species, data_species)
+
+  if (length(species_to_prune) > 0) {
+    tree <- ape::drop.tip(tree, species_to_prune)
+  }
+
+  return(tree)
+}
+
+#' Create Temporary Phylogenetic Matrix For Leave-One-Out
+#' 
+#' @param data A data frame containing the variables specified in phylo_args.
+#' @param phylo_args A list of arguments for the phylogenetic matrix calculation, including:
+#'  \itemize{
+#'    \item tree: A phylogenetic tree object
+#'    \item species_colname: Name of the column in the data that is linked to the phylo matrix (species names)
+#'  }
+#'
+#' @return A phylogenetic matrix for use in meta-analytic models.
+#'
+#' @author Facundo Decunta -
+#' @keywords internal
+.create_tmp_phylo_matrix <- function(data, phylo_args) {
+  orig_tree <- phylo_args$tree
+  species_colname <- phylo_args$species_colname
+
+  # Remove species that are left out
+  pruned_tree <- .prune_tree(orig_tree, data[[species_colname]])
+  pruned_tree <- ape::compute.brlen(pruned_tree)
+
+  # Compute the phylo matrix 
+  tmp_phylo_matrix <- ape::vcv.phylo(pruned_tree, cor = TRUE)
+
+  return(tmp_phylo_matrix)
 }

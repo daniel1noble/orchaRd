@@ -239,20 +239,65 @@ test_that("leave_one_out gives the same result that metafor::leave1out", {
 })
 
 
-test_that("leave_one_out accepts numeric ID as group and works like metafor::leave1out", {
-  # Here 'group' is a numeric variable with ID numbers.
-  mock_data2 <- data.frame(study_id = 1:10,
-                          yi = c(0.2, -0.1, 0.4, 0.3, 0.5, -0.2, 0.1, 0.6, -0.3, 0.25),
-                          vi = c(0.05, 0.07, 0.06, 0.08, 0.04, 0.09, 0.03, 0.05, 0.1, 0.06))
+test_that(".prune_tree is removing the branches correctly", {
+  # Create a tree with 4 species
+  full_spp_names <- c("Festuca arundinacea",
+                 "Lolium perenne",
+                 "Solanum tuberosum",
+                 "Nassella neesiana")
 
-  res <- metafor::rma(yi, vi, data = mock_data2)
+  # TODO: Use a saved tree instead of downloading it every time with rotl
 
-  # Leave One Out:
-  loo_metafor <- metafor::leave1out(res)
-  loo_orchard <- leave_one_out(res, group = "study_id")   
+  # Get phylo tree
+  taxa <- rotl::tnrs_match_names(full_spp_names, context_name = "Land plants")
+  tree <- rotl::tol_induced_subtree(taxa$ott_id)
+  tree$tip.label <- rotl::strip_ott_ids(tree$tip.label, remove_underscores = TRUE)
+
+  # Remove one species
+  removed_species <- "Solanum tuberosum"
+  sliced_spp_names <- full_spp_names[full_spp_names != removed_species]
+  pruned_tree <- .prune_tree(tree, sliced_spp_names)
+
+  expect_false(removed_species %in% pruned_tree$tip.label)
+})
+
+test_that(".create_tmp_phylo_matrix creates the correct matrix", {
+  full_spp_names <- c("Festuca arundinacea",
+                 "Lolium perenne",
+                 "Solanum tuberosum",
+                 "Nassella neesiana")
+  # Get the original phylo tree 
+  taxa <- rotl::tnrs_match_names(full_spp_names, context_name = "Land plants")
+  tree <- rotl::tol_induced_subtree(taxa$ott_id)
+  tree$tip.label <- rotl::strip_ott_ids(tree$tip.label, remove_underscores = TRUE)
   
-  # Metafor output has a lot of column, we only use the estimate, ci.lb and ci.ub
-  expect_equal(round(loo_metafor$estimate, 4), round(loo_orchard$mod_table$estimate, 4))
-  expect_equal(round(loo_metafor$ci.lb,    4), round(loo_orchard$mod_table$lowerCL,  4))
-  expect_equal(round(loo_metafor$ci.ub,    4), round(loo_orchard$mod_table$upperCL,  4))
+  # Compute phylo matrix for full dataset
+  tree <- ape::compute.brlen(tree)
+  full_phylo_matrix <- ape::vcv(tree, cor = TRUE)
+  
+  # --------------------------------------------------------------
+  # Remove one species and compute the phylo matrix manually
+  short_spp_names <- c("Festuca arundinacea",
+                 "Lolium perenne",
+                 "Nassella neesiana")
+  # Get tree for the reduced dataset
+  short_taxa <- rotl::tnrs_match_names(short_spp_names, context_name = "Land plants")
+  short_tree <- rotl::tol_induced_subtree(short_taxa$ott_id)
+  short_tree$tip.label <- rotl::strip_ott_ids(short_tree$tip.label, remove_underscores = TRUE)
+  
+  # Compute phylo matrix
+  short_tree <- ape::compute.brlen(short_tree)
+  short_phylo_matrix <- ape::vcv(short_tree, cor = TRUE)
+  
+  # --------------------------------------------------------------
+  # Test .create_tmp_phylo_matrix
+  # It must be: 
+  #   - Different than full_phylo_matrix
+  #   - Equal to short_phylo_matrix
+  dat <- data.frame(spp_names = short_spp_names)
+  phylo_args <- list(tree = tree, species_colname = "spp_names")
+  test_matrix <- .create_tmp_phylo_matrix(dat, phylo_args)
+  
+  expect_false(identical(full_phylo_matrix, test_matrix))
+  expect_true(identical(short_phylo_matrix, test_matrix))
 })
