@@ -1,6 +1,6 @@
 #' Leave-One-Out Analysis for Meta-Analytic Models
 #'
-#' Performs a leave-one-out (LOO) analysis on a meta-analytic model from
+#' Performs a leave-one-out analysis on a meta-analytic model from
 #' the **metafor** package by iteratively removing each level of a grouping
 #' variable and refitting the model.
 #'
@@ -55,8 +55,6 @@ leave_one_out <- function(model, group, vcalc_args = NULL, robust_args = NULL, p
   }
 
   # TODO: Validate phylogenetic args
-  # phylo_args must be a list with the phylogenetic tree and
-  # the name of the column in the data tha is linked to the phylo matrix (species names).
   if (!is.null(phylo_args)) {
     .validate_phylo_args(model, phylo_args) 
   }
@@ -355,3 +353,32 @@ leave_one_out <- function(model, group, vcalc_args = NULL, robust_args = NULL, p
 
   return(tmp_phylo_matrix)
 }
+
+#' Validate Phylogenetic Arguments
+# phylo_args must be a list with the phylogenetic tree and
+# the name of the column in the data tha is linked to the phylo matrix (species names).
+.validate_phylo_args <- function(model, phylo_args) {
+  if (!is.list(phylo_args)) {
+    stop("phylo_args must be a list with the arguments for the phylogenetic matrix calculation: e.g., phylo_args = list(tree = tree, species_colname = 'species')",
+         call. = FALSE)
+  }
+
+  if (!all(c("tree", "species_colname") %in% names(phylo_args))) {
+    stop("phylo_args must contain at least the following elements: 'tree', 'species_colname'", call. = FALSE)
+  }
+
+  if (class(phylo_args$tree) != "phylo") {
+    stop("The 'tree' argument in phylo_args must be a phylogenetic tree object", call. = FALSE)
+  }
+
+  # Check if the species_colname is the name of a random factor linked to a matrix in the model
+  linked_random_factors <- names(model$Rfix[model$Rfix == TRUE])
+  if (!(phylo_args$species_colname %in% linked_random_factors)) {
+    stop("The 'species_colname' argument in phylo_args must be the name of the random factor linked to the phylo matrix in the model",
+         call. = FALSE)
+  }
+
+  return(phylo_args)
+}
+
+

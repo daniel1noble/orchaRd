@@ -241,35 +241,30 @@ test_that("leave_one_out gives the same result that metafor::leave1out", {
 
 test_that(".prune_tree is removing the branches correctly", {
   # Create a tree with 4 species
-  full_spp_names <- c("Festuca arundinacea",
-                 "Lolium perenne",
-                 "Solanum tuberosum",
-                 "Nassella neesiana")
+  full_spp_names <- c("Festuca_arundinacea",
+                      "Lolium_perenne",
+                      "Solanum_tuberosum",
+                      "Nassella_neesiana")
 
-  # TODO: Use a saved tree instead of downloading it every time with rotl
-
-  # Get phylo tree
-  taxa <- rotl::tnrs_match_names(full_spp_names, context_name = "Land plants")
-  tree <- rotl::tol_induced_subtree(taxa$ott_id)
-  tree$tip.label <- rotl::strip_ott_ids(tree$tip.label, remove_underscores = TRUE)
+  # Read phylo tree created with those species
+  tree <- ape::read.tree(test_path("dummy_tree.tre"))
 
   # Remove one species
-  removed_species <- "Solanum tuberosum"
+  removed_species <- "Solanum_tuberosum"
   sliced_spp_names <- full_spp_names[full_spp_names != removed_species]
   pruned_tree <- .prune_tree(tree, sliced_spp_names)
 
+  expect_s3_class(pruned_tree, "phylo")
   expect_false(removed_species %in% pruned_tree$tip.label)
 })
 
 test_that(".create_tmp_phylo_matrix creates the correct matrix", {
-  full_spp_names <- c("Festuca arundinacea",
-                 "Lolium perenne",
-                 "Solanum tuberosum",
-                 "Nassella neesiana")
-  # Get the original phylo tree 
-  taxa <- rotl::tnrs_match_names(full_spp_names, context_name = "Land plants")
-  tree <- rotl::tol_induced_subtree(taxa$ott_id)
-  tree$tip.label <- rotl::strip_ott_ids(tree$tip.label, remove_underscores = TRUE)
+  full_spp_names <- c("Festuca_arundinacea",
+                      "Lolium_perenne",
+                      "Solanum_tuberosum",
+                      "Nassella_neesiana")
+  # Read phylo tree created with those species
+  tree <- ape::read.tree(test_path("dummy_tree.rda"))
   
   # Compute phylo matrix for full dataset
   tree <- ape::compute.brlen(tree)
@@ -277,14 +272,12 @@ test_that(".create_tmp_phylo_matrix creates the correct matrix", {
   
   # --------------------------------------------------------------
   # Remove one species and compute the phylo matrix manually
-  short_spp_names <- c("Festuca arundinacea",
-                 "Lolium perenne",
-                 "Nassella neesiana")
-  # Get tree for the reduced dataset
-  short_taxa <- rotl::tnrs_match_names(short_spp_names, context_name = "Land plants")
-  short_tree <- rotl::tol_induced_subtree(short_taxa$ott_id)
-  short_tree$tip.label <- rotl::strip_ott_ids(short_tree$tip.label, remove_underscores = TRUE)
-  
+  short_spp_names <- c("Festuca_arundinacea",
+                       "Lolium_perenne",
+                       "Nassella_neesiana")
+  # Get tree for the reduced dataset 
+  short_tree <- .prune_tree(tree, short_spp_names)
+
   # Compute phylo matrix
   short_tree <- ape::compute.brlen(short_tree)
   short_phylo_matrix <- ape::vcv(short_tree, cor = TRUE)

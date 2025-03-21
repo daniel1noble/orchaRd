@@ -4,7 +4,13 @@
 \alias{.run_leave1out}
 \title{Fit Multiple Meta-Analytic Models For Leave-One-Out Analysis}
 \usage{
-.run_leave1out(model, group, vcalc_args = NULL, robust_args = NULL)
+.run_leave1out(
+  model,
+  group,
+  vcalc_args = NULL,
+  robust_args = NULL,
+  phylo_args = NULL
+)
 }
 \arguments{
 \item{model}{A fitted model object containing a \code{data} element, which must be 

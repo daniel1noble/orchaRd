@@ -4,7 +4,13 @@
 \alias{leave_one_out}
 \title{Leave-One-Out Analysis for Meta-Analytic Models}
 \usage{
-leave_one_out(model, group, vcalc_args = NULL, robust_args = NULL)
+leave_one_out(
+  model,
+  group,
+  vcalc_args = NULL,
+  robust_args = NULL,
+  phylo_args = NULL
+)
 }
 \arguments{
 \item{model}{A meta-analytic model fitted using **metafor**.}
@@ -22,7 +28,7 @@ Same as `mod_results()`, but with the estimates from each model ran
   in the leave-one-out analysis, and the effect sizes from each model.
 }
 \description{
-Performs a leave-one-out (LOO) analysis on a meta-analytic model from
+Performs a leave-one-out analysis on a meta-analytic model from
 the **metafor** package by iteratively removing each level of a grouping
 variable and refitting the model.
 }
