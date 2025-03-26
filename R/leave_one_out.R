@@ -54,7 +54,6 @@ leave_one_out <- function(model, group, vcalc_args = NULL, robust_args = NULL, p
     .validate_robust_args(model$data, robust_args)
   }
 
-  # TODO: Validate phylogenetic args
   if (!is.null(phylo_args)) {
     .validate_phylo_args(model, phylo_args) 
   }
@@ -100,14 +99,11 @@ leave_one_out <- function(model, group, vcalc_args = NULL, robust_args = NULL, p
 #' @keywords internal
 
 .run_leave1out <- function(model, group, vcalc_args = NULL, robust_args = NULL, phylo_args = NULL) {
-  .is_model_valid(model)
-  .is_group_valid(model$data, group)
-
   group_ids <- unique(model$data[[group]])
 
   models_outputs <- lapply(group_ids, function(id_left_out) {
     # Create a new call to fit the model. Modify the data to leave out the group
-    # and change de VCV if needed. Then evaluate the new call.
+    # and change de VCV and phylo matrix if needed. Then evaluate the new call.
 
     tmp_model_call <- model$call
     tmp_model_call$data <- subset(model$data, model$data[[group]] != id_left_out)
@@ -117,10 +113,13 @@ leave_one_out <- function(model, group, vcalc_args = NULL, robust_args = NULL, p
       tmp_model_call$V <- .create_tmp_vcv(tmp_model_call$data, vcalc_args)
     }
 
-    # TODO: TEST THIS!!!!
     # If the model uses phylogenetic matrix, recalculate it using the original tree
+    # The model object contains the correlation matrices in 'R'. This is a list
+    # where the names are the random effects and the elements are the correlation matrices.
+    # So, first create the new matrix, then use it as the matrix linked to phylo_args$species_colname.
     if (!is.null(phylo_args)) {
-     tmp_model_call$R <- .create_tmp_phylo_matrix(tmp_model_call$data, phylo_args)
+      tmp_phylo_matrix <- .create_tmp_phylo_matrix(tmp_model_call$data, phylo_args) 
+      tmp_model_call$R[[phylo_args$species_colname]] <- tmp_phylo_matrix
     }
 
     # Evaluate the new call. If something happens, return NULL.

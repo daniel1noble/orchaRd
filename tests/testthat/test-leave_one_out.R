@@ -247,7 +247,7 @@ test_that(".prune_tree is removing the branches correctly", {
                       "Nassella_neesiana")
 
   # Read phylo tree created with those species
-  tree <- ape::read.tree(test_path("dummy_tree.tre"))
+  tree <- ape::read.tree(test_path("dummy_tree.rda"))
 
   # Remove one species
   removed_species <- "Solanum_tuberosum"
@@ -293,4 +293,66 @@ test_that(".create_tmp_phylo_matrix creates the correct matrix", {
   
   expect_false(identical(full_phylo_matrix, test_matrix))
   expect_true(identical(short_phylo_matrix, test_matrix))
+})
+
+test_that(".run_leave1out works with phylo_args", {
+  # Create mock data using four species
+  full_spp_names <- c("Festuca_arundinacea",
+                      "Lolium_perenne",
+                      "Solanum_tuberosum",
+                      "Nassella_neesiana")
+
+  # Read phylo tree created with those species
+  tree <- ape::read.tree(test_path("dummy_tree.rda"))
+
+  # Create mock data
+  # Create 5 observations for each species
+  set.seed(123)
+  mock_data <- data.frame(spp_names = rep(full_spp_names, times = 5),
+                          yi = rnorm(20),
+                          vi = abs(rnorm(20)))
+
+  # Add new column to link species with phylo matrix
+  mock_data$phylo <- mock_data$spp_names
+
+  # Compute the full matrix
+  tree <- ape::compute.brlen(tree)
+  phylo_matrix <- ape::vcv(tree, cor = TRUE)
+
+  # --------------------------------------------------------------
+  # Create short data set without "Solanum_tuberosum"
+  short_spp_names <- c("Festuca_arundinacea",
+                       "Lolium_perenne",
+                       "Nassella_neesiana")
+  short_tree <- .prune_tree(tree, short_spp_names)
+  short_tree <- ape::compute.brlen(short_tree)
+  short_phylo_matrix <- ape::vcv(short_tree, cor = TRUE)
+
+  short_data <- subset(mock_data, spp_names != "Solanum_tuberosum")
+
+  true_results <- metafor::rma.mv(yi, vi,
+                                  random = list(~ 1 | spp_names,
+                                                ~ 1 | phylo),
+                                  R = list(phylo = short_phylo_matrix),
+                                  data = short_data)
+
+  # --------------------------------------------------------------
+  # Create the full model to leave-one-out
+  mock_model <- metafor::rma.mv(yi, vi,
+                         random = list(~ 1 | spp_names,
+                                       ~ 1 | phylo),
+                         R = list(phylo = phylo_matrix),
+                         data = mock_data)
+
+  # Run leave-one-out
+  loo_results <- leave_one_out(mock_model,
+                               group = "spp_names",
+                               phylo_args = list(tree = tree, species_colname = "phylo"))
+
+  test_results <- subset(loo_results$mod_table, name == "Solanum_tuberosum")
+
+  # --------------------------------------------------------------
+  expect_equal(c(true_results$beta), test_results$estimate, tolerance = 1e-4)
+  expect_equal(c(true_results$ci.lb), test_results$lowerCL, tolerance = 1e-4)
+  expect_equal(c(true_results$ci.ub), test_results$upperCL, tolerance = 1e-4)
 })
