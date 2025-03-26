@@ -10,6 +10,9 @@
 #'   metafor's vcalc function. Must include 'vi', 'cluster', 'obs', and 'rho' elements.
 #' @param robust_args Optional list of arguments for robust variance estimation using
 #'   metafor's robust function. Must include a 'cluster' element.
+#' @param phylo_args Optional list of arguments for phylogenetic matrix calculation using
+#'   ape's vcv function. Must include 'tree' and 'species_colname' elements. 'tree' is a phylogenetic
+#'   tree object and 'species_colname' is the name of the column in the model data that is linked to the phylo matrix.
 #'
 #' @return Same as `mod_results()`, but with the estimates from each model ran
 #'   in the leave-one-out analysis, and the effect sizes from each model.
@@ -86,6 +89,9 @@ leave_one_out <- function(model, group, vcalc_args = NULL, robust_args = NULL, p
 #'   metafor's vcalc function. Must include 'vi', 'cluster', 'obs', and 'rho' elements.
 #' @param robust_args Optional list of arguments for robust variance estimation using
 #'   metafor's robust function. Must include a 'cluster' element.
+#' @param phylo_args Optional list of arguments for phylogenetic matrix calculation using
+#'   ape's vcv function. Must include 'tree' and 'species_colname' elements. 'tree' is a phylogenetic
+#'   tree object and 'species_colname' is the name of the column in the model data that is linked to the phylo matrix.
 #'
 #' @details The function removes each unique group from \code{model$data} one at a time, 
 #'   refitting the model using \code{update()}. If an update fails, a warning is issued, 
@@ -348,7 +354,7 @@ leave_one_out <- function(model, group, vcalc_args = NULL, robust_args = NULL, p
   pruned_tree <- ape::compute.brlen(pruned_tree)
 
   # Compute the phylo matrix 
-  tmp_phylo_matrix <- ape::vcv.phylo(pruned_tree, cor = TRUE)
+  tmp_phylo_matrix <- ape::vcv(pruned_tree, corr = TRUE)
 
   return(tmp_phylo_matrix)
 }
@@ -379,5 +385,4 @@ leave_one_out <- function(model, group, vcalc_args = NULL, robust_args = NULL, p
 
   return(phylo_args)
 }
-
 

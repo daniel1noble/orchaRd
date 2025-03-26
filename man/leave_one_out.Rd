@@ -22,6 +22,10 @@ metafor's vcalc function. Must include 'vi', 'cluster', 'obs', and 'rho' element
 
 \item{robust_args}{Optional list of arguments for robust variance estimation using
 metafor's robust function. Must include a 'cluster' element.}
+
+\item{phylo_args}{Optional list of arguments for phylogenetic matrix calculation using
+ape's vcv function. Must include 'tree' and 'species_colname' elements. 'tree' is a phylogenetic
+tree object and 'species_colname' is the name of the column in the model data that is linked to the phylo matrix.}
 }
 \value{
 Same as `mod_results()`, but with the estimates from each model ran

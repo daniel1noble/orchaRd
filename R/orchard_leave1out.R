@@ -12,8 +12,13 @@
 #' @param group Character string naming the column in \code{model$data} that indicates the grouping variable.
 #'   The analysis iteratively omits each unique element of this variable.
 #' @param ylab Optional label for the y-axis, which lists the elements left out.
-#' @param vcalc_args Optional list of parameters for computing the variance-covariance matrix.
-#' @param robust_args Optional list of parameters for running \code{metafor::robust}.
+#' @param vcalc_args Optional list of arguments for the variance-covariance calculation using 
+#'   metafor's vcalc function. Must include 'vi', 'cluster', 'obs', and 'rho' elements.
+#' @param robust_args Optional list of arguments for robust variance estimation using
+#'   metafor's robust function. Must include a 'cluster' element.
+#' @param phylo_args Optional list of arguments for phylogenetic matrix calculation using
+#'   ape's vcv function. Must include 'tree' and 'species_colname' elements. 'tree' is a phylogenetic
+#'   tree object and 'species_colname' is the name of the column in the model data that is linked to the phylo matrix.
 #' @param ci_lines Logical indicating whether to add horizontal reference lines (default is \code{TRUE})
 #'   representing the original model's 95\% confidence intervals.
 #' @param ci_lines_color Character string specifying the color for the confidence interval lines (default is \code{"red"}).
@@ -66,6 +71,7 @@ orchard_leave1out <- function(model,
                               ylab = NULL,
                               vcalc_args = NULL,
                               robust_args = NULL,
+                              phylo_args = NULL,
                               ci_lines = TRUE,
                               ci_lines_color = "red",
                               ghost_points = TRUE,
@@ -91,7 +97,8 @@ orchard_leave1out <- function(model,
     loo_output <- leave_one_out(model = model,
                                 group = group,
                                 vcalc_args = vcalc_args,
-                                robust_args = robust_args)
+                                robust_args = robust_args,
+                                phylo_args = phylo_args)
   }
 
   # Set colors for the plot. Check if 20 colours are enough 

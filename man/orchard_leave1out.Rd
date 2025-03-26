@@ -11,6 +11,7 @@ orchard_leave1out(
   ylab = NULL,
   vcalc_args = NULL,
   robust_args = NULL,
+  phylo_args = NULL,
   ci_lines = TRUE,
   ci_lines_color = "red",
   ghost_points = TRUE,
@@ -31,9 +32,15 @@ The analysis iteratively omits each unique element of this variable.}
 
 \item{ylab}{Optional label for the y-axis, which lists the elements left out.}
 
-\item{vcalc_args}{Optional list of parameters for computing the variance-covariance matrix.}
+\item{vcalc_args}{Optional list of arguments for the variance-covariance calculation using 
+metafor's vcalc function. Must include 'vi', 'cluster', 'obs', and 'rho' elements.}
 
-\item{robust_args}{Optional list of parameters for running \code{metafor::robust}.}
+\item{robust_args}{Optional list of arguments for robust variance estimation using
+metafor's robust function. Must include a 'cluster' element.}
+
+\item{phylo_args}{Optional list of arguments for phylogenetic matrix calculation using
+ape's vcv function. Must include 'tree' and 'species_colname' elements. 'tree' is a phylogenetic
+tree object and 'species_colname' is the name of the column in the model data that is linked to the phylo matrix.}
 
 \item{ci_lines}{Logical indicating whether to add horizontal reference lines (default is \code{TRUE})
 representing the original model's 95\% confidence intervals.}

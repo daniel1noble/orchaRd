@@ -268,7 +268,7 @@ test_that(".create_tmp_phylo_matrix creates the correct matrix", {
   
   # Compute phylo matrix for full dataset
   tree <- ape::compute.brlen(tree)
-  full_phylo_matrix <- ape::vcv(tree, cor = TRUE)
+  full_phylo_matrix <- ape::vcv(tree, corr = TRUE)
   
   # --------------------------------------------------------------
   # Remove one species and compute the phylo matrix manually
@@ -280,7 +280,7 @@ test_that(".create_tmp_phylo_matrix creates the correct matrix", {
 
   # Compute phylo matrix
   short_tree <- ape::compute.brlen(short_tree)
-  short_phylo_matrix <- ape::vcv(short_tree, cor = TRUE)
+  short_phylo_matrix <- ape::vcv(short_tree, corr = TRUE)
   
   # --------------------------------------------------------------
   # Test .create_tmp_phylo_matrix
@@ -317,7 +317,7 @@ test_that(".run_leave1out works with phylo_args", {
 
   # Compute the full matrix
   tree <- ape::compute.brlen(tree)
-  phylo_matrix <- ape::vcv(tree, cor = TRUE)
+  phylo_matrix <- ape::vcv(tree, corr = TRUE)
 
   # --------------------------------------------------------------
   # Create short data set without "Solanum_tuberosum"
@@ -326,7 +326,7 @@ test_that(".run_leave1out works with phylo_args", {
                        "Nassella_neesiana")
   short_tree <- .prune_tree(tree, short_spp_names)
   short_tree <- ape::compute.brlen(short_tree)
-  short_phylo_matrix <- ape::vcv(short_tree, cor = TRUE)
+  short_phylo_matrix <- ape::vcv(short_tree, corr = TRUE)
 
   short_data <- subset(mock_data, spp_names != "Solanum_tuberosum")
 
