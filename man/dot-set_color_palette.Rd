@@ -7,8 +7,7 @@
 .set_color_palette(loo_results)
 }
 \arguments{
-\item{loo_results}{A list or data frame containing the leave-one-out analysis results,
-including a \code{mod_table} component with one row per leave-one-out model.}
+\item{loo_results}{Output from \code{leave_one_out()}, which contains the leave-one-out analysis results.}
 }
 \value{
 A list with two components:

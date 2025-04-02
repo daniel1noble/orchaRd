@@ -28,8 +28,9 @@ test_that("orchard_leave1out creates a ggplot object", {
                                        ~1 | Datapoint),
                          data = eklof)
 
-  p <- orchard_leave1out(res, group = "Author", xlab = "lnRR")
+  loo_res <- leave_one_out(res, group = "Author")
+  p <- orchard_leave1out(loo_res, xlab = "lnRR")
 
-  expect_no_error(orchard_leave1out(res, group = "Author", xlab = "lnRR"))
+  expect_no_error(orchard_leave1out(loo_res, xlab = "lnRR"))
   expect_s3_class(p, "ggplot")
 })

@@ -24,12 +24,14 @@ metafor's vcalc function. Must include 'vi', 'cluster', 'obs', and 'rho' element
 metafor's robust function. Must include a 'cluster' element.}
 
 \item{phylo_args}{Optional list of arguments for phylogenetic matrix calculation using
-ape's vcv function. Must include 'tree' and 'species_colname' elements. 'tree' is a phylogenetic
-tree object and 'species_colname' is the name of the column in the model data that is linked to the phylo matrix.}
+  ape's vcv function. Must include 'tree' and 'species_colname' elements. 'tree' is a phylogenetic
+  tree object and 'species_colname' is the name of the column in the model data that is linked to the phylo matrix.
+
+TODO: Write documentation for this.}
 }
 \value{
-Same as `mod_results()`, but with the estimates from each model ran
-  in the leave-one-out analysis, and the effect sizes from each model.
+Similar output as `mod_results()`, but with the estimates from each model ran
+  in the leave-one-out analysis, the effect sizes from each model.
 }
 \description{
 Performs a leave-one-out analysis on a meta-analytic model from

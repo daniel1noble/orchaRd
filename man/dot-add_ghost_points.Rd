@@ -4,13 +4,10 @@
 \alias{.add_ghost_points}
 \title{Add Ghost Points to Orchard Plot}
 \usage{
-.add_ghost_points(model, group, transfm)
+.add_ghost_points(data, transfm)
 }
 \arguments{
-\item{model}{A meta-analytic model object from the \pkg{metafor} package.}
-
-\item{group}{Character string specifying the column name in \code{model$data} that
-identifies the grouping variable. Each unique value in this variable is omitted in turn.}
+\item{data}{Data from the leave-one-out analysis, specifically the \code{data} component}
 
 \item{transfm}{Character string with the transformation to be applied}
 }
@@ -23,11 +20,6 @@ Internal function to add ghost points to an orchard plot.
 \details{
 Ghost points represent the effect sizes that were omitted in each leave-one-out iteration.
 They are plotted as empty points with reduced opacity to indicate their auxiliary role.
-
-
-The function extracts the removed points from the original model's data, converts the grouping
-variable to a factor, and computes a scaling factor (the inverse square root of the variance)
-for the point sizes.
 }
 \author{
 Facundo Decunta - fdecunta@agro.uba.ar

@@ -6,6 +6,19 @@
 \usage{
 .validate_phylo_args(model, phylo_args)
 }
-\description{
-Validate Phylogenetic Arguments
+\arguments{
+\item{model}{Metafor model.}
+
+\item{phylo_args}{A list containing the arguments for the phylogenetic matrix calculation. Must include:
+\itemize{
+  \item \code{tree}: A phylogenetic tree object of class \code{"phylo"}.
+  \item \code{species_colname}: The name of the column in the data corresponding to species names, which should be a random factor linked to a matrix in the model.
+}}
 }
+\value{
+The validated \code{phylo_args} list if all checks pass.
+}
+\description{
+This internal function checks the validity of the arguments provided for phylogenetic matrix calculations.
+}
+\keyword{internal}

@@ -14,8 +14,9 @@
 #'   ape's vcv function. Must include 'tree' and 'species_colname' elements. 'tree' is a phylogenetic
 #'   tree object and 'species_colname' is the name of the column in the model data that is linked to the phylo matrix.
 #'
-#' @return Same as `mod_results()`, but with the estimates from each model ran
-#'   in the leave-one-out analysis, and the effect sizes from each model.
+#' TODO: Write documentation for this. 
+#' @return Similar output as `mod_results()`, but with the estimates from each model ran
+#'   in the leave-one-out analysis, the effect sizes from each model.
 #'
 #' @author Facundo Decunta - fdecunta@agro.uba.ar
 #'
@@ -66,10 +67,17 @@ leave_one_out <- function(model, group, vcalc_args = NULL, robust_args = NULL, p
   estimates      <- .get_estimates(models_outputs, group)
   effect_sizes   <- .get_effectsizes(models_outputs, group)
 
+  # Get the original model results
+  orig_mod_results <- mod_results(model, group = group)
+
   # Immitates the output of mod_results().
   #   - mod_table: In this case, the estimates from each model ran
   #   - data:  Effect sizes and sampling variances from each model
-  output <- list(mod_table = estimates, data = effect_sizes)
+  # Plus one more element:
+  #   - orig_mod_results: mod_results() output from the original model
+  output <- list(mod_table = estimates,
+                 data = effect_sizes,
+                 orig_mod_results = orig_mod_results)
   class(output) <- c("orchard", "data.frame")
 
   return(output)
@@ -360,8 +368,19 @@ leave_one_out <- function(model, group, vcalc_args = NULL, robust_args = NULL, p
 }
 
 #' Validate Phylogenetic Arguments
-# phylo_args must be a list with the phylogenetic tree and
-# the name of the column in the data tha is linked to the phylo matrix (species names).
+#'
+#' This internal function checks the validity of the arguments provided for phylogenetic matrix calculations.
+#'
+#' @param model Metafor model.
+#' @param phylo_args A list containing the arguments for the phylogenetic matrix calculation. Must include:
+#'   \itemize{
+#'     \item \code{tree}: A phylogenetic tree object of class \code{"phylo"}.
+#'     \item \code{species_colname}: The name of the column in the data corresponding to species names, which should be a random factor linked to a matrix in the model.
+#'   }
+#'
+#' @return The validated \code{phylo_args} list if all checks pass.
+#'
+#' @keywords internal
 .validate_phylo_args <- function(model, phylo_args) {
   if (!is.list(phylo_args)) {
     stop("phylo_args must be a list with the arguments for the phylogenetic matrix calculation: e.g., phylo_args = list(tree = tree, species_colname = 'species')",

@@ -1,7 +1,7 @@
 ---
-title: "leave_one_out() and orchard_leave1out() demo"
+title: "leave_one_out() and orchard_leave1out() with phylogenetic matrix"
 author: "fd"
-date: "2025-03-13"
+date: "2025-03-26"
 output: html_document
 ---
 
@@ -11,321 +11,121 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 ```{r, message=FALSE, warning=FALSE}
-library(tidyverse)
 library(metafor)
 library(devtools)
-library(clubSandwich)
+library(rotl)
+library(ape)
 load_all() # Load dev package
 ```
 
-## orchard_leave1out()
+# Example with subset from Pottier data
 
-`orchard_leave1out()` creates an orchard plot with the results from a leave-one-out analysis. 
-For each element left-out, the plot shows effect sizes, the model estimate, 95% confidence intervals and prediction intervals. Also, it shows the left-out effect sizes as 'ghost points' (this is experimental, of course).
-
-### Example 1: Eklof data
+Use only a subset to avoid long runtimes in leave-one-out
 
 ```{r}
-data(eklof)
-
-# Calculate the effect size
-eklof <- escalc(measure = "ROM",
-                n1i = N_control,
-                sd1i = SD_control,
-                m1i = mean_control, 
-                n2i = N_treatment,
-                sd2i = SD_treatment,
-                m2i = mean_treatment,
-                var.names = c("lnRR", "vlnRR"),
-                data = eklof)
-
-# Add the observation level factor
-eklof$Datapoint <- as.factor(seq(1, dim(eklof)[1], 1))
-
-# Also, we can get the sample size, which we can use for weighting if we would like
-eklof$N <- rowSums(eklof[, c("N_control", "N_treatment")])
+data("pottier")
+pottier_subset <- pottier[1:20, ]
 ```
 
-Create **Authors** column with first author and year. This is going to be used as the `group` from which leave-one-out.
+Get the phylo tree using `rotl`
 
-```{r}
-eklof <- eklof %>% 
-  mutate(Author = paste(First.author, Publication.year, sep = ", "))
+```{r, warning=FALSE, results='hide'}
+unique_names <- unique(pottier_subset$search_string)
+taxa <- tnrs_match_names(unique_names)
+
+tree <- tol_induced_subtree(taxa$ott_id)
+tree$tip.label <- strip_ott_ids(tree$tip.label)
+```
+
+
+```{r, warning=FALSE}
+plot(tree)
 ```
 
 
 ```{r}
-eklof_MR0 <- rma.mv(yi = lnRR,
-                    V = vlnRR,
-                    mods = ~ Grazer.type,
-                    random = list(~1 | ExptID,
-                                  ~1 | Datapoint),
-                    data = eklof)
+tree <- ape::compute.brlen(tree)
+phylo_matrix <- ape::vcv(tree, corr = TRUE)
 
-results <- mod_results(eklof_MR0, group = "Author")
-results
+phylo_matrix
 ```
 
-You can create the basic leave-one-out plot like this:
-
 ```{r}
-orchard_leave1out(model = eklof_MR0,
-                  group = "Author",
-                  xlab  = "lnRR")
+# Simplified model just for the example
+res <- rma.mv(yi = dARR,
+              V = Var_dARR,
+              test = "t",
+              random = list(~1 | species_ID,
+                            ~1 | phylogeny),
+              R = list(phylogeny = phylo_matrix),
+              data = pottier_subset)
+res
+```
+```{r}
+loo_test <- leave_one_out(res,
+                          group = "phylogeny",
+                          phylo_args = list(tree = tree, species_colname = "phylogeny"))
+
+loo_test
 ```
 
-But you may want to make changes to the plot. You can customize it using the arguments from `orchard_plot()`:
-
 ```{r}
-orchard_leave1out(eklof_MR0,
-                  group = "Author",
-                  xlab = "lnRR",
+orchard_leave1out(leave1out = loo_test,
+                  xlab = "dARR",
+                  ylab = "Species left out",
                   trunk.size = 1.2,
                   branch.size = 1.5,
                   alpha = 0.2,
                   legend.pos = "top.out")
 ```
 
-There are a few arguments for aesthetic changes that are specific to `orchard_leave1out()`:
-
-- `ylab`: String. Label for the y-axis. 
-
-- `ci_lines`: Logical. If TRUE, the 95% CI lines are added to the plot. Default is TRUE.
-
-- `ci_lines_color`: String. Color for the 95% CI lines. Default is "red".
-
-- `ghost_points`: Logical. If TRUE, the points from the study left out are added to the plot. Default is TRUE.
+### Just for testing: remove Danio_rerio by hand
 
 ```{r}
-orchard_leave1out(eklof_MR0,
-                  group = "Author",
-                  xlab = "lnRR",
-                  trunk.size = 1.2,
-                  branch.size = 1.5,
-                  alpha = 0.2,
-                  k.pos = "none",
-                  legend.pos = "top.out",
-                  ylab = "Study left out",
-                  ci_lines_color = "darkorchid")
+subset2 <- subset(pottier_subset, phylogeny != "Danio_rerio")
 ```
 
-You can remove `ghost_points` or `ci_lines` if you don't want them:
-
+The function `.prune_tree()` is a simplified version of Dan's code. It is used internally
 
 ```{r}
-orchard_leave1out(eklof_MR0,
-                  group = "Author",
-                  xlab = "lnRR",
-                  trunk.size = 1.2,
-                  branch.size = 1.5,
-                  alpha = 0.1,
-                  legend.pos = "top.out",
-                  ylab = "Study left out",
-                  ci_lines = FALSE,
-                  ghost_points = FALSE)
-```
-
-### Example 2: BCG vaccine data from metafor
-
-```{r}
-dat <- metafor::escalc(measure = "RR", ai = tpos, bi = tneg, ci = cpos, di = cneg, data = dat.bcg)
-
-dat <- dat %>% 
-  mutate(reference = paste(author, year, sep = ", ")) 
-  
-res <- metafor::rma(yi, vi, data = dat)
-```
-
-You can use **transformations** in `orchard_leave1out()` using the `transfm` argument, just like in `orchard_plot()`:
-
-```{r, fig.height=2}
-# Simple orchard plot just for comparison
-orchard_plot(res, group = "reference", transfm = "percentr", xlab = "%")
-```
-
-```{r}
-# Leave one out using transformation and lot of args
-orchard_leave1out(res,
-                  group = "reference",
-                  xlab = "%",
-                  ylab = "Study left out",
-                  legend.pos = "bottom.out", 
-                  trunk.size = 1.2,
-                  branch.size = 1.3,
-                  twig.size = 0,
-                  transfm = "percentr",
-                  k.pos = "none",
-                  alpha = 0.2,
-                  ci_lines_color = "black")
-```
-
-The plot is build on ggplot2, so there are some thing that you can modify using ggplot2 functions:
-
-```{r}
-orchard_leave1out(res,
-                  group = "reference",
-                  xlab = "%",
-                  ylab = "Study left out",
-                  legend.pos = "bottom.out", 
-                  trunk.size = 1.2,
-                  branch.size = 1.3,
-                  twig.size = 0,
-                  transfm = "percentr",
-                  k.pos = "none",
-                  alpha = 0.2,
-                  ci_lines_color = "black") +
-  theme_minimal() +
-  labs(title = "BCG vaccine data",
-       subtitle = "Leave-one-out analysis") +
-  scale_fill_discrete() + 
-  scale_color_discrete()
-```
-
-
-**Note on colors**: By default, orchard_leave1out() uses a color-blind-friendly palette. But this palette has only 20 colors.
-If there are more than 20 elements in 'group', the palette is set to Viridis.
-
-
-## leave_one_out() 
-
-Very often the first plot is not good enough and you want to make changes. The workflow is: run `orchard_leave1out()`, make changes, run it again, and repeat. But `orchard_leave1out()` can be slow because it fits all the meta-analytic models for the leave-one-out.
-
-You can avoid this by running the leave-one-out analysis once, storing the results, and then passing them to `orchard_leave1out()`.
-
-```{r}
-res_loo <- leave_one_out(res, group = "reference")
-res_loo
-```
-
-
-The output from `leave_one_out()` can be passed to `orchard_leave1out` with the argument `loo_output`. Note that `orchard_leave1out()` still needs the `model` and `group` arguments:
-
-
-```{r}
-orchard_leave1out(model = res,
-                  loo_output = res_loo,
-                  group = "reference",
-                  xlab = "lnRR",
-                  ylab = "Study left out",
-                  trunk.size = 1.2,
-                  branch.size = 1.5,
-                  alpha = 0.1,
-                  legend.pos = "top.out",
-                  k.pos = "none")
-```
-
-### Using leave_one_out() alone
-
-The function `leave_one_out()` returns the results, imitating the output from mod_results(). So it can be used for any other purpose, like custom plots or tables.
-
-
-```{r}
-res_loo <- leave_one_out(res, group = "reference")
-
-res_loo$mod_table %>% 
-  ggplot(aes(x = reorder(name, -estimate),
-             y = estimate,
-             ymin = lowerCL,
-             ymax = upperCL)) +
-  geom_pointrange() +
-  coord_flip() +
-  geom_hline(yintercept = res$beta, linetype = 2, color = "blue") +
-  geom_hline(yintercept = 0, linetype = 2, color = "black") +
-  xlab("Study left out") +
-  ylab("lnRR") +
-  ylim(-1.5, 0.5) +
-  theme_minimal() + 
-  scale_color_discrete()
-```
-
-
-## For more complex models
-
-
-For more complex meta-analytic models, it is common to use approximate variance-covariance matrix and/or cluster robust variance estimation. Both `leave_one_out()` and `orchard_leave1out()` can handle this:
-
-- `vcalc_args`: List. Arguments to be passed to `metafor::vcalc()`. Must include 'vi', 'cluster', 'obs', and 'rho' elements.
-
-- `robust_args`: List. Arguments to be passed to `metafor::robust()`. For the moment, only accepts 'cluster' and 'clubSandwich`.
-
-
-It is a little bit more complicated, but it is a solution. For example:
-
-
-```{r}
-# Didn't try to be a correct analysis, just an example
-VCV <- vcalc(vi = vlnRR,
-             cluster = ExptID,
-             obs = Datapoint,
-             rho = 0.5,
-             data = eklof)
-
-eklof_res2 <- rma.mv(yi = lnRR,
-                     V = VCV,
-                     mods = ~ Grazer.type,
-                     random = list(~1 | ExptID,
-                                   ~1 | Datapoint),
-                     data = eklof)
-
-rob.eklof <- robust(eklof_res2, cluster = ExptID, clubSandwich = TRUE)
+kept_spp <- unique(subset2$phylogeny)
+tree2 <- .prune_tree(tree, kept_spp)
+plot(tree2)
 ```
 
 
 ```{r}
-# Define arguments for metafor::vcalc. They are passed as strings, except for rho.
-vcalc_args = list(vi = "vlnRR",
-                  cluster = "ExptID",
-                  obs = "Datapoint",
-                  rho = 0.5)
-
-# Define arguments for metafor::robust.
-robust_args = list(cluster = "ExptID", clubSandwich = TRUE)
-
-
-orchard_leave1out(rob.eklof, 
-                  group = 'Author',
-                  xlab = "lnRR",
-                  ylab = "Study left out",
-                  vcalc_args = vcalc_args,    # vcalc arguments
-                  robust_args = robust_args,    # robust arguments
-                  k.pos = "none",
-                  alpha = 0.2,
-                  legend.pos = "top.out")
+tree2 <- ape::compute.brlen(tree2)
+phylo_matrix2 <- ape::vcv(tree2, corr = TRUE)
+phylo_matrix2
 ```
-
-
-The same works for `leave_one_out()`:
 
 ```{r}
-loo_outputs <- leave_one_out(rob.eklof,
-                             group = "Author",
-                             vcalc_args = vcalc_args,
-                             robust_args = robust_args)
-
-loo_outputs
+res2 <- rma.mv(yi = dARR,
+               V = Var_dARR,
+               test = "t",
+               random = list(~1 | species_ID,
+                             ~1 | phylogeny),
+               R = list(phylogeny = phylo_matrix2),
+               data = subset2)
 ```
 
-This is an internal function, but just to check that it is actually using robust with clubSandwich (there are tests to check that robust is working):
+By-hand result:
 
 ```{r}
-raw_output <- .run_leave1out(rob.eklof,
-              group = "Author",
-              vcalc_args = vcalc_args,
-              robust_args = robust_args)
-
-# show the results when leaving out Richardsson 1998
-raw_output$`Richardsson, 1998`
+mod_results(res2, group = "phylogeny")
 ```
 
+`leave-one-out` result:
 
-## Notes and to-do
+```{r}
+subset(loo_test$mod_table, name == "Danio_rerio")
+```
 
-- For the moment, it only works shows the intercept. 
+## Notes:
 
-- The `ghost_points` are experimental. I'm not sure if they are useful or not.
+- To-do: Write good documentation and examples
 
-- The `robust_args` and `vcalc_args` were tested with simple cases, but I should work a little more on this. 
+- To-do: Add error messages for models that use phylogeny but don't pass phylo_args (same for vcalc and robust)
 
-- If the user pass a model that used variance covariance matrix but then don't pass `vcalc_args`, the function should give an appropriate error. Same for robust. 
-
-- This kind of plots always had lot of points. Maybe `alpha` should be 0.2 or 0.1 by default.
+- It doesn't work with moderators. For example, I got an error if I use the model from the vignette. Don't know if it is worth the effort to make this work.
