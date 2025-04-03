@@ -14,7 +14,7 @@
   \item vi: Name of the variance column
   \item cluster: Name of the clustering variable column
   \item obs: Name of the observation ID column
-  \item rho: Correlation coefficient
+  \item rho: Correlation coefficient between effect sizes
 }}
 }
 \value{

@@ -2,26 +2,28 @@
 % Please edit documentation in R/leave_one_out.R
 \name{.create_tmp_phylo_matrix}
 \alias{.create_tmp_phylo_matrix}
-\title{Create Temporary Phylogenetic Matrix For Leave-One-Out}
+\title{Create Temporary Phylogenetic Matrix For Leave-One-Out Analysis}
 \usage{
 .create_tmp_phylo_matrix(data, phylo_args)
 }
 \arguments{
-\item{data}{A data frame containing the variables specified in phylo_args.}
+\item{data}{A data frame containing the variables specified in phylo_args,
+representing the current data subset after removing one group.}
 
 \item{phylo_args}{A list of arguments for the phylogenetic matrix calculation, including:
 \itemize{
-  \item tree: A phylogenetic tree object
-  \item species_colname: Name of the column in the data that is linked to the phylo matrix (species names)
+  \item tree: A phylogenetic tree object of class "phylo"
+  \item species_colname: Name of the column in the data that contains species names
 }}
 }
 \value{
-A phylogenetic matrix for use in meta-analytic models.
+A phylogenetic correlation matrix for the species in the data subset.
 }
 \description{
-Create Temporary Phylogenetic Matrix For Leave-One-Out
+Creates a correlation matrix from a phylogenetic tree for the species remaining
+in the data subset during leave-one-out analysis.
 }
 \author{
-Facundo Decunta -
+Facundo Decunta - fdecunta@agro.uba.ar
 }
 \keyword{internal}

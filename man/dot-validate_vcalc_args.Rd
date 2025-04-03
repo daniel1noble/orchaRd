@@ -12,11 +12,12 @@
 \item{vcalc_args}{A list of arguments for the metafor::vcalc function.}
 }
 \value{
-The validated vcalc_args list.
+The validated vcalc_args list if all checks pass.
 }
 \description{
 Ensures that the arguments provided for variance-covariance calculation are
-valid and refer to existing variables in the model data.
+valid and refer to existing variables in the model data. Performs checks on
+the structure and content of the vcalc_args list.
 }
 \author{
 Facundo Decunta - fdecunta@agro.uba.ar

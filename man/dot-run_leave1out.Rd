@@ -13,34 +13,35 @@
 )
 }
 \arguments{
-\item{model}{A fitted model object containing a \code{data} element, which must be 
-a data frame with all model variables.}
+\item{model}{A fitted metafor model object containing a \code{data} element and \code{call} object.}
 
 \item{group}{A character string specifying the column in \code{model$data} that 
 defines the groups to be omitted one at a time.}
 
 \item{vcalc_args}{Optional list of arguments for the variance-covariance calculation using 
-metafor's vcalc function. Must include 'vi', 'cluster', 'obs', and 'rho' elements.}
+metafor's vcalc function. See \code{leave_one_out()} for details.}
 
 \item{robust_args}{Optional list of arguments for robust variance estimation using
-metafor's robust function. Must include a 'cluster' element.}
+metafor's robust function. See \code{leave_one_out()} for details.}
 
-\item{phylo_args}{Optional list of arguments for phylogenetic matrix calculation using
-ape's vcv function. Must include 'tree' and 'species_colname' elements. 'tree' is a phylogenetic
-tree object and 'species_colname' is the name of the column in the model data that is linked to the phylo matrix.}
+\item{phylo_args}{Optional list of arguments for phylogenetic matrix calculation.
+See \code{leave_one_out()} for details.}
 }
 \value{
 A named list of models, each fitted after omitting one group. Names correspond 
-  to the omitted group IDs.
+        to the omitted group IDs. Any failed model fits will be NULL.
 }
 \description{
 Iteratively refits a meta-analytic model, leaving out one level of a specified 
-grouping variable in each iteration.
+grouping variable in each iteration. This internal function handles the actual model
+refitting process for the leave-one-out analysis.
 }
 \details{
-The function removes each unique group from \code{model$data} one at a time, 
-  refitting the model using \code{update()}. If an update fails, a warning is issued, 
-  and \code{NULL} is returned for that group.
+The function creates a subset of the original data for each unique value in the
+         grouping variable, removing that group and refitting the model using the same
+         specification as the original model. If variance-covariance matrices or 
+         phylogenetic corrections were used in the original model, these are 
+         recalculated for each subset. If a model fails to fit, NULL is returned for that group.
 }
 \author{
 Facundo Decunta - fdecunta@agro.uba.ar

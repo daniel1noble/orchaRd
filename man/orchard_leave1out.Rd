@@ -29,6 +29,14 @@ representing the original model's 95\% confidence intervals.}
 \item{ghost_points}{Logical indicating whether to add "ghost points" for the effect sizes that were left out.
 These are plotted as empty points (default is \code{TRUE}).}
 
+\item{angle}{Numeric value specifying the angle of the x-axis labels in degrees (default is 0).}
+
+\item{g}{Logical indicating whether to return the plot as a grob object (default is \code{FALSE}).}
+
+\item{transfm}{Character string specifying the transformation to apply to the data. 
+Options are: "none" (default, no transformation), "tanh" (hyperbolic tangent),
+"invlogit" (inverse logit), "percent" (percentage), or "percentr" (percentage range).}
+
 \item{...}{Additional arguments passed to \code{orchard_plot}.}
 }
 \value{

@@ -13,25 +13,44 @@ leave_one_out(
 )
 }
 \arguments{
-\item{model}{A meta-analytic model fitted using **metafor**.}
+\item{model}{A meta-analytic model fitted using **metafor** package functions such as rma.mv().}
 
-\item{group}{A factor or categorical variable specifying the leave-one-out groups.}
+\item{group}{A character string specifying the column name in model$data that contains the 
+grouping variable for which levels will be iteratively removed.}
 
-\item{vcalc_args}{Optional list of arguments for the variance-covariance calculation using 
-metafor's vcalc function. Must include 'vi', 'cluster', 'obs', and 'rho' elements.}
+\item{vcalc_args}{Optional list of arguments for variance-covariance calculation using 
+metafor's vcalc function. Must include:
+\itemize{
+  \item \code{vi}: Name of the variance column
+  \item \code{cluster}: Name of the clustering variable column
+  \item \code{obs}: Name of the observation ID column
+  \item \code{rho}: Correlation coefficient between effect sizes
+}}
 
 \item{robust_args}{Optional list of arguments for robust variance estimation using
-metafor's robust function. Must include a 'cluster' element.}
+metafor's robust function. Must include:
+\itemize{
+  \item \code{cluster}: Name of the clustering variable column
+  \item \code{clubSandwich}: Logical indicating whether to use clubSandwich method (optional)
+}}
 
 \item{phylo_args}{Optional list of arguments for phylogenetic matrix calculation using
-  ape's vcv function. Must include 'tree' and 'species_colname' elements. 'tree' is a phylogenetic
-  tree object and 'species_colname' is the name of the column in the model data that is linked to the phylo matrix.
-
-TODO: Write documentation for this.}
+ape's vcv function. Must include:
+\itemize{
+  \item \code{tree}: A phylogenetic tree object of class "phylo"
+  \item \code{species_colname}: Name of the column in model data linked to the tree tips
+}}
 }
 \value{
-Similar output as `mod_results()`, but with the estimates from each model ran
-  in the leave-one-out analysis, the effect sizes from each model.
+An object of class "orchard" containing:
+  \itemize{
+    \item \code{mod_table}: A data frame with model estimates from each leave-one-out iteration,
+          with an additional column indicating which group was omitted.
+    \item \code{data}: A data frame with effect sizes from each iteration, with an additional
+          column indicating which group was omitted.
+    \item \code{orig_mod_results}: The results from the original model without any omissions,
+          as returned by mod_results().
+  }
 }
 \description{
 Performs a leave-one-out analysis on a meta-analytic model from

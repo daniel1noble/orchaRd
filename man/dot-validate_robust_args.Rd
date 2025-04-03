@@ -2,7 +2,7 @@
 % Please edit documentation in R/leave_one_out.R
 \name{.validate_robust_args}
 \alias{.validate_robust_args}
-\title{Validate robust_args}
+\title{Validate Robust Variance Estimation Arguments}
 \usage{
 .validate_robust_args(model_data, robust_args)
 }
@@ -12,11 +12,12 @@
 \item{robust_args}{A list of arguments for the metafor::robust function.}
 }
 \value{
-The validated robust_args list.
+The validated robust_args list if all checks pass.
 }
 \description{
 Validates that robust_args contains the required parameters and that they
-reference valid columns in the data.
+reference valid columns in the data. Ensures that the cluster variable exists
+in the provided model data.
 }
 \author{
 Facundo Decunta - fdecunta@agro.uba.ar

@@ -4,19 +4,39 @@
 #' the **metafor** package by iteratively removing each level of a grouping
 #' variable and refitting the model.
 #'
-#' @param model A meta-analytic model fitted using **metafor**.
-#' @param group A factor or categorical variable specifying the leave-one-out groups.
-#' @param vcalc_args Optional list of arguments for the variance-covariance calculation using 
-#'   metafor's vcalc function. Must include 'vi', 'cluster', 'obs', and 'rho' elements.
+#' @param model A meta-analytic model fitted using **metafor** package functions such as rma.mv().
+#' @param group A character string specifying the column name in model$data that contains the 
+#'        grouping variable for which levels will be iteratively removed.
+#' @param vcalc_args Optional list of arguments for variance-covariance calculation using 
+#'        metafor's vcalc function. Must include:
+#'        \itemize{
+#'          \item \code{vi}: Name of the variance column
+#'          \item \code{cluster}: Name of the clustering variable column
+#'          \item \code{obs}: Name of the observation ID column
+#'          \item \code{rho}: Correlation coefficient between effect sizes
+#'        }
 #' @param robust_args Optional list of arguments for robust variance estimation using
-#'   metafor's robust function. Must include a 'cluster' element.
+#'        metafor's robust function. Must include:
+#'        \itemize{
+#'          \item \code{cluster}: Name of the clustering variable column
+#'          \item \code{clubSandwich}: Logical indicating whether to use clubSandwich method (optional)
+#'        }
 #' @param phylo_args Optional list of arguments for phylogenetic matrix calculation using
-#'   ape's vcv function. Must include 'tree' and 'species_colname' elements. 'tree' is a phylogenetic
-#'   tree object and 'species_colname' is the name of the column in the model data that is linked to the phylo matrix.
+#'        ape's vcv function. Must include:
+#'        \itemize{
+#'          \item \code{tree}: A phylogenetic tree object of class "phylo"
+#'          \item \code{species_colname}: Name of the column in model data linked to the tree tips
+#'        }
 #'
-#' TODO: Write documentation for this. 
-#' @return Similar output as `mod_results()`, but with the estimates from each model ran
-#'   in the leave-one-out analysis, the effect sizes from each model.
+#' @return An object of class "orchard" containing:
+#'   \itemize{
+#'     \item \code{mod_table}: A data frame with model estimates from each leave-one-out iteration,
+#'           with an additional column indicating which group was omitted.
+#'     \item \code{data}: A data frame with effect sizes from each iteration, with an additional
+#'           column indicating which group was omitted.
+#'     \item \code{orig_mod_results}: The results from the original model without any omissions,
+#'           as returned by mod_results().
+#'   }
 #'
 #' @author Facundo Decunta - fdecunta@agro.uba.ar
 #'
@@ -87,26 +107,27 @@ leave_one_out <- function(model, group, vcalc_args = NULL, robust_args = NULL, p
 #' Fit Multiple Meta-Analytic Models For Leave-One-Out Analysis
 #'
 #' Iteratively refits a meta-analytic model, leaving out one level of a specified 
-#' grouping variable in each iteration.
+#' grouping variable in each iteration. This internal function handles the actual model
+#' refitting process for the leave-one-out analysis.
 #'
-#' @param model A fitted model object containing a \code{data} element, which must be 
-#'   a data frame with all model variables.
+#' @param model A fitted metafor model object containing a \code{data} element and \code{call} object.
 #' @param group A character string specifying the column in \code{model$data} that 
-#'   defines the groups to be omitted one at a time.
+#'        defines the groups to be omitted one at a time.
 #' @param vcalc_args Optional list of arguments for the variance-covariance calculation using 
-#'   metafor's vcalc function. Must include 'vi', 'cluster', 'obs', and 'rho' elements.
+#'        metafor's vcalc function. See \code{leave_one_out()} for details.
 #' @param robust_args Optional list of arguments for robust variance estimation using
-#'   metafor's robust function. Must include a 'cluster' element.
-#' @param phylo_args Optional list of arguments for phylogenetic matrix calculation using
-#'   ape's vcv function. Must include 'tree' and 'species_colname' elements. 'tree' is a phylogenetic
-#'   tree object and 'species_colname' is the name of the column in the model data that is linked to the phylo matrix.
+#'        metafor's robust function. See \code{leave_one_out()} for details.
+#' @param phylo_args Optional list of arguments for phylogenetic matrix calculation.
+#'        See \code{leave_one_out()} for details.
 #'
-#' @details The function removes each unique group from \code{model$data} one at a time, 
-#'   refitting the model using \code{update()}. If an update fails, a warning is issued, 
-#'   and \code{NULL} is returned for that group.
+#' @details The function creates a subset of the original data for each unique value in the
+#'          grouping variable, removing that group and refitting the model using the same
+#'          specification as the original model. If variance-covariance matrices or 
+#'          phylogenetic corrections were used in the original model, these are 
+#'          recalculated for each subset. If a model fails to fit, NULL is returned for that group.
 #'
 #' @return A named list of models, each fitted after omitting one group. Names correspond 
-#'   to the omitted group IDs.
+#'         to the omitted group IDs. Any failed model fits will be NULL.
 #'
 #' @author Facundo Decunta - fdecunta@agro.uba.ar
 #'
@@ -148,8 +169,6 @@ leave_one_out <- function(model, group, vcalc_args = NULL, robust_args = NULL, p
     })
 
     if(!is.null(robust_args)) {
-      # TODO: This way of calling robust must be simpler
-
       # cluster_var has to be a vector, not a string. robust_args$cluster is a string.
       cluster_var <- tmp_model_call$data[[robust_args$cluster]]
 
@@ -181,7 +200,7 @@ leave_one_out <- function(model, group, vcalc_args = NULL, robust_args = NULL, p
 #'     \item vi: Name of the variance column
 #'     \item cluster: Name of the clustering variable column
 #'     \item obs: Name of the observation ID column
-#'     \item rho: Correlation coefficient
+#'     \item rho: Correlation coefficient between effect sizes
 #'   }
 #'
 #' @return A variance-covariance matrix for use in meta-analytic models.
@@ -205,12 +224,13 @@ leave_one_out <- function(model, group, vcalc_args = NULL, robust_args = NULL, p
 #' Validate Variance-Covariance Calculation Arguments
 #'
 #' Ensures that the arguments provided for variance-covariance calculation are
-#' valid and refer to existing variables in the model data.
+#' valid and refer to existing variables in the model data. Performs checks on
+#' the structure and content of the vcalc_args list.
 #'
 #' @param model_data A data frame containing the variables used in the model.
 #' @param vcalc_args A list of arguments for the metafor::vcalc function.
 #'
-#' @return The validated vcalc_args list.
+#' @return The validated vcalc_args list if all checks pass.
 #'
 #' @author Facundo Decunta - fdecunta@agro.uba.ar
 #'
@@ -226,7 +246,6 @@ leave_one_out <- function(model, group, vcalc_args = NULL, robust_args = NULL, p
     stop("vcalc_args must contain at least the following elements: 'vi', 'cluster', 'obs', 'rho'", call. = FALSE)
   }
 
-  # TODO: This is not a compelte check, but it's a start
   # Check if the vcalc arguments are present in the model data
   if (is.null(model_data[[vcalc_args$vi]]) || is.null(model_data[[vcalc_args$cluster]]) || is.null(model_data[[vcalc_args$obs]])) {
     stop("One or more of the vcalc arguments are not found in the model data", call. = FALSE)
@@ -235,15 +254,16 @@ leave_one_out <- function(model, group, vcalc_args = NULL, robust_args = NULL, p
   return(vcalc_args)
 }
 
-#' Validate robust_args
+#' Validate Robust Variance Estimation Arguments
 #'
 #' Validates that robust_args contains the required parameters and that they
-#' reference valid columns in the data.
+#' reference valid columns in the data. Ensures that the cluster variable exists
+#' in the provided model data.
 #'
 #' @param model_data A data frame containing the variables used in the model.
 #' @param robust_args A list of arguments for the metafor::robust function.
 #'
-#' @return The validated robust_args list.
+#' @return The validated robust_args list if all checks pass.
 #'
 #' @author Facundo Decunta - fdecunta@agro.uba.ar
 #'
@@ -269,12 +289,16 @@ leave_one_out <- function(model, group, vcalc_args = NULL, robust_args = NULL, p
 
 #' Get Leave-One-Out Model Estimates
 #'
-#' Extracts and combines the model estimates from each leave-one-out iteration.
+#' Extracts and combines the model estimates from each leave-one-out iteration into a 
+#' single data frame. Applies mod_results() to each model and combines the resulting
+#' mod_table values.
 #'
-#' @param outputs A named list of model objects from leave-one-out analysis.
-#' @param group A string specifying the grouping variable used in the analysis.
+#' @param outputs A named list of model objects from leave-one-out analysis where each
+#'        name corresponds to the omitted group ID.
+#' @param group A character string specifying the grouping variable used in the analysis.
 #'
-#' @return A data frame of model estimates with an added column indicating the omitted group.
+#' @return A data frame of model estimates with an added column 'name' indicating the omitted group.
+#'         Contains the same structure as the mod_table from mod_results() for each model iteration.
 #'
 #' @author Facundo Decunta - fdecunta@agro.uba.ar
 #'
@@ -297,12 +321,16 @@ leave_one_out <- function(model, group, vcalc_args = NULL, robust_args = NULL, p
 
 #' Get Leave-One-Out Effect Sizes
 #'
-#' Extracts and aggregates effect size data from each leave-one-out iteration.
+#' Extracts and aggregates effect size data from each leave-one-out iteration into a
+#' single data frame. Applies mod_results() to each model and combines the resulting
+#' data values.
 #'
-#' @param outputs A named list of model objects from leave-one-out analysis.
-#' @param group A string specifying the grouping variable used in the analysis.
+#' @param outputs A named list of model objects from leave-one-out analysis where each
+#'        name corresponds to the omitted group ID.
+#' @param group A character string specifying the grouping variable used in the analysis.
 #'
-#' @return A data frame of effect sizes with a column indicating the omitted group.
+#' @return A data frame of effect sizes with a column 'moderator' indicating the omitted group.
+#'         Contains the same structure as the data element from mod_results() for each model iteration.
 #'
 #' @author Facundo Decunta - fdecunta@agro.uba.ar
 #'
@@ -319,14 +347,21 @@ leave_one_out <- function(model, group, vcalc_args = NULL, robust_args = NULL, p
     return(effect_sizes)
 }
 
-#' Prune Tree For Leave-One-Out
+#' Prune Phylogenetic Tree For Leave-One-Out Analysis
 #' 
-#' @param tree A phylogenetic tree object.
-#' @param species_names A vector of species names.
+#' Removes species from a phylogenetic tree that are not present in the current data subset
+#' during leave-one-out analysis.
+#'
+#' @param tree A phylogenetic tree object of class "phylo".
+#' @param species_names A vector of species names that should remain in the pruned tree.
+#'        These are the species present in the current data subset.
 #' 
+#' @return A pruned phylogenetic tree containing only the tips for species in species_names.
+#'
 #' @author Daniel Noble  - daniel.noble@anu.edu.au
 #' @author Facundo Decunta - fdecunta@agro.uba.ar
 #'
+#' @keywords internal
 .prune_tree <- function(tree, species_names) {
   tree_species <- tree$tip.label
   data_species <- unique(species_names)
@@ -340,18 +375,23 @@ leave_one_out <- function(model, group, vcalc_args = NULL, robust_args = NULL, p
   return(tree)
 }
 
-#' Create Temporary Phylogenetic Matrix For Leave-One-Out
+#' Create Temporary Phylogenetic Matrix For Leave-One-Out Analysis
 #' 
-#' @param data A data frame containing the variables specified in phylo_args.
+#' Creates a correlation matrix from a phylogenetic tree for the species remaining
+#' in the data subset during leave-one-out analysis.
+#'
+#' @param data A data frame containing the variables specified in phylo_args,
+#'        representing the current data subset after removing one group.
 #' @param phylo_args A list of arguments for the phylogenetic matrix calculation, including:
-#'  \itemize{
-#'    \item tree: A phylogenetic tree object
-#'    \item species_colname: Name of the column in the data that is linked to the phylo matrix (species names)
-#'  }
+#'   \itemize{
+#'     \item tree: A phylogenetic tree object of class "phylo"
+#'     \item species_colname: Name of the column in the data that contains species names
+#'   }
 #'
-#' @return A phylogenetic matrix for use in meta-analytic models.
+#' @return A phylogenetic correlation matrix for the species in the data subset.
 #'
-#' @author Facundo Decunta -
+#' @author Facundo Decunta - fdecunta@agro.uba.ar
+#'
 #' @keywords internal
 .create_tmp_phylo_matrix <- function(data, phylo_args) {
   orig_tree <- phylo_args$tree
@@ -369,16 +409,19 @@ leave_one_out <- function(model, group, vcalc_args = NULL, robust_args = NULL, p
 
 #' Validate Phylogenetic Arguments
 #'
-#' This internal function checks the validity of the arguments provided for phylogenetic matrix calculations.
+#' Checks the validity of the arguments provided for phylogenetic matrix calculations.
+#' Ensures the tree is a proper phylogenetic object and that the species column name
+#' is correctly linked to a random effect in the model.
 #'
-#' @param model Metafor model.
-#' @param phylo_args A list containing the arguments for the phylogenetic matrix calculation. Must include:
+#' @param model A metafor model object with random effects.
+#' @param phylo_args A list containing the arguments for the phylogenetic matrix calculation:
 #'   \itemize{
-#'     \item \code{tree}: A phylogenetic tree object of class \code{"phylo"}.
-#'     \item \code{species_colname}: The name of the column in the data corresponding to species names, which should be a random factor linked to a matrix in the model.
+#'     \item tree: A phylogenetic tree object of class "phylo"
+#'     \item species_colname: Name of the column in the data corresponding to species names,
+#'           which should be a random factor linked to a matrix in the model
 #'   }
 #'
-#' @return The validated \code{phylo_args} list if all checks pass.
+#' @return The validated phylo_args list if all checks pass.
 #'
 #' @keywords internal
 .validate_phylo_args <- function(model, phylo_args) {
@@ -404,4 +447,3 @@ leave_one_out <- function(model, group, vcalc_args = NULL, robust_args = NULL, p
 
   return(phylo_args)
 }
-

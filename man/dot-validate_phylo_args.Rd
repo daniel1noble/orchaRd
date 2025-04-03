@@ -7,18 +7,21 @@
 .validate_phylo_args(model, phylo_args)
 }
 \arguments{
-\item{model}{Metafor model.}
+\item{model}{A metafor model object with random effects.}
 
-\item{phylo_args}{A list containing the arguments for the phylogenetic matrix calculation. Must include:
+\item{phylo_args}{A list containing the arguments for the phylogenetic matrix calculation:
 \itemize{
-  \item \code{tree}: A phylogenetic tree object of class \code{"phylo"}.
-  \item \code{species_colname}: The name of the column in the data corresponding to species names, which should be a random factor linked to a matrix in the model.
+  \item tree: A phylogenetic tree object of class "phylo"
+  \item species_colname: Name of the column in the data corresponding to species names,
+        which should be a random factor linked to a matrix in the model
 }}
 }
 \value{
-The validated \code{phylo_args} list if all checks pass.
+The validated phylo_args list if all checks pass.
 }
 \description{
-This internal function checks the validity of the arguments provided for phylogenetic matrix calculations.
+Checks the validity of the arguments provided for phylogenetic matrix calculations.
+Ensures the tree is a proper phylogenetic object and that the species column name
+is correctly linked to a random effect in the model.
 }
 \keyword{internal}

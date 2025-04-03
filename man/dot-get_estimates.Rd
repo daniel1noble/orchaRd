@@ -7,15 +7,19 @@
 .get_estimates(outputs, group)
 }
 \arguments{
-\item{outputs}{A named list of model objects from leave-one-out analysis.}
+\item{outputs}{A named list of model objects from leave-one-out analysis where each
+name corresponds to the omitted group ID.}
 
-\item{group}{A string specifying the grouping variable used in the analysis.}
+\item{group}{A character string specifying the grouping variable used in the analysis.}
 }
 \value{
-A data frame of model estimates with an added column indicating the omitted group.
+A data frame of model estimates with an added column 'name' indicating the omitted group.
+        Contains the same structure as the mod_table from mod_results() for each model iteration.
 }
 \description{
-Extracts and combines the model estimates from each leave-one-out iteration.
+Extracts and combines the model estimates from each leave-one-out iteration into a 
+single data frame. Applies mod_results() to each model and combines the resulting
+mod_table values.
 }
 \author{
 Facundo Decunta - fdecunta@agro.uba.ar

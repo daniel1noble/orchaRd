@@ -12,6 +12,11 @@
 #' @param ci_lines_color Character string specifying the color for the confidence interval lines (default is \code{"red"}).
 #' @param ghost_points Logical indicating whether to add "ghost points" for the effect sizes that were left out.
 #'   These are plotted as empty points (default is \code{TRUE}).
+#' @param angle Numeric value specifying the angle of the x-axis labels in degrees (default is 0).
+#' @param g Logical indicating whether to return the plot as a grob object (default is \code{FALSE}).
+#' @param transfm Character string specifying the transformation to apply to the data. 
+#'   Options are: "none" (default, no transformation), "tanh" (hyperbolic tangent),
+#'   "invlogit" (inverse logit), "percent" (percentage), or "percentr" (percentage range).
 #' @param ... Additional arguments passed to \code{orchard_plot}.
 #'
 #' @return A ggplot2 object displaying the leave-one-out analysis with reference lines
@@ -166,7 +171,9 @@ orchard_leave1out <- function(leave1out,
 #' They are plotted as empty points with reduced opacity to indicate their auxiliary role.
 #'
 #' @param data Data from the leave-one-out analysis, specifically the \code{data} component
-#' @param transfm Character string with the transformation to be applied
+#'   containing effect sizes (yi), variances (vi), and grouping variable (stdy).
+#' @param transfm Character string indicating the transformation to be applied to the data.
+#'   See \code{orchard_leave1out()} for available transformation options.
 #'
 #' @return A \pkg{ggplot2} layer (via \code{geom_quasirandom}) displaying the ghost points.
 #'

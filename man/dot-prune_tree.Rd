@@ -2,20 +2,26 @@
 % Please edit documentation in R/leave_one_out.R
 \name{.prune_tree}
 \alias{.prune_tree}
-\title{Prune Tree For Leave-One-Out}
+\title{Prune Phylogenetic Tree For Leave-One-Out Analysis}
 \usage{
 .prune_tree(tree, species_names)
 }
 \arguments{
-\item{tree}{A phylogenetic tree object.}
+\item{tree}{A phylogenetic tree object of class "phylo".}
 
-\item{species_names}{A vector of species names.}
+\item{species_names}{A vector of species names that should remain in the pruned tree.
+These are the species present in the current data subset.}
+}
+\value{
+A pruned phylogenetic tree containing only the tips for species in species_names.
 }
 \description{
-Prune Tree For Leave-One-Out
+Removes species from a phylogenetic tree that are not present in the current data subset
+during leave-one-out analysis.
 }
 \author{
 Daniel Noble  - daniel.noble@anu.edu.au
 
 Facundo Decunta - fdecunta@agro.uba.ar
 }
+\keyword{internal}

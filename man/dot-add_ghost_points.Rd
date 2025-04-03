@@ -7,9 +7,11 @@
 .add_ghost_points(data, transfm)
 }
 \arguments{
-\item{data}{Data from the leave-one-out analysis, specifically the \code{data} component}
+\item{data}{Data from the leave-one-out analysis, specifically the \code{data} component
+containing effect sizes (yi), variances (vi), and grouping variable (stdy).}
 
-\item{transfm}{Character string with the transformation to be applied}
+\item{transfm}{Character string indicating the transformation to be applied to the data.
+See \code{orchard_leave1out()} for available transformation options.}
 }
 \value{
 A \pkg{ggplot2} layer (via \code{geom_quasirandom}) displaying the ghost points.
