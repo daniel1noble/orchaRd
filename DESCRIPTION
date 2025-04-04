@@ -33,7 +33,8 @@ Imports: tidyverse,
     magrittr,
     dplyr,
     progress,
-    latex2exp
+    latex2exp,
+    ape
 Suggests: R.rsp, 
   testthat,
     knitr,
