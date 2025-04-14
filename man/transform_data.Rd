@@ -6,11 +6,14 @@
 \usage{
 transform_data(
   x,
-  transfm = c("none", "tanh", "invlogit", "percentr", "percent")
+  n = NULL,
+  transfm = c("none", "tanh", "invlogit", "percentr", "percent", "inv_ft")
 )
 }
 \arguments{
 \item{x}{A numeric vector.}
+
+\item{n}{Used with "inv_ft". A numeric value representing the sample size for proportion.}
 
 \item{transfm}{A character string specifying the transformation to apply. 
 Options include:
@@ -18,7 +21,8 @@ Options include:
 - "tanh": Hyperbolic tangent transformation
 - "invlogit": Inverse logit transformation
 - "percentr": Percentage relative change transformation
-- "percent": Percentage transformation}
+- "percent": Percentage transformation
+- "inv_ft": Inverse Freeman-Tukey (double arcsine) transformation for proportions (not yet working)}
 }
 \value{
 A numeric vector with the applied transformation.
@@ -28,8 +32,9 @@ This function applies a specified transformation to a numeric vector.
 }
 \examples{
 \dontrun{
-transform_data(c(-1, 0, 1), "tanh")
-transform_data(c(-1, 0, 1), "invlogit")
+transform_data(c(-1, 0, 1), transfm = "tanh")
+transform_data(c(-1, 0, 1), transfm = "invlogit")
+transform_data(c(-1, 0, 1), transfm = "none")
 }
 }
 \keyword{internal}
