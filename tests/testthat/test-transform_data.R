@@ -2,19 +2,19 @@ test_that("transform_data applies the correct transformations", {
   x <- c(-1, 0, 1)
   
   # No transformation
-  expect_equal(transform_data(x, "none"), x)
+  expect_equal(transform_data(x, transfm ="none"), x)
   
   # Hyperbolic tangent transformation
-  expect_equal(transform_data(x, "tanh"), tanh(x))
+  expect_equal(transform_data(x, transfm ="tanh"), tanh(x))
   
   # Inverse logit transformation
-  expect_equal(transform_data(x, "invlogit"), exp(x) / (1 + exp(x)))
+  expect_equal(transform_data(x, transfm ="invlogit"), exp(x) / (1 + exp(x)))
   
   # Percentage relative change transformation
-  expect_equal(transform_data(x, "percentr"), (exp(x) - 1) * 100)
+  expect_equal(transform_data(x, transfm ="percentr"), (exp(x) - 1) * 100)
   
   # Percentage transformation
-  expect_equal(transform_data(x, "percent"), exp(x) * 100)
+  expect_equal(transform_data(x, transfm ="percent"), exp(x) * 100)
 })
 
 test_that("internal transformation functions work independently", {
@@ -69,31 +69,31 @@ test_that("transform_data works identically to how trasnf was handled by orchard
 
   # Inverse logit transformation
   old_method_table[, numeric_cols] <- lapply(mod_table[, numeric_cols], function(x) metafor::transf.ilogit(x))
-  new_method_table[, numeric_cols] <- transform_data(mod_table[, numeric_cols], "invlogit")
+  new_method_table[, numeric_cols] <- transform_data(mod_table[, numeric_cols], transfm ="invlogit")
   expect_equal(old_method_table, new_method_table)
   expect_equal(metafor::transf.ilogit(data_trim$yi),
-               transform_data(data_trim$yi, "invlogit"))
+               transform_data(data_trim$yi, transfm ="invlogit"))
 
 
   # Hyperbolic tangent transformation
   old_method_table[, numeric_cols] <- lapply(mod_table[, numeric_cols], function(x) tanh(x))
-  new_method_table[, numeric_cols] <- transform_data(mod_table[, numeric_cols], "tanh")
+  new_method_table[, numeric_cols] <- transform_data(mod_table[, numeric_cols], transfm ="tanh")
   expect_equal(old_method_table, new_method_table)
   expect_equal(tanh(data_trim$yi),
-               transform_data(data_trim$yi, "tanh"))
+               transform_data(data_trim$yi, transfm ="tanh"))
 
   # Percentage relative change transformation
   old_method_table[, numeric_cols] <- lapply(mod_table[, numeric_cols], function(x) (exp(x) - 1) * 100)
-  new_method_table[, numeric_cols] <- transform_data(mod_table[, numeric_cols], "percentr")
+  new_method_table[, numeric_cols] <- transform_data(mod_table[, numeric_cols], transfm ="percentr")
   expect_equal(old_method_table, new_method_table)
   expect_equal((exp(data_trim$yi) - 1) * 100,
-               transform_data(data_trim$yi, "percentr"))
+               transform_data(data_trim$yi, transfm ="percentr"))
 
   # Percentage transformation
   old_method_table[, numeric_cols] <- lapply(mod_table[, numeric_cols], function(x) exp(x) * 100)
-  new_method_table[, numeric_cols] <- transform_data(mod_table[, numeric_cols], "percent")
+  new_method_table[, numeric_cols] <- transform_data(mod_table[, numeric_cols], transfm ="percent")
   expect_equal(old_method_table, new_method_table)
   expect_equal(exp(data_trim$yi) * 100,
-               transform_data(data_trim$yi, "percent"))
+               transform_data(data_trim$yi, transfm ="percent"))
 })
 
