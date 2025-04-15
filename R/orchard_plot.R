@@ -61,7 +61,7 @@
 orchard_plot <- function(object, mod = "1", group, xlab, N = NULL,
                          alpha = 0.5, angle = 90, cb = TRUE, k = TRUE, g = TRUE,
                          tree.order = NULL, trunk.size = 0.5, branch.size = 1.2, twig.size = 0.5,
-                         transfm = c("none", "tanh", "invlogit", "percent", "percentr"), n_transfm = NULL, condition.lab = "Condition",
+                         transfm = c("none", "tanh", "invlogit", "percent", "percentr", "inv_ft"), n_transfm = NULL, condition.lab = "Condition",
                          legend.pos = c("bottom.right", "bottom.left",
                                         "top.right", "top.left",
                                         "top.out", "bottom.out",

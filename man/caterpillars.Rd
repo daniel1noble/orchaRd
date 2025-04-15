@@ -10,7 +10,8 @@ caterpillars(
   group,
   xlab,
   overall = TRUE,
-  transfm = c("none", "tanh"),
+  transfm = c("none", "tanh", "invlogit", "percent", "percentr", "inv_ft"),
+  n_transfm = NULL,
   colerrorbar = "#00CD00",
   colpoint = "#FFD700",
   colpoly = "red",
@@ -32,7 +33,9 @@ caterpillars(
 
 \item{overall}{Logical, indicating whether to re-label "Intrcpt" (the default label from \code{rma} or \code{rma.mv} intercept only models or meta-analyses) to "Overall". Defaults to \code{TRUE}.}
 
-\item{transfm}{If set to \code{"tanh"}, a tanh transformation will be applied to effect sizes, converting Zr to a correlation or pulling in extreme values for other effect sizes (lnRR, lnCVR, SMD). Defaults to \code{"none"}.}
+\item{transfm}{If set to \code{"tanh"}, a tanh transformation will be applied to effect sizes, converting Zr to a correlation or pulling in extreme values for other effect sizes (lnRR, lnCVR, SMD).  \code{"invlogit"} can be used to convert lnRR to the inverse logit scale. \code{"percentr"} can convert to the percentage change scale when using response ratios and \code{"percent"} can convert to the percentage change scale of an log transformed effect size. Defaults to \code{"none"}.}
+
+\item{n_transfm}{The vector of sample sizes for each effect size estimate. This is used when \code{transfm = "inv_ft"}. Defaults to NULL.}
 
 \item{colerrorbar}{Colour of the error bar in the caterpillars plot. Defaults to hex code - "#00CD00".}
 

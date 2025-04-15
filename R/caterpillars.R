@@ -5,7 +5,8 @@
 #' @param group The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species, or whatever other grouping variable one wishes to present sample sizes for.
 #' @param xlab The effect size measure label.
 #' @param overall Logical, indicating whether to re-label "Intrcpt" (the default label from \code{rma} or \code{rma.mv} intercept only models or meta-analyses) to "Overall". Defaults to \code{TRUE}.
-#' @param transfm If set to \code{"tanh"}, a tanh transformation will be applied to effect sizes, converting Zr to a correlation or pulling in extreme values for other effect sizes (lnRR, lnCVR, SMD). Defaults to \code{"none"}.
+#' @param transfm If set to \code{"tanh"}, a tanh transformation will be applied to effect sizes, converting Zr to a correlation or pulling in extreme values for other effect sizes (lnRR, lnCVR, SMD).  \code{"invlogit"} can be used to convert lnRR to the inverse logit scale. \code{"percentr"} can convert to the percentage change scale when using response ratios and \code{"percent"} can convert to the percentage change scale of an log transformed effect size. Defaults to \code{"none"}.
+#' @param n_transfm The vector of sample sizes for each effect size estimate. This is used when \code{transfm = "inv_ft"}. Defaults to NULL.
 #' @param colerrorbar Colour of the error bar in the caterpillars plot. Defaults to hex code - "#00CD00". 
 #' @param colpoint Point estimate colour in the caterpillars plot. Defaults to hex code - "#FFD700".
 #' @param colpoly Polygon colour in the caterpillars plot. Defaults to "red".
@@ -43,7 +44,7 @@
 #' }
 #' @export
 
-caterpillars <- function(object, mod = "1",  group, xlab, overall = TRUE, transfm = c("none", "tanh"), colerrorbar = "#00CD00", colpoint = "#FFD700", colpoly = "red",  k = TRUE, g = TRUE, at = NULL, by = NULL, weights = "prop") {
+caterpillars <- function(object, mod = "1",  group, xlab, overall = TRUE, transfm = c("none", "tanh", "invlogit", "percent", "percentr", "inv_ft"), n_transfm = NULL, colerrorbar = "#00CD00", colpoint = "#FFD700", colpoly = "red",  k = TRUE, g = TRUE, at = NULL, by = NULL, weights = "prop") {
 
   if(any(class(object) %in% c("rma.mv", "rma"))){
 
@@ -69,16 +70,28 @@ caterpillars <- function(object, mod = "1",  group, xlab, overall = TRUE, transf
   data$lower <- data$yi - stats::qnorm(0.975)*sqrt(data$vi)
   data$upper <- data$yi + stats::qnorm(0.975)*sqrt(data$vi)
 
-  if(transfm == "tanh"){
-    cols <- sapply(mod_table, is.numeric)
-    mod_table[,cols] <- Zr_to_r(mod_table[,cols])
-    data$yi <- Zr_to_r(data$yi)
-    data$lower <- Zr_to_r(data$lower)
-    data$upper <- Zr_to_r(data$upper)
-    label <- xlab
-  }else{
+# Transform data if needed using unified method with orchard. Code below this  that is commented out was old.
+  if (transfm != "none") {
+                 numeric_cols <- sapply(mod_table, is.numeric)
+    mod_table[, numeric_cols] <- transform_data(as.numeric(mod_table[, numeric_cols]), n = n_transfm, transfm = transfm) # TRANSFORM change  (15 April 20205)  to numeric. CHECK CONSEQUENCES BETTER with moderators
+                     data$yi <- transform_data(data$yi,    n = n_transfm, transfm = transfm)
+                  data$lower <- transform_data(data$lower, n = n_transfm, transfm = transfm)
+                  data$upper <- transform_data(data$upper, n = n_transfm, transfm = transfm)
+              label <- xlab
+  } else{
     label <- xlab
   }
+
+  #if(transfm == "tanh"){
+  #  cols <- sapply(mod_table, is.numeric)
+  #  mod_table[,cols] <- Zr_to_r(mod_table[,cols])
+  #  data$yi <- Zr_to_r(data$yi)
+  #  data$lower <- Zr_to_r(data$lower)
+  #  data$upper <- Zr_to_r(data$upper)
+    
+  #}else{
+  #  label <- xlab
+  #}
 
   if("Intrcpt" %in% mod_table$name){
     mod_table$name <- replace(as.vector(mod_table$name), which(mod_table$name == "Intrcpt"), "Overall")
