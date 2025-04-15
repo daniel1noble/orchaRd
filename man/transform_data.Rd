@@ -22,7 +22,7 @@ Options include:
 - "invlogit": Inverse logit transformation
 - "percentr": Percentage relative change transformation
 - "percent": Percentage transformation
-- "inv_ft": Inverse Freeman-Tukey (double arcsine) transformation for proportions (not yet working)}
+- "inv_ft": Inverse Freeman-Tukey (double arcsine) transformation for proportions (use with caution)}
 }
 \value{
 A numeric vector with the applied transformation.
