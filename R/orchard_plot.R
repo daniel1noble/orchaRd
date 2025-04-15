@@ -14,6 +14,7 @@
 #' @param k If \code{TRUE}, it displays k (number of effect sizes) on the plot.
 #' @param g If \code{TRUE}, it displays g (number of grouping levels for each level of the moderator) on the plot.
 #' @param transfm If set to \code{"tanh"}, a tanh transformation will be applied to effect sizes, converting Zr to a correlation or pulling in extreme values for other effect sizes (lnRR, lnCVR, SMD).  \code{"invlogit"} can be used to convert lnRR to the inverse logit scale. \code{"percentr"} can convert to the percentage change scale when using response ratios and \code{"percent"} can convert to the percentage change scale of an log transformed effect size. Defaults to \code{"none"}.
+#' @param n_transfm The vector of sample sizes for each effect size estimate. This is used when \code{transfm = "inv_ft"}. Defaults to NULL.
 #' @param condition.lab Label for the condition being marginalized over.
 #' @param tree.order Order in which to plot the groups of the moderator when it is a categorical one. Should be a vector of equal length to number of groups in the categorical moderator, in the desired order (bottom to top, or left to right for flipped orchard plot)
 #' @param trunk.size Size of the mean, or central point.
@@ -60,7 +61,7 @@
 orchard_plot <- function(object, mod = "1", group, xlab, N = NULL,
                          alpha = 0.5, angle = 90, cb = TRUE, k = TRUE, g = TRUE,
                          tree.order = NULL, trunk.size = 0.5, branch.size = 1.2, twig.size = 0.5,
-                         transfm = c("none", "tanh", "invlogit", "percent", "percentr"), condition.lab = "Condition",
+                         transfm = c("none", "tanh", "invlogit", "percent", "percentr"), n_transfm = NULL, condition.lab = "Condition",
                          legend.pos = c("bottom.right", "bottom.left",
                                         "top.right", "top.left",
                                         "top.out", "bottom.out",
@@ -121,9 +122,9 @@ orchard_plot <- function(object, mod = "1", group, xlab, N = NULL,
 
   # Transform data if needed
   if (transfm != "none") {
-    numeric_cols <- sapply(mod_table, is.numeric)
-    mod_table[, numeric_cols] <- transform_data(mod_table[, numeric_cols], transfm)
-    data_trim$yi <- transform_data(data_trim$yi, transfm)
+                 numeric_cols <- sapply(mod_table, is.numeric)
+    mod_table[, numeric_cols] <- transform_data(as.numeric(mod_table[, numeric_cols]), n = n_transfm, transfm = transfm) # TRANSFORM change  (15 April 20205)  to numeric. CHECK CONSEQUENCES BETTER with moderators
+                 data_trim$yi <- transform_data(data_trim$yi, n = n_transfm, transfm = transfm)
   }
 
 	# Add in total effect sizes for each level

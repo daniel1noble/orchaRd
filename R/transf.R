@@ -11,7 +11,7 @@
 #'   - "invlogit": Inverse logit transformation
 #'   - "percentr": Percentage relative change transformation
 #'   - "percent": Percentage transformation
-#'   - "inv_ft": Inverse Freeman-Tukey (double arcsine) transformation for proportions (not yet working)
+#'   - "inv_ft": Inverse Freeman-Tukey (double arcsine) transformation for proportions (use with caution)
 #'
 #' @return A numeric vector with the applied transformation.
 #' @examples
@@ -32,7 +32,7 @@ transform_data <- function(x, n = NULL, transfm = c("none", "tanh", "invlogit", 
   })
 
   if(is.null(n) && transfm == "inv_ft") {
-    stop("Sample size for each proportion, 'n', must be provided for 'inv_ft' transformation.")
+    stop("Sample size for each proportion, 'n', must be provided for 'inv_ft' transformation using the n_transfm argument.")
   }
 
   if (transfm == "none") {
@@ -95,9 +95,9 @@ transf_inv_ft <- function(x, n) {
    nhm <- 1/(mean(1/n, na.rm = TRUE))
      z <- suppressWarnings(1/2 * (1 - sign(cos(2 * x)) * sqrt(1 - 
         (sin(2 * x) + (sin(2 * x) - 1/sin(2 * x))/nhm)^2)))
-     z <- ifelse(is.nan(zi), NA, zi)
-     z[x > transf_ft(1, nhm)] <- 1
-     z[x < transf_ft(0, nhm)] <- 0
+     z <- ifelse(is.nan(z), NA, z)
+     z[x > transf_ift(1, nhm)] <- 1
+     z[x < transf_ift(0, nhm)] <- 0
     return(z)
 }
 
@@ -107,7 +107,7 @@ transf_inv_ft <- function(x, n) {
 #' @param n A numeric value representing the sample size for proportion.
 #' @return Back transformed proportion.
 #' @keywords internal
-transf_ft  <- function(x, n){
+transf_ift  <- function(x, n){
      x <- x * n
      z <- 1/2 * (asin(sqrt(x/(n + 1))) + asin(sqrt((x + 1)/(n + 1))))
     return(z)

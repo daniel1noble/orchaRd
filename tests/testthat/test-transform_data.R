@@ -97,3 +97,35 @@ test_that("transform_data works identically to how trasnf was handled by orchard
                transform_data(data_trim$yi, transfm ="percent"))
 })
 
+## Checking the inverse transformation of Freeman Tukey
+datap <- data.frame(  
+  StudyLabel = c("Study A", "Study B", "Study C", "Study D", "Study E",  
+                 "Study F", "Study G", "Study H", "Study I", "Study J"), 
+  Infected = c(20, 35, 15, 8, 50, 90, 22, 30, 10, 190), #Infected STDs Cases
+  TotalSample = c(100, 200, 1000, 100, 300, 1500, 120, 180, 80, 2100), #Total Study Sample
+  PublicationYear = c(2013, 2015, 2016, 2016, 2018, 2019, 2021, 2021, 2023, 2023) #Study Publication Year
+)  
+datap_rma <- escalc(measure = "PFT",   
+                   xi = datap$Infected,   
+                   ni = datap$TotalSample,   
+                   data = datap,   
+                   slab = datap$StudyLabel)
+
+# Check transformation works on the raw data, gives same results as metafor.
+ expect_equal(transf_inv_ft(datap_rma$yi, datap_rma$TotalSample), metafor::transf.ipft.hm(datap_rma$yi, targs = list(ni = datap_rma$TotalSample)))
+
+
+## TO DO: Need to test also mod table conversion. Something like this, but note that we would be transforming to median not mean because we are transforming the estimates from the models, so we need to adjust in orchard to get the mean rather than median.:
+# Run model
+meta_rma <- rma(yi = datap_rma$yi,   
+               vi = datap_rma$vi, 
+               method = "REML",   
+               test = "knha",
+               data = datap_rma,  
+               verbose = TRUE,
+               digits = 3)
+
+meta_rma_new <- predict(meta_rma, transf = transf.ipft.hm, targ = list(ni = datap$TotalSample))  #Back-transformation
+
+mod_table <- mod_results(meta_rma, mod = "1", group = "StudyLabel")$mod_table
+mod_table <- transf_inv_ft(as.numeric(mod_table[1,-1]), datap$TotalSample)
