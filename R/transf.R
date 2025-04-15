@@ -95,7 +95,7 @@ transf_inv_ft <- function(x, n) {
    nhm <- 1/(mean(1/n, na.rm = TRUE))
      z <- suppressWarnings(1/2 * (1 - sign(cos(2 * x)) * sqrt(1 - 
         (sin(2 * x) + (sin(2 * x) - 1/sin(2 * x))/nhm)^2)))
-     z <- ifelse(is.nan(z), NA, z)
+     z <- ifelse(is.nan(z), NA_real_, z)
      z[x > transf_ift(1, nhm)] <- 1
      z[x < transf_ift(0, nhm)] <- 0
     return(z)
