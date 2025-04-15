@@ -73,11 +73,16 @@ caterpillars <- function(object, mod = "1",  group, xlab, overall = TRUE, transf
 # Transform data if needed using unified method with orchard. Code below this  that is commented out was old.
   if (transfm != "none") {
                  numeric_cols <- sapply(mod_table, is.numeric)
-    mod_table[, numeric_cols] <- transform_data(as.numeric(mod_table[, numeric_cols]), n = n_transfm, transfm = transfm) # TRANSFORM change  (15 April 20205)  to numeric. CHECK CONSEQUENCES BETTER with moderators
+    if(mod != "1"){
+        mod_table[, numeric_cols] <- transform_data(mod_table[, numeric_cols], n = n_transfm, transfm = transfm) # Need this for moderators. TODO: Freeman-Tukey transformation will not work with moderators NEED TO FIX. This is a PATCH L77-85
+    } else{ 
+      mod_table[, numeric_cols] <- transform_data(as.numeric(mod_table[, numeric_cols]), n = n_transfm, transfm = transfm) # Only works for the intercept but generalised to back transform using freeman-tukey 
+                    
+    }
                      data$yi <- transform_data(data$yi,    n = n_transfm, transfm = transfm)
                   data$lower <- transform_data(data$lower, n = n_transfm, transfm = transfm)
                   data$upper <- transform_data(data$upper, n = n_transfm, transfm = transfm)
-              label <- xlab
+                       label <- xlab
   } else{
     label <- xlab
   }
