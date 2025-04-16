@@ -380,32 +380,43 @@ Finally, we make a comparable caterpillars plot.
 
 Compared to the orchard plot @fig-Figure10, @fig-Figure11 does not look as elegant, unlike the previous comparisons. This is because the groups with small sample sizes are packed at the top of the figure. 
 
-From @fig-Figure10 we can see that many taxonimic groups have very little data. We may want instead to just focus the readers attention to means of groups with sufficient data. The new `mod_results` function allows us to do this using the maginalised means approach. We can do that as follows:
+From @fig-Figure10 we can see that many taxonomic groups have very little data. We may want instead to just focus the readers attention to means of groups with sufficient data. The new `mod_results` function allows us to do this using the maginalised means approach. We can do that as follows:
 
-```{r, echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE}
+```{r}
 #| label: fig-Figure121
 #| fig-cap: "Caterpillars plot of the the strength of correlation between maternal and offspring size within-species"
+#| eval: true
+#| warning: false
+#| message: false
  
   #Plot the meta-regression model
   lim_MR_results <- orchaRd::mod_results(lim_MR, mod = "Phylum", group = "Article", 
                                            at = list(Phylum = c("Chordata", "Arthropoda", "Mollusca")),
                                            subset = TRUE)
-  orchaRd::orchard_plot(lim_MR_results, xlab = "Correlation coefficient", transfm = "tanh", g = TRUE, angle = 45)
+  orchaRd::orchard_plot(lim_MR_results, xlab = "Fishers z-transformed Correlation (Zr)",  g = TRUE, angle = 45)
 ```
 
 We can now see that @fig-Figure121 limits what it plots to only the three levels relevant for presentation. 
 
+:::{.column-margin}
+:::{.callout-important}
+We have noted a bug at this point in the `orchaRd` package. In updating the `transf` pipeline we've now noticed a bug when combining subsetting of levels using the `at` argument and the `subset` argument. This still works, but you cannot currently combine it with any back-transformation of the effect size, which is why we have reverted back to `Zr`. We're working on fixing this.
+:::
+:::
 We may also at times want to revert back to a normal plot with catagorical variables on the x-axis. We can do this by setting `flip` argument to `FALSE`. 
 
-```{r, echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE}
+```{r}
 #| label: fig-Figure1212
 #| fig-cap: "Caterpillars plot of the the strength of correlation between maternal and offspring size within-species"
+#| eval: true
+#| warning: false
+#| message: false
  
   #Plot the meta-regression model
   lim_MR_results <- orchaRd::mod_results(lim_MR, mod = "Phylum", group = "Article", 
                                            at = list(Phylum = c("Chordata", "Arthropoda", "Mollusca")),
                                            subset = TRUE)
-  orchaRd::orchard_plot(lim_MR_results, xlab = "Correlation coefficient", transfm = "tanh", g = TRUE, flip = FALSE)
+  orchaRd::orchard_plot(lim_MR_results, xlab = "Fishers z-transformed Correlation (Zr)", g = TRUE, flip = FALSE)
 ```
 
 # **Orchard Plots with Meta-regression Models: Marginalised and conditional means with heteroscedastic residual variances**
@@ -655,15 +666,15 @@ orchaRd::orchard_plot(HetModel2, xlab = "lnRR", angle = 45, g = FALSE, legend.po
 
 Now the orchard plot depicts the mean effect sizes (plus 95% CI and PI) for each trait category, at 5, 10 and 15 $^{\circ}$C when the treatment duration is 10 days. 
 
-# New Leave-on-out Analysis and Plots
+# **New Leave-on-out Analysis and Plots**
 
 One way to assess the robustness of a meta-analytic model is by re-running the model without one or more effect sizes and then comparing the results. A common approach is to re-run the model multiple times, each time removing the effect sizes from a different study. This allows you to see how the overall effect estimate changes when each study is excluded.
 
-This is a leave-one-out analysis (Nakagawa et al. 2023). It leaves out one study at a time, but you can leave out any group you think can have a large influence on the overall effect estimate. In ecology and evolution meta-analyses, it can be useful to check how the model changes when certain species are left out.
+This is a leave-one-out analysis @nakagawa2023quantitative. It leaves out one study at a time, but you can leave out any group you think can have a large influence on the overall effect estimate. In ecology and evolution meta-analyses, it can be useful to check how the model changes when certain species are left out.
 
 Thanks to [Facundo Decunta](https://github.com/fdecunta), there are now two functions for this: `leave_one_out()` and `orchard_leave1out()`. The first one is to run the analysis, and the second one is to plot the results.
 
-## Example 7: Simple leave-one-out
+## **Example 7: Simple leave-one-out**
 
 Using the data from @EnglishUller2016, here is how to run a leave-one-out and plot the results. 
 
@@ -725,10 +736,9 @@ in the original model. You can removed them by setting `ci_lines = FALSE`. To ch
 
 The empty points, called 'ghost points', show the effect sizes left-out of that model. You can removed them by setting `ghost_points = FALSE`.
 
-
 The rest of the arguments are the same as in `orchard_plot()`.
 
-# Example 8: Leave-one-out in more complex models
+## **Example 8: Leave-one-out in more complex models**
 
 There are cases in which the meta-analytic model is more complicated. 
 `leave_one_out()` can handle some common cases that try to account for
