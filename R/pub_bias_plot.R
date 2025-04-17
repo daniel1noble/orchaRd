@@ -2,9 +2,9 @@
 
 #' @title pub_bias_plot
 #' @description This function adds the bias corrected mean and confidence intervals to an existing orchard plot that displays the overall meta-analytic mean effect size.
-#' @param plot The orchard plot object to add the bias corrected mean and confidence intervals to. This plot needs to be a plot that displays the raw and a single meta-analytic mean (overall mean), confidence interval and predcition interval. 
+#' @param plot The orchard plot object to add the bias corrected mean and confidence intervals to. This plot needs to be a plot that displays the raw and a single meta-analytic mean (overall mean), confidence interval and prediction interval. 
 #' @param fe_model The meta-analytic model (rma object) produced from a two-step correction (sensu Yang et al. 2023) (Step 1: Fixed effect model) with a robust corretion to correct the meta-analytic mean for publication bias (selection bias) and the dependency in the data. 
-#' @param v_model An optional argument. The meta-analytic model (rma object) to deal with publication bias using the meta-regression approach proposed by Nakagawa et al. 2023. This model can have fixed and/or random effects, with one random effect being sampling error (se or v). The intercept from this model can be considred the corrected meta-analytic mean when sample size is infinite or sampling error is zero.
+#' @param v_model An optional argument. The meta-analytic model (rma object) to deal with publication bias using the meta-regression approach proposed by Nakagawa et al. 2023. This model can have fixed and/or random effects, with one random effect being sampling error (se or v). The intercept from this model can be considered the corrected meta-analytic mean when sample size is infinite or sampling error is zero.
 #' @param col The colour of the mean and confidence intervals.
 #' @param plotadj The adjustment to the x-axis position of the mean and confidence intervals.
 #' @param textadj The adjustment to the y-axis position of the mean and confidence intervals for the text displaying the type of correction. 
