@@ -69,7 +69,7 @@ If you want to download the development branch, which contains newer features yo
 #| code-fold: true
 rm(list = ls())
 devtools::install_github("daniel1noble/orchaRd", ref = "dev", force = TRUE)
-pacman::p_load(devtools, tidyverse, metafor, patchwork, R.rsp, orchaRd, emmeans, ape, phytools, flextable, rotl)
+pacman::p_load(devtools, tidyverse, metafor, patchwork, R.rsp, orchaRd, emmeans, ape, phytools, flextable, rotl, clubSandwich)
 ```
 
 It's important to note that this version may not be as stable as the master branch.
@@ -666,7 +666,7 @@ orchaRd::orchard_plot(HetModel2, xlab = "lnRR", angle = 45, g = FALSE, legend.po
 
 Now the orchard plot depicts the mean effect sizes (plus 95% CI and PI) for each trait category, at 5, 10 and 15 $^{\circ}$C when the treatment duration is 10 days. 
 
-# **New Leave-on-out Analysis and Plots**
+# ***New* Leave-on-out Analysis and Plots**
 
 One way to assess the robustness of a meta-analytic model is by re-running the model without one or more effect sizes and then comparing the results. A common approach is to re-run the model multiple times, each time removing the effect sizes from a different study. This allows you to see how the overall effect estimate changes when each study is excluded.
 
@@ -872,36 +872,37 @@ loo_test_phylo$mod_table |>
   coord_flip() 
 ```
 
-# New Bias-Corrected Meta-analytic Mean Plots
+# ***New* Bias-Corrected Meta-analytic Mean Plots**
 
-Publication bias is a common issue in meta-analysis but can be challenging to deal with the multi-level meta-analyses [@Nakagawa2022]
+Publication bias is a common issue in meta-analysis but can be challenging to deal with the multi-level meta-analyses [@nakagawa2022methods]. @yang2024robust proposed a new method to correct for publication bias in multi-level meta-analyses. We have implemented a new plot which can visualise how overall meta-analytic means change when correcting for publication bias.
+This is done using the `pub_bias_plot()` function. 
 
 ```{r}
 # Data
 data(english)
 
 # We need to calculate the effect sizes, in this case d
-english <- escalc(measure = "SMD", n1i = NStartControl, sd1i = SD_C, m1i = MeanC, n2i = NStartExpt, sd2i = SD_E, m2i = MeanE, 
+english <- metafor::escalc(measure = "SMD", n1i = NStartControl, sd1i = SD_C, m1i = MeanC, n2i = NStartExpt, sd2i = SD_E, m2i = MeanE, 
 				var.names=c("SMD","vSMD"),
 				data = english)
  
 # Our MLMA model
-english_MA1 <- rma.mv(yi = SMD, V = vSMD, random = list( ~ 1 | StudyNo, ~ 1 | EffectID),test = "t", data = english)
+english_MA1 <- metafor::rma.mv(yi = SMD, V = vSMD, random = list( ~ 1 | StudyNo, ~ 1 | EffectID),test = "t", data = english)
  
+ # Now apply the approach of Yang et al. 2024
 # Step 1: Fit the fixed effect model
-english_MA2 <- rma.mv(yi = SMD, V = vSMD, data = english, test = "t")
-
-english_MA3 <- rma(yi = SMD, vi = vSMD, data = english, test = "t", method = "FE")
+english_MA2 <- metafor::rma(yi = SMD, vi = vSMD, data = english, test = "t", method = "FE")
 
 # Step 2: Correct for dependency 
-english_MA2_1 <- robust(english_MA2, cluster = english$StudyNo, clubSandwich=TRUE)
+english_MA2_1 <- metafor::robust(english_MA2, cluster = english$StudyNo, clubSandwich=TRUE)
 
-# Step 3: Testing modified eggers. Need intercept
-english_MA4 <- rma.mv(yi = SMD, V = vSMD, mod = ~vSMD, random = list( ~ 1 | StudyNo, ~ 1 | EffectID),test = "t", data = english)
+# Step 3: Testing modified eggers. Need intercept following Nakagawa et al. 2022
+english_MA4 <- metafor::rma.mv(yi = SMD, V = vSMD, mod = ~vSMD, random = list( ~ 1 | StudyNo, ~ 1 | EffectID),test = "t", data = english)
 
 ```
 
-
+We can then plot the results using the `pub_bias_plot()` function. This function takes the output of `orchard_plot()` and adds the bias-corrected mean estimates (@fig-biascorrect).
+The `pub_bias_plot()` function takes the output of `orchard_plot()` and adds the bias-corrected mean estimates. 
 
 ```{r}
 #| label: fig-biascorrect
@@ -909,13 +910,10 @@ english_MA4 <- rma.mv(yi = SMD, V = vSMD, mod = ~vSMD, random = list( ~ 1 | Stud
 #| fig-align: center
 #| message: false
  
-plot <- orchard_plot(english_MA1, group = "StudyNo",  xlab = "Standardized Mean Difference")
-plot2 <- pub_bias_plot(plot, english_MA2_1)
-plot3 <- pub_bias_plot(plot, english_MA2_1, english_MA4)
+ plot <- orchard_plot(english_MA1, group = "StudyNo",  xlab = "Standardized Mean Difference")
+plot2 <- pub_bias_plot(plot, english_MA2_1, english_MA4)
 
-(plot2+plot3) + 
-  plot_annotation(tag_levels = 'A') & 
-  theme(plot.tag = element_text(size = 12, face = "bold"))
+plot2
 ```
 
 \newpage
