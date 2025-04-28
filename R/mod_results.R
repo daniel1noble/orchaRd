@@ -91,9 +91,12 @@ mod_results <- function(model, mod = "1", group,  N = NULL,  weights = "prop", b
     df_mod = 1.0e6 # almost identical to z value
   }
 
-  # Extract the data from the model object, use only complete cases
-  data <- model$data[model$not.na, ]
-  mod_vector <- data[[mod]]
+  # Extract the data from the model object
+  data <- .extract_model_data(model)
+
+  # Get the column in the data used as moderator
+  mod_vector <- data[[mod]]  
+
 
   # ---------------------------
   # Get grid for emmeans
@@ -271,13 +274,7 @@ get_data_raw <- function(model, mod, group, N = NULL, at = NULL, subset = TRUE){
     stop("Please specify the 'group' argument by providing the name of the grouping variable. See ?mod_results")
   }
  
-# Extract the data from the model object
-  data <- model$data 
-
-# Check if missing values exist and use complete case data
-  if(any(model$not.na == FALSE)){
-    data <- data[model$not.na,]
-  }
+  data <- .extract_model_data(model)
 
   if(!is.null(at) & subset){
     # Find the at slot in list that pertains to the moderator and extract levels
@@ -334,12 +331,7 @@ get_data_raw_cont <- function(model, mod, group, N = NULL, by){
   }
 
   # Extract the data from the model object
-  data <- model$data 
-
-# Check if missing values exist and use complete case data
-  if(any(model$not.na == FALSE)){
-    data <- data[model$not.na,]
-  }
+  data <- .extract_model_data(model)
 
   # Extract effect sizes
   yi <- model$yi
@@ -523,4 +515,27 @@ mod_is_valid <- function(model, mod) {
   }
 
   return(TRUE)
+}
+
+
+#' Extract model data used in metafor model
+#'
+#' Gets the data actually used to fit a \pkg{metafor} model, after applying
+#' any subset and removing rows with missing values.
+#'
+#' @param model A \code{metafor} model object.
+#'
+#' @return A data frame of the used observations.
+#'
+#' @keywords internal
+.extract_model_data <- function(model) {
+  # Extract the data from the model object.
+  # First check if metafor model used subset, then use only complete cases
+  if (is.null(model$subset)) { 
+    data <- model$data[model$not.na, ]
+  } else {
+    subset_data <- model$data[model$subset, ]
+    data <- subset_data[model$not.na, ]
+  }
+  return(data)
 }
