@@ -93,13 +93,10 @@ orchard_plot <- function(
   k.pos <- match.arg(NULL, choices = k.pos)
 
   if (any(class(object) %in% c("robust.rma", "rma.mv", "rma", "rma.uni"))) {
-    if (mod != "1") {
-      mod_arg <- mod
-    } else {
-      mod_arg <- "1"
-    }
-    results <-  orchaRd::mod_results(object, mod, group, N, by = by, at = at,
-                                     weights = weights, upper = upper)
+    # TODO: Test this. I think that the old code has a useless if-else 
+    #       to decide how to ise mod
+    results <- orchaRd::mod_results(object, mod, group, N, by = by, at = at,
+                                    weights = weights, upper = upper)
   } 
   
   if (any(class(object) %in% c("orchard"))) {
@@ -134,7 +131,7 @@ orchard_plot <- function(
 
   # If tree.order isn't equal to NULL but passes above check, then reorder mod table
   # according to custom order if there is one.
-  if (!is.null(tree.order)){
+  if (!is.null(tree.order)) {
     data_trim$moderator<-factor(data_trim$moderator, levels = tree.order, labels = tree.order)
     mod_table <- mod_table %>% dplyr::arrange(factor(name, levels = tree.order))
   }
