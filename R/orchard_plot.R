@@ -58,217 +58,393 @@
 #' }
 #' @export
 
-orchard_plot <- function(object, mod = "1", group, xlab, N = NULL,
-                         alpha = 0.5, angle = 90, cb = TRUE, k = TRUE, g = TRUE,
-                         tree.order = NULL, trunk.size = 0.5, branch.size = 1.2, twig.size = 0.5,
-                         transfm = c("none", "tanh", "invlogit", "percent", "percentr", "inv_ft"), n_transfm = NULL, condition.lab = "Condition",
-                         legend.pos = c("bottom.right", "bottom.left",
-                                        "top.right", "top.left",
-                                        "top.out", "bottom.out",
-                                        "none"), # "none" - no legends
-                         k.pos = c("right", "left", "none"),
-                         colour = FALSE,
-                         fill = TRUE,
-                         weights = "prop", by = NULL, at = NULL, upper = TRUE, flip = TRUE)
-{
+orchard_plot <- function(
+  object,
+  mod = "1",
+  group,
+  xlab,
+  N = NULL,
+  alpha = 0.5,
+  angle = 90,
+  cb = TRUE,
+  k = TRUE,
+  g = TRUE,
+  tree.order = NULL,
+  trunk.size = 0.5,
+  branch.size = 1.2,
+  twig.size = 0.5,
+  transfm = c("none", "tanh", "invlogit", "percent", "percentr", "inv_ft"),
+  n_transfm = NULL,
+  condition.lab = "Condition",
+  legend.pos = c("bottom.right", "bottom.left", "top.right", "top.left",
+                  "top.out", "bottom.out", "none"), 
+  k.pos = c("right", "left", "none"),
+  colour = FALSE,
+  fill = TRUE,
+  weights = "prop",
+  by = NULL,
+  at = NULL,
+  upper = TRUE,
+  flip = TRUE
+) {
   ## evaluate choices, if not specified it takes the first choice
   transfm <- match.arg(NULL, choices = transfm)
   legend.pos <- match.arg(NULL, choices = legend.pos)
   k.pos <- match.arg(NULL, choices = k.pos)
-  label <- xlab
 
+  if (any(class(object) %in% c("robust.rma", "rma.mv", "rma", "rma.uni"))) {
+    if (mod != "1") {
+      mod_arg <- mod
+    } else {
+      mod_arg <- "1"
+    }
+    results <-  orchaRd::mod_results(object, mod, group, N, by = by, at = at,
+                                     weights = weights, upper = upper)
+  } 
+  
+  if (any(class(object) %in% c("orchard"))) {
+    results <- object
+  }
 
-	if(any(class(object) %in% c("robust.rma", "rma.mv", "rma", "rma.uni"))){
+  # -----------------------------------------
+  # Prepare data
 
-	    if(mod != "1"){
-	    results <-  orchaRd::mod_results(object, mod, group,  N,
-	                                        by = by, at = at, weights = weights, upper = upper)
-	  } else {
-	    results <-  orchaRd::mod_results(object, mod = "1", group,  N,
-	                                        by = by, at = at, weights = weights, upper = upper)
-	    }
-	  }
-
-	if(any(class(object) %in% c("orchard"))) {
-			results <- object
-	}
-
-	mod_table <- results$mod_table
-
+  # Get model table and data.
+  mod_table <- results$mod_table
   data_trim <- results$data
+
+  # Transform data if needed
+  if (transfm != "none") {
+    numeric_cols <- c("estimate", "lowerCL", "upperCL", "lowerPR", "upperPR")
+    mod_table[, numeric_cols] <- transform_data(mod_table[, numeric_cols],
+                                                n = n_transfm,
+                                                transfm = transfm)
+    data_trim$yi <- transform_data(data_trim$yi, n = n_transfm, transfm = transfm)
+  }
+
   # making sure factor names match
   data_trim$moderator <- factor(data_trim$moderator, levels = mod_table$name, labels = mod_table$name)
 
-  data_trim$scale <- (1/sqrt(data_trim[,"vi"]))
-	legend <- "Precision (1/SE)"
+  # Reorder data if needed
+  # If tree.order isn't equal to NULL, and length of tree order does not 
+  # match number of categories in categorical moderator, then stop with error.
+  if (!is.null(tree.order) & length(tree.order)!= nlevels(data_trim[,'moderator'])) {
+    stop("Length of 'tree.order' does not equal number of categories in moderator")
+  }
 
-	#if tree.order isn't equal to NULL, and length of tree order does not match number of categories in categorical moderator, then stop function and throw an error
-	if(!is.null(tree.order)&length(tree.order)!=nlevels(data_trim[,'moderator'])){
-	  stop("Length of 'tree.order' does not equal number of categories in moderator")
-	}
-
-  #if tree.order isn't equal to NULL but passes above check, then reorder mod table according to custom order if there is one
+  # If tree.order isn't equal to NULL but passes above check, then reorder mod table
+  # according to custom order if there is one.
   if (!is.null(tree.order)){
     data_trim$moderator<-factor(data_trim$moderator, levels = tree.order, labels = tree.order)
     mod_table <- mod_table %>% dplyr::arrange(factor(name, levels = tree.order))
   }
 
-	if(is.null(N) == FALSE){
-	  data_trim$scale <- data_trim$N
-		  legend <- paste0("Sample Size ($\\textit{N}$)") # we want to use italic
-		  #latex2exp::TeX()
-	}
 
+  # Set scale used for points sizes and it's legend.
+  # If N is not null, it is the name of the column that has the sample size
+  if (is.null(N) == FALSE) {
+    data_trim$scale <- data_trim$N
+    legend <- paste0("Sample Size ($\\textit{N}$)") # we want to use italic
+  } else {
+    # This is the default
+    data_trim$scale <- (1 / sqrt(data_trim[, "vi"]))
+    legend <- "Precision (1/SE)"
+  }
+  size_legend <- ggplot2::guide_legend(title = latex2exp::TeX(legend))
 
-  # Transform data if needed
-  if (transfm != "none") {
-    numeric_cols <- c("estimate", "lowerCL", "upperCL", "lowerPR", "upperPR")
-    mod_table[, numeric_cols] <- transform_data(mod_table[, numeric_cols], 
-						n = n_transfm,
-						transfm = transfm)
-    data_trim$yi <- transform_data(data_trim$yi, n = n_transfm, transfm = transfm)
+  # ----------------------------------------
+  # Set color and fill
+  # setting fruit colour
+  if (colour == TRUE) {
+    color <- as.factor(data_trim$stdy)
+    color2 <- NULL
+  } else {
+    color <- data_trim$mod
+    color2 <- mod_table$name
   }
 
-	# Add in total effect sizes for each level
-	 mod_table$K <- as.vector(by(data_trim, data_trim[,"moderator"], function(x) length(x[,"yi"])))
+  # whether we fill fruit or not
+  if (fill == TRUE) {
+    fill <- color
+  } else {
+    fill <- NULL
+  }
 
-	# Add in total levels of a grouping variable (e.g., study ID) within each moderator level.
-	 mod_table$g <- as.vector(num_studies(data_trim, moderator, stdy)[,2])
+  # ----------------------------------------
+  # Build orchard plot by layers:
+  #   1. Effect sizes as beeswarm and bubbles
+  #   2. Horizontal reference line (at 0 by default)
+  #   3. Confidence interval
+  #   4. Prediction interval
+  #   5. Point estimate
+  #   6. Basic theme, labels and legend
+  #   7. Colors and flip
 
-	 # the number of groups in a moderator & data points
-	 group_no <- length(unique(mod_table[, "name"]))
+  # 1,2 and 7 are common for every plot
+  # 3 to 6 are different if conditions are used (i.e., `at` and `by` options)
 
-	 #data_no <- nrow(data)
+  # ----------------------------------------
+  # Parse options for plots with or without conditions:
 
-	# colour blind friendly colours with grey
-	 cbpl <- c("#88CCEE", "#CC6677", "#DDCC77", "#117733", "#332288", "#AA4499", "#44AA99", "#999933", "#882255", "#661100", "#6699CC", "#888888", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#999999")
+  # If the plot has conditions it must add:
+  # - Space between lines from different conditions
+  # - Different shapes for each element in 'condition'
+  # - Shapes for all conditions:                        
+  # - Labels for conditions:                           
 
-	 # setting fruit colour
-	 if(colour == TRUE){
-	   color <- as.factor(data_trim$stdy)
-	   color2 <- NULL
-	 }else{
-	   color <- data_trim$mod
-	   color2 <- mod_table$name
-	 }
+  if (names(mod_table)[2] == "condition") {
+    condition_no <- length(unique(mod_table[, "condition"])) # How many conditions?
 
-	 # whether we fill fruit or not
-	 if(fill == TRUE){
-	   fill <- color
-	 }else{
-	     fill <- NULL
-	   }
+    lines_position <- ggplot2::position_dodge2(width = 0.3) # Add spacing for multiple lines
+    points_shapes <- as.factor(mod_table$condition) # Different shapes for each condition
+    shapes_values <- 20 + (1:condition_no) # One shape for each condition
+    shape_legend <- ggplot2::guide_legend(title = latex2exp::TeX(condition.lab))
+  } else {
+    lines_position <- ggplot2::position_dodge2(width = 0.75) # Set to default width in ggplot2
+    points_shapes <- factor(1) # Dummy variable, same shape for all
+    shapes_values <- 21 # Only one shape
+    shape_legend <- "none"
+  }
 
-	 # whether marginal
-	 if(names(mod_table)[2] == "condition"){
 
-	   # the number of levels in the condition
-	   condition_no <- length(unique(mod_table[, "condition"]))
+  plt <- .base_orchard_plot(data_trim, color, fill, alpha) %>%
+    .add_reference_line(alpha) %>% 
+    .add_conf_intervals(mod_table, lines_position, branch.size) %>%
+    .add_pred_intervals(mod_table, lines_position, trunk.size, twig.size) %>%
+    .add_point_estimates(mod_table, color2, points_shapes, lines_position, trunk.size, shapes_values) %>%
+    .add_orchard_theme() %>%
+    .add_legends(legend.pos, size_legend, shape_legend) %>%
+    .add_axis_labels(xlab, angle)
 
-	   plot <- ggplot2::ggplot() +
-	     # pieces of fruit (bee-swarm and bubbles)
-	     ggbeeswarm::geom_quasirandom(data = data_trim, ggplot2::aes(y = yi, x = moderator, size = scale, colour = color, fill = fill), alpha=alpha, shape = 21) +
+  if (k == TRUE && k.pos != "none") {
+    plt <- .add_k_and_g(plt, k.pos, g, data_trim, mod_table)
+  }
+  if (cb == TRUE) {
+    plt <- .add_colour_blind_palette(plt)
+  }
+  if (flip) {
+    plt <- plt + ggplot2::coord_flip()
+  }
 
-	     ggplot2::geom_hline(yintercept = 0, linetype = 2, colour = "black", alpha = alpha) +
-	     # creating CI
-	     ggplot2::geom_linerange(data = mod_table, ggplot2::aes(x = name, ymin = lowerCL, ymax = upperCL),
-	                             size = branch.size, position = ggplot2::position_dodge2(width = 0.3)) +
-	     # drowning point estimate and PI
-	     ggplot2::geom_pointrange(data = mod_table, ggplot2::aes(y = estimate, x = name, ymin = lowerPR, ymax = upperPR,  shape = as.factor(condition), fill = color2), size = trunk.size, position = ggplot2::position_dodge2(width = 0.3), linewidth = twig.size) +
-	     # this will only work for up to 5 different conditions
-	     # flipping things around (I guess we could do use the same geoms but the below is the original so we should not change)
-	     ggplot2::scale_shape_manual(values =  20 + (1:condition_no))  +
-	     ggplot2::theme_bw() +
-	     ggplot2::guides(fill = "none", colour = "none") +
-	     ggplot2::theme(legend.position = c(0, 1), legend.justification = c(0, 1)) +
-	     ggplot2::theme(legend.title = ggplot2::element_text(size = 9)) +
-	     ggplot2::theme(legend.direction="horizontal") +
-	     ggplot2::theme(legend.background = ggplot2::element_blank()) +
-	     ggplot2::labs(y = label, x = "", size = latex2exp::TeX(legend)) +
-	     ggplot2::labs(shape = condition.lab) +
-	     ggplot2::theme(axis.text.y = ggplot2::element_text(size = 10, colour ="black",
-	                                                        hjust = 0.5,
-	                                                        angle = angle))
-	if(flip){
-		plot <- plot + ggplot2::coord_flip()
-	}
+  return(plt)
+}
 
-	 } else {
 
-	  plot <- ggplot2::ggplot() +
-	    # pieces of fruit (bee-swarm and bubbles)
-	    ggbeeswarm::geom_quasirandom(data = data_trim, ggplot2::aes(y = yi, x = moderator, size = scale, colour = color, fill = fill), alpha=alpha, shape = 21) +
+#' Create base for orchard plot
+#'
+#' @keywords internal
+.base_orchard_plot <- function(data_trim, color, fill, alpha) {
+  p <- ggplot2::ggplot() +
+    ggbeeswarm::geom_quasirandom(
+      data = data_trim,
+      ggplot2::aes(
+        y = yi,
+        x = moderator,
+        size = scale,
+        colour = color,
+        fill = fill
+      ),
+      alpha = alpha,
+      shape = 21
+    )
+  return(p)
+}
 
-	    ggplot2::geom_hline(yintercept = 0, linetype = 2, colour = "black", alpha = alpha) +
-	    # creating CI
-	    ggplot2::geom_linerange(data = mod_table, ggplot2::aes(x = name, ymin = lowerCL, ymax = upperCL), size = branch.size) +
-	    # drowning point estimate and PI
-	    ggplot2::geom_pointrange(data = mod_table, ggplot2::aes(y = estimate, x = name,  ymin = lowerPR, ymax = upperPR, fill = color2), size = trunk.size, linewidth = twig.size, shape = 21) +
-	    ggplot2::theme_bw() +
-	    ggplot2::guides(fill = "none", colour = "none") +
-	    ggplot2::theme(legend.title = ggplot2::element_text(size = 9)) +
-	    ggplot2::theme(legend.direction="horizontal") +
-	    ggplot2::theme(legend.background = ggplot2::element_blank()) +
-	    ggplot2::labs(y = label, x = "", size = latex2exp::TeX(legend)) +
-	    ggplot2::theme(axis.text.y = ggplot2::element_text(size = 10, colour ="black",
-	                                                       hjust = 0.5,
-	                                                       angle = angle)) #+
-	    #ggplot2::theme(legend.position= c(1, 0), legend.justification = c(1, 0))
-	 if(flip){
-		plot <- plot + ggplot2::coord_flip()
-	}
-	 }
 
-	 # Add legend
-	 plot <- switch(legend.pos,
-	                "bottom.right" = plot + ggplot2::theme(legend.position = "inside", legend.justification = c(1, 0)),
-	                "bottom.left"  = plot + ggplot2::theme(legend.position = "inside", legend.justification = c(0, 0)),
-	                "top.right"    = plot + ggplot2::theme(legend.position = "inside", legend.justification = c(1, 1)),
-	                "top.left"     = plot + ggplot2::theme(legend.position = "inside", legend.justification = c(0, 1)),
-	                "top.out"      = plot + ggplot2::theme(legend.position = "top"),
-	                "bottom.out"   = plot + ggplot2::theme(legend.position = "bottom"),
-	                "none"         = plot + ggplot2::theme(legend.position = "none"),
-	                plot
-	 )
+#' Add reference line for orchard plot
+#'
+#' @keywords internal
+.add_reference_line <- function(plt, alpha) {
+  plt +
+    ggplot2::geom_hline(
+      yintercept = 0,
+      linetype = 2,
+      colour = "black",
+      alpha = alpha
+    )
+}
 
-	  # putting colors in
-	  if(cb == TRUE){
-	    plot <- plot +
-	      ggplot2::scale_fill_manual(values = cbpl) +
-	      ggplot2::scale_colour_manual(values = cbpl)
-	  }
 
-	  # putting k and g in
-	  if(k == TRUE && g == FALSE && k.pos == "right"){
-	    plot <- plot +
-	      ggplot2::annotate('text', y = (max(data_trim$yi) + (max(data_trim$yi)*0.10)), x = (seq(1, group_no, 1)+0.3),
-	                        label= paste("italic(k)==", mod_table$K[1:group_no]), parse = TRUE, hjust = "right", size = 3.5)
-	  } else if(k == TRUE && g == FALSE && k.pos == "left") {
-	    plot <- plot +  ggplot2::annotate('text', y = (min(data_trim$yi) + (min(data_trim$yi)*0.10)), x = (seq(1, group_no, 1)+0.3),
-	                                      label= paste("italic(k)==", mod_table$K[1:group_no]), parse = TRUE, hjust = "left", size = 3.5)
-	  } else if (k == TRUE && g == TRUE && k.pos == "right"){
-	    # get group numbers for moderator
-	    plot <- plot + ggplot2::annotate('text', y = (max(data_trim$yi) + (max(data_trim$yi)*0.10)), x = (seq(1, group_no, 1)+0.3),
-	                        label= paste("italic(k)==", mod_table$K[1:group_no], "~","(", mod_table$g[1:group_no], ")"),
-	                        parse = TRUE, hjust = "right", size = 3.5)
-	  } else if (k == TRUE && g == TRUE && k.pos == "left"){
-	    # get group numbers for moderator
-	    plot <- plot + ggplot2::annotate('text',  y = (min(data_trim$yi) + (min(data_trim$yi)*0.10)), x = (seq(1, group_no, 1)+0.3),
-	                        label= paste("italic(k)==", mod_table$K[1:group_no], "~","(", mod_table$g[1:group_no], ")"),
-	                        parse = TRUE, hjust = "left", size = 3.5)
-	  } else if (k == TRUE && g == FALSE && k.pos%in%c('right','left','none')==FALSE) {
-	    # get group numbers for moderator
-	    plot <- plot + ggplot2::annotate("text", y = k.pos, x = (seq(1, group_no,
-	                                                                1) + 0.3), label = paste("italic(k)==", mod_table$K[1:group_no]),
-	                                    parse = TRUE, size = 3.5)
-	  } else if (k == TRUE && g == TRUE && k.pos%in%c('right','left','none')==FALSE) {
-	    # get group numbers for moderator
-	    plot <- plot + ggplot2::annotate("text", y = k.pos, x = (seq(1, group_no,
-	                                                                1) + 0.3), label = paste("italic(k)==", mod_table$K[1:group_no],
-	                                                                                         "~", "(", mod_table$g[1:group_no], ")"),
-	                                    parse = TRUE, size = 3.5)
-    }
-	  return(plot)
+#' Add confidence intervals
+#'
+#' @keywords internal
+.add_conf_intervals <- function(plt, mod_table, lines_position, branch.size) {
+  plt +
+    ggplot2::geom_linerange(
+      data = mod_table,
+      ggplot2::aes(
+        x = name,
+        ymin = lowerCL,
+        ymax = upperCL
+      ),
+      position = lines_position,
+      size = branch.size
+    )
+}
+
+
+#' Add prediction intervals
+#'
+#' @keywords internal
+.add_pred_intervals <- function(plt, mod_table, lines_position, trunk.size, twig.size) {
+  plt +
+    ggplot2::geom_linerange(
+      data = mod_table,
+      ggplot2::aes(y = estimate, x = name, min = lowerPR, max = upperPR),
+      position = lines_position,
+      size = trunk.size,
+      linewidth = twig.size
+    )
+}
+
+
+#' Add point estimates for orchard plot
+#'
+#' @keywords internal
+.add_point_estimates <- function(plt, mod_table, color2, points_shapes, lines_position, trunk.size, shapes_values) {
+  # NOTE: Point estimate previously used in 'geom_pointrange',
+  # plotting the point estimate and prediction interval at the same time.
+  # However, that was less flexible.
+  # Now PI are plotted with 'geom_linerange' and point estimate with 'geom_point'.
+  #
+  # To make points look the same as before, 'geom_point' use
+  # some factors multiplying size and stroke.
+  plt +
+    ggplot2::geom_point(
+      data = mod_table,
+      ggplot2::aes(y = estimate, x = name, fill = color2, shape = points_shapes),
+      position = lines_position,
+      size = trunk.size * 4,
+      stroke = 1 + trunk.size * 0.07   # Increase the stroke of the point 7% the size of the point. I think it's nice that way
+    ) +
+    ggplot2::scale_shape_manual(values = shapes_values)
+}
+
+
+#' Theme for orchard plot
+#'
+#' @keywords internal
+.add_orchard_theme <- function(plt) {
+  plt + ggplot2::theme_bw() +
+    ggplot2::theme(
+      legend.title = ggplot2::element_text(size = 9),
+      legend.direction = "horizontal",
+      legend.background = ggplot2::element_blank()
+    )
+}
+
+
+#' Add legends to the plot
+#'
+#' @keywords internal
+.add_legends <- function(plt, legend.pos, size_legend, shape_legend) {
+  # Define legend position and add the legend
+  plt <- switch(legend.pos,
+    "bottom.right" = plt + ggplot2::theme(legend.position = "inside", legend.justification = c(1, 0)),
+    "bottom.left"  = plt + ggplot2::theme(legend.position = "inside", legend.justification = c(0, 0)),
+    "top.right"    = plt + ggplot2::theme(legend.position = "inside", legend.justification = c(1, 1)),
+    "top.left"     = plt + ggplot2::theme(legend.position = "inside", legend.justification = c(0, 1)),
+    "top.out"      = plt + ggplot2::theme(legend.position = "top"),
+    "bottom.out"   = plt + ggplot2::theme(legend.position = "bottom"),
+    "none"         = plt + ggplot2::theme(legend.position = "none"),
+    plt
+  )
+
+  plt <- plt +
+    ggplot2::guides(
+      size   = size_legend,
+      shape  = shape_legend,
+      colour = "none",
+      fill   = "none"
+    )
+
+  return(plt)
+}
+
+
+#' Add axis labels to orchard plot
+#'
+#' @keywords internal
+.add_axis_labels <- function(plt, xlab, angle) {
+  plt + ggplot2::labs(y = xlab, x = "") +
+    ggplot2::theme(axis.text.y = ggplot2::element_text(
+      size = 10,
+      colour = "black",
+      hjust = 0.5,
+      angle = angle
+    ))
+}
+
+
+#' Add k and g to base orchard plot
+#'
+#' @param plot A ggplot object representing the base orchard plot.
+#' @param k.pos Position for the annotations. Can be "right", "left", or a numeric value specifying the y-coordinate.
+#' @param g Logical. If \code{TRUE}, adds the g values in parentheses after k.
+#' @param data_trim A data frame containing the yi values used to calculate annotation positions.
+#' @param mod_table A data frame containing the k (and optionally g) values for each group.
+#'
+#' @return ggplot object with added text annotations.
+#' @keywords internal
+.add_k_and_g <- function(plt, k.pos, g, data_trim, mod_table) {
+  # Add in total effect sizes for each level
+  mod_table$K <- as.vector(by(data_trim, data_trim[, "moderator"], function(x) length(x[, "yi"])))
+  # Add in total levels of a grouping variable (e.g., study ID) within each moderator level.
+  mod_table$g <- as.vector(num_studies(data_trim, moderator, stdy)[, 2])
+  # Number of groups in a moderator & data points
+  group_no <- length(unique(mod_table[, "name"]))
+
+  # Define x position
+  x_pos <- seq(1, group_no, 1) + 0.3
+
+  # Define y position based on k.pos parameter
+  if (k.pos == "right") {
+    y_pos <- max(data_trim$yi) * 1.1
+    hjust_val <- "right"
+  } else if (k.pos == "left") {
+    y_pos <- min(data_trim$yi) * 1.1
+    hjust_val <- "left"
+  } else {
+    y_pos <- k.pos # Manually defined by user
+    hjust_val <- 0.5 # 0.5 because this is centered in ggplot
+  }
+
+  # Determine label based on whether g should be included
+  if (g) {
+    label_text <- paste("italic(k)==", mod_table$K[1:group_no], "~", "(", mod_table$g[1:group_no], ")")
+  } else {
+    label_text <- paste("italic(k)==", mod_table$K[1:group_no])
+  }
+
+  plt <- plt + ggplot2::annotate(
+    "text",
+    x = x_pos,
+    y = y_pos,
+    label = label_text,
+    parse = TRUE,
+    hjust = hjust_val,
+    size = 3.5
+  )
+
+  return(plt)
+}
+
+
+#' Set colour blind friendly palette
+#'
+#' @keywords internal
+.add_colour_blind_palette <- function(plt) {
+  colour_blind_palette <- c(
+    "#88CCEE", "#CC6677", "#DDCC77", "#117733",
+    "#332288", "#AA4499", "#44AA99", "#999933",
+    "#882255", "#661100", "#6699CC", "#888888",
+    "#E69F00", "#56B4E9", "#009E73", "#F0E442",
+    "#0072B2", "#D55E00", "#CC79A7", "#999999"
+  )
+
+  plt +
+    ggplot2::scale_fill_manual(values = colour_blind_palette) +
+    ggplot2::scale_colour_manual(values = colour_blind_palette)
 }
 
 
@@ -279,8 +455,6 @@ orchard_plot <- function(object, mod = "1", group, xlab, N = NULL,
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
 #' @export
-
 Zr_to_r <- function(df){
 	return(sapply(df, tanh))
 }
-
