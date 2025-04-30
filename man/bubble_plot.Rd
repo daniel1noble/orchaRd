@@ -29,7 +29,7 @@ bubble_plot(
   weights = "prop",
   by = NULL,
   at = NULL,
-  cond_levels = NULL
+  condition.levels = NULL
 )
 }
 \arguments{
@@ -79,7 +79,7 @@ bubble_plot(
 
 \item{at}{List of levels one wishes to predict at for the corresponding variables in \code{by}. Used when one wants marginalised means. This argument can also be used to suppress levels of the moderator when argument \code{subset = TRUE}. Provide a list as follows: \code{list(mod = c("level1", "level2"))}.}
 
-\item{cond_levels}{Order of the levels of the condition variable in the order to plot. Defaults to NULL.}
+\item{condition.levels}{Order of the levels of the condition variable in the order to plot. Defaults to NULL.}
 }
 \value{
 Orchard plot
@@ -91,14 +91,15 @@ Using a \pkg{metafor} model object of class \code{rma} or \code{rma.mv}, or a re
 \dontrun{
 data(lim)
 lim[, "year"] <- as.numeric(lim$year)
-lim$vi<- 1/(lim$N - 3)
-model<-metafor::rma.mv(yi=yi, V=vi, mods= ~Environment*year,
-random=list(~1|Article,~1|Datapoint), data=na.omit(lim))
+lim$vi <- 1 / (lim$N - 3)
+model <- metafor::rma.mv(
+  yi = yi, V = vi, mods = ~ Environment * year,
+  random = list(~ 1 | Article, ~ 1 | Datapoint), data = na.omit(lim)
+)
 test <- orchaRd::mod_results(model, mod = "year", group = "Article", data = lim, weights = "prop", by = "Environment")
-orchaRd::bubble_plot(test, mod = "year", data = lim, group = "Article",legend.pos = "top.left")
+orchaRd::bubble_plot(test, mod = "year", data = lim, group = "Article", legend.pos = "top.left")
 # Or just using model directly
 orchaRd::bubble_plot(model, mod = "year", legend.pos = "top.left", data = lim, group = "Article", weights = "prop", by = "Environment")
-
 }
 }
 \author{

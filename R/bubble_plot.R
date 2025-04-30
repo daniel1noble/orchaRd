@@ -71,7 +71,6 @@ bubble_plot <- function(
             "bottom.right", "bottom.left",
             "none"),
   condition.nrow = 2,
-  # condition.lab = "Condition",
   weights = "prop",
   by = NULL,
   at = NULL,
@@ -80,39 +79,33 @@ bubble_plot <- function(
   transfm <- match.arg(NULL, choices = transfm)
   legend.pos <- match.arg(NULL, choices = legend.pos)
   k.pos <- match.arg(NULL, choices = k.pos)
-  # facet <- match.arg(NULL, choices = facet)
 
   if (missing(group)) {
     stop("Please specify the 'group' argument by providing the name of the grouping variable. See ?bubble_plot")
   }
 
-  if (is.numeric(by)) {
-    k <- FALSE
-    g <- FALSE
-  }
-
-
+  # Get results to be used. Only accepts metafor or orchard object objects
   if (any(class(object) %in% c("robust.rma", "rma.mv", "rma", "rma.uni"))) {
-    if (mod != "1") {
-      results <- orchaRd::mod_results(object, mod, group,
-        by = by, at = at, weights = weights
-      )
-    } else {
-      results <- orchaRd::mod_results(object,
-        mod = "1", group,
-        by = by, at = at, weights = weights
-      )
-    }
-  }
-
-  if (any(class(object) %in% c("orchard"))) {
+    results <- orchaRd::mod_results(
+      object, 
+      mod = mod,  
+      group = group, 
+      by = by, 
+      at = at, 
+      weights = weights
+    )
+  } else if (any(class(object) %in% c("orchard"))) {
     results <- object
+  } else {
+    stop("object argument must be a 'metafor' model or the output from 'mod_results'", .call = FALSE)
   }
 
-  # ---------------------------
-  # Prepare data for plotting 
 
-  # Get model table and raw data
+  # Set condition in mod_table and data_trim.
+  # If no condition is used, it uses a dummy variable. Make it easier to handle
+  # reordering, facets and all that, because always reference to 'condition'.
+  results <- .set_condition(results, condition.levels)
+
   mod_table <- results$mod_table
   data_trim <- results$data
 
@@ -134,63 +127,40 @@ bubble_plot <- function(
     data_trim$yi <- transform_data(data_trim$yi, n = n_transfm, transfm = transfm)
   }
 
-
-
-
-  if (is.null(data_trim$condition) == TRUE) {
-    condition <- factor(1)
-    fill_palette <- ggplot2::scale_fill_manual(values = "grey90")
-    # Remove guides for fill!
-  } else if (is.character(data_trim$condition) == TRUE || is.factor(data_trim$condition) == TRUE) {
-    condition <- data_trim$condition
-    fill_palette <- ggplot2::scale_fill_viridis_d()
-    # TODO: Don't use viridis, set colour blind
+   # TODO: If 'by' is numeric should make another kind of plot. See https://github.com/daniel1noble/orchaRd/issues/18
+  if (is.numeric(by)) {
+    k <- FALSE
+    g <- FALSE
   }
 
-  dat_text <- .get_k_and_g(data_trim, mod_table, condition.levels)
-
+  kg_labels <- .get_kg_labels(data_trim)
 
   # Note: the bbp (bubble plot) prefix is to avoid clashes with other functions
-  plt <- .base_bubble_plot(data_trim, condition, fill_palette, alpha) +
+  plt <- .base_bubble_plot(data_trim, alpha) +
 	  .bbp_theme() +
 	  .bbp_pred_interval(mod_table, pi.lwd, pi.col) +
 	  .bbp_conf_interval(mod_table, ci.lwd, ci.col) +
 	  .bbp_estimate_line(mod_table, est.lwd, est.col) +
 	  .bbp_axis_labels(xlab, ylab) +
 	  .bbp_legends(legend.pos, size_legend) +
-	  .bbp_k_and_g(k, g, k.pos, dat_text) + 
-	  .bbp_facets(data_trim$condition, condition.nrow, condition.levels) 
-
-
+	  .bbp_kg_labels(k, g, k.pos, kg_labels) + 
+	  .bbp_facets(data_trim, condition.nrow, condition.levels) +
+    .bbp_colors(data_trim, cb)
 
   return(plt)
-
-  # putting colors in
-  # # colour blind friendly colours with grey
-  cbpl <- c("#88CCEE", "#CC6677", "#DDCC77", "#117733", "#332288", "#AA4499", "#44AA99", "#999933", "#882255", "#661100", "#6699CC", "#888888", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#999999")
-
-
-  if(cb == TRUE){
-    plot <- plot +
-      ggplot2::scale_fill_manual(values=cbpl) +
-      ggplot2::scale_colour_manual(values=cbpl)
-  }
-
-  return(plot)
 }
 
 
-.base_bubble_plot <- function(data_trim, condition, fill_palette, alpha) {
+.base_bubble_plot <- function(data_trim, alpha) {
   p <- ggplot2::ggplot() + 
     ggplot2::geom_point(
       data = data_trim,
       ggplot2::aes(x = moderator,
-		   y = yi,
+                   y = yi,
                    size = scale,
-	           fill = condition),
+	                 fill = condition),
 		shape = 21,
-		alpha = alpha) +
-    fill_palette
+		alpha = alpha)
 
   return(p)
 }
@@ -207,59 +177,58 @@ bubble_plot <- function(
 
 
 .bbp_pred_interval <- function(mod_table, pi.lwd, pi.col) {
-  # Multiple geoms should be passed as a list
+  # Note: Multiple ggplot2::geoms must be passed as a list
   list(
     ggplot2::geom_smooth(data = mod_table,
       ggplot2::aes(x = moderator,
                    y = lowerPR),
-                   method = "loess",
-                   formula = y ~ x,
-                   se = FALSE,
-                   lty = "dotted",
-                   lwd = pi.lwd,
-                   colour = pi.col),
+        method = "loess",
+        formula = y ~ x,
+        se = FALSE,
+        lty = "dotted",
+        lwd = pi.lwd,
+        colour = pi.col),
     ggplot2::geom_smooth(data = mod_table,
       ggplot2::aes(x = moderator,
                    y = upperPR),
-                   method = "loess",
-                   formula = y ~ x,
-                   se = FALSE,
-                   lty = "dotted",
-                   lwd = pi.lwd,
-                   colour = pi.col)
+        method = "loess",
+        formula = y ~ x,
+        se = FALSE,
+        lty = "dotted",
+        lwd = pi.lwd,
+        colour = pi.col)
   )
 }
 
 
 .bbp_conf_interval <- function(mod_table, ci.lwd, ci.col) {
-  # Multiple geoms should be passed as a list:
+  # Note: Multiple ggplot2::geoms must be passed as a list
   list(
     ggplot2::geom_smooth(data = mod_table,
       ggplot2::aes(x = moderator,
                    y = lowerCL),
-  		   method = "loess",
-  		   formula = y ~ x,
-  		   se = FALSE,
-  		   lty = "dashed",
-  		   lwd = ci.lwd,
-  		   colour = ci.col),
+  		  method = "loess",
+  		  formula = y ~ x,
+  		  se = FALSE,
+  		  lty = "dashed",
+  		  lwd = ci.lwd,
+  		  colour = ci.col),
     ggplot2::geom_smooth(data = mod_table,
       ggplot2::aes(x = moderator,
                    y = upperCL),
-  		   method = "loess",
-  		   formula = y ~ x,
-  		   se = FALSE,
-  		   lty = "dashed",
-  		   lwd = ci.lwd,
-  		   colour = ci.col)
+  		  method = "loess",
+  		  formula = y ~ x,
+  		  se = FALSE,
+  		  lty = "dashed",
+  		  lwd = ci.lwd,
+  		  colour = ci.col)
     )
 }
 
 
 .bbp_estimate_line <- function(mod_table, est.lwd, est.col) {
   ggplot2::geom_smooth(data = mod_table,
-    ggplot2::aes(x = moderator,
-		 y = estimate),
+    ggplot2::aes(x = moderator, y = estimate),
                  method = "loess",
                  formula = y ~ x,
                  se = FALSE,
@@ -301,9 +270,11 @@ bubble_plot <- function(
 }
 
 
-.bbp_facets <- function(condition, condition.nrow, condition.levels) {
-  if (!is.null(condition.levels)) {
-    condition <- factor(condition, levels = condition.levels)
+.bbp_facets <- function(data_trim, condition.nrow, condition.levels) {
+  condition <- data_trim$condition
+
+  if (nlevels(condition) == 1) {
+    return()
   }
 
   if (is.character(condition) == TRUE || is.factor(condition) == TRUE) {
@@ -312,16 +283,16 @@ bubble_plot <- function(
 }
 
 
-.bbp_k_and_g <- function(k, g, k.pos, dat_text) {
+.bbp_kg_labels <- function(k, g, k.pos, kg_labels) {
   if (k == FALSE || k.pos == "none") {
     return()
   } 
 
   # Build label string
   if (g) {
-    label_str <- paste0("italic(k)==", dat_text$K, " ~ (", dat_text$G, ")")
+    label_str <- paste0("italic(k)==", kg_labels$K, " ~ (", kg_labels$G, ")")
   } else {
-    label_str <- paste0("italic(k)==", dat_text$K)
+    label_str <- paste0("italic(k)==", kg_labels$K)
   }
 
   # If left, anchor at -inf. At right, at +inf. Same for bottom and top
@@ -338,7 +309,7 @@ bubble_plot <- function(
   }
 
   ggplot2::geom_text(
-    data = dat_text,
+    data = kg_labels,
     mapping = ggplot2::aes(x = x_val, y = y_val),
     inherit.aes = FALSE,  # Need this for silencing ggplot warnings 
     label = label_str,
@@ -349,34 +320,89 @@ bubble_plot <- function(
 }
 
 
+.get_kg_labels <- function(data_trim) {
+  cond <- data_trim$condition
 
-.get_k_and_g <- function(data_trim, mod_table, condition.levels) {
-  if (is.null(data_trim$condition) == TRUE) {
-    effect_num <- nrow(data_trim)
-    group_num <- length(unique(data_trim$stdy))
-    dat_text <- data.frame(K = effect_num, G = group_num)
+  K <- by(data_trim, cond, function(x) length(x[, "yi"]))
+  G <- by(data_trim, cond, function(x) length(unique(x[, "stdy"])))
+
+  # Return a table with k, g and condition.
+  # Condition must be a factor with the same levels
+  # and order than the data used
+  kg_labels <- data.frame(
+    K = as.vector(K),
+    G = as.vector(G),
+    condition = factor(levels(cond),
+                       levels = levels(cond),
+                       ordered = is.ordered(cond))
+  )
+
+  return(kg_labels)
+}
+
+
+
+.bbp_colors <- function(data_trim, cb) {
+  # # colour blind friendly colours with grey
+  cbpl <- c("#88CCEE", "#CC6677", "#DDCC77", "#117733",
+            "#332288", "#AA4499", "#44AA99", "#999933",
+            "#882255", "#661100", "#6699CC", "#888888",
+            "#E69F00", "#56B4E9", "#009E73", "#F0E442",
+            "#0072B2", "#D55E00", "#CC79A7", "#999999")
+
+  # Boolean variable to make it readable
+  has_conditions <- if (nlevels(data_trim$condition) > 1) TRUE else FALSE
+
+  if (!has_conditions) {
+    ggplot2::scale_fill_manual(values = "grey90")
+  } else if (has_conditions && cb == TRUE) {
+    ggplot2::scale_fill_manual(values = cbpl) 
   } else {
-    if (!is.null(condition.levels)) {
-      data_trim$condition <- factor(data_trim$condition, levels = condition.levels, labels = condition.levels, ordered = TRUE)
-    } else {
-      # making sure factor names match
-      data_trim$condition <- factor(data_trim$condition, levels = mod_table$condition, labels = mod_table$condition)
-    }
-
-    effect_num <- as.vector(by(data_trim, data_trim[, "condition"], function(x) base::length(x[, "yi"])))
-    # Add in total levels of a grouping variable (e.g., study ID) within each moderator level.
-    group_num <- as.vector(by(data_trim, data_trim[, "condition"], function(x) base::length(base::unique(x[, "stdy"]))))
-    dat_text <- data.frame(K = effect_num,
-			   G = group_num,
-			   condition = as.vector(base::levels(data_trim$condition)),
-                           stringsAsFactors = FALSE)
-
-    # This is necesary to be sure that the levels are ordeder 
-    # Without it, the order of facets can fail
-    dat_text$condition <- factor(dat_text$condition,
-                                 levels = levels(data_trim$condition),
-                                 ordered = is.ordered(data_trim$condition))
+    ggplot2::scale_fill_hue()  # Default fill palette in ggplot2 for discrete variables
   }
 
-  return(dat_text)
+}
+
+
+.set_condition <- function(results, condition.levels) {
+  # There are 3 cases:
+  #  - No condition. 
+  #  - Categorical condition
+  #  - Continuous condition  TODO: 
+
+  mod_table <- results$mod_table
+  data <- results$data
+
+  # This is not necessary but helps with readability
+  if (is.null(mod_table$condition)) {
+    condition_type <- "none"
+  } else if (is.character(mod_table$condition) || is.factor(mod_table$condition)) {
+    condition_type <- "categorical"
+  } else {
+    condtition_type <- "continuous"
+  }
+
+  if (condition_type == "none") {
+    data$condition <- factor(1)
+    mod_table$condition <- factor(1)
+  } else if (condition_type == "categorical") {
+    if (is.null(condition.levels)) {
+      condition.levels <- levels(factor(data$condition))
+    } 
+    mod_table$condition <- factor(mod_table$condition,
+                                  levels = condition.levels,
+                                  labels = condition.levels,
+                                  ordered = TRUE)
+    data$condition <- factor(data$condition,
+                                  levels = condition.levels,
+                                  labels = condition.levels,
+                                  ordered = TRUE)
+  }
+
+  results <- list(
+    mod_table = mod_table,
+    data = data
+  )
+
+  return(results)
 }
