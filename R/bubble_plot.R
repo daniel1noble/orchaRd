@@ -135,52 +135,23 @@ bubble_plot <- function(
   }
 
 
-  # NOTE: All this sections is just for creating labels:
-  # k, g and condition
-  #
-  # Don't think it should be here. It can be computed inside
-  # a function that takes care of those labels
-
-  if (is.null(data_trim$condition) == TRUE) {
-    # the number of effect sizes
-    effect_num <- nrow(data_trim)
-    # Add in total levels of a grouping variable (e.g., study ID) within each moderator level.
-    group_num <- length(unique(data_trim$stdy))
-    dat_text <- data.frame(K = effect_num, G = group_num)
-  } else {
-    if (!is.null(condition.levels)) {
-      data_trim$condition <- factor(data_trim$condition, levels = condition.levels, labels = condition.levels, ordered = TRUE)
-    } else {
-      # making sure factor names match
-      data_trim$condition <- factor(data_trim$condition, levels = mod_table$condition, labels = mod_table$condition)
-    }
-
-    effect_num <- as.vector(by(data_trim, data_trim[, "condition"], function(x) base::length(x[, "yi"])))
-    # Add in total levels of a grouping variable (e.g., study ID) within each moderator level.
-    group_num <- as.vector(by(data_trim, data_trim[, "condition"], function(x) base::length(base::unique(x[, "stdy"]))))
-    dat_text <- data.frame(K = effect_num,
-			   G = group_num,
-			   condition = as.vector(base::levels(data_trim$condition)),
-                           stringsAsFactors = FALSE)
-    dat_text$condition <- factor(dat_text$condition,
-                                 levels = levels(data_trim$condition),
-                                 ordered = is.ordered(data_trim$condition))
-  }
 
 
   if (is.null(data_trim$condition) == TRUE) {
-    fill <- factor(1)
+    condition <- factor(1)
     fill_palette <- ggplot2::scale_fill_manual(values = "grey90")
     # Remove guides for fill!
   } else if (is.character(data_trim$condition) == TRUE || is.factor(data_trim$condition) == TRUE) {
-    fill <- data_trim$condition
+    condition <- data_trim$condition
     fill_palette <- ggplot2::scale_fill_viridis_d()
     # TODO: Don't use viridis, set colour blind
   }
 
+  dat_text <- .get_k_and_g(data_trim, mod_table, condition.levels)
+
 
   # Note: the bbp (bubble plot) prefix is to avoid clashes with other functions
-  plt <- .base_bubble_plot(data_trim, fill, fill_palette, alpha) +
+  plt <- .base_bubble_plot(data_trim, condition, fill_palette, alpha) +
 	  .bbp_theme() +
 	  .bbp_pred_interval(mod_table, pi.lwd, pi.col) +
 	  .bbp_conf_interval(mod_table, ci.lwd, ci.col) +
@@ -209,19 +180,16 @@ bubble_plot <- function(
 }
 
 
-.base_bubble_plot <- function(data_trim, fill, fill_palette, alpha) {
+.base_bubble_plot <- function(data_trim, condition, fill_palette, alpha) {
   p <- ggplot2::ggplot() + 
     ggplot2::geom_point(
       data = data_trim,
-      ggplot2::aes(
-        x = moderator,
-	y = yi,
-	size = scale,
-	fill = fill
-      ),
-      shape = 21,
-      alpha = alpha
-    ) +
+      ggplot2::aes(x = moderator,
+		   y = yi,
+                   size = scale,
+	           fill = condition),
+		shape = 21,
+		alpha = alpha) +
     fill_palette
 
   return(p)
@@ -372,10 +340,43 @@ bubble_plot <- function(
   ggplot2::geom_text(
     data = dat_text,
     mapping = ggplot2::aes(x = x_val, y = y_val),
-    inherit.aes = FALSE  # Need this for silencing ggplot warnings 
+    inherit.aes = FALSE,  # Need this for silencing ggplot warnings 
     label = label_str,
     parse = TRUE,
     hjust = hjust_val,
     vjust = vjust_val
   )
+}
+
+
+
+.get_k_and_g <- function(data_trim, mod_table, condition.levels) {
+  if (is.null(data_trim$condition) == TRUE) {
+    effect_num <- nrow(data_trim)
+    group_num <- length(unique(data_trim$stdy))
+    dat_text <- data.frame(K = effect_num, G = group_num)
+  } else {
+    if (!is.null(condition.levels)) {
+      data_trim$condition <- factor(data_trim$condition, levels = condition.levels, labels = condition.levels, ordered = TRUE)
+    } else {
+      # making sure factor names match
+      data_trim$condition <- factor(data_trim$condition, levels = mod_table$condition, labels = mod_table$condition)
+    }
+
+    effect_num <- as.vector(by(data_trim, data_trim[, "condition"], function(x) base::length(x[, "yi"])))
+    # Add in total levels of a grouping variable (e.g., study ID) within each moderator level.
+    group_num <- as.vector(by(data_trim, data_trim[, "condition"], function(x) base::length(base::unique(x[, "stdy"]))))
+    dat_text <- data.frame(K = effect_num,
+			   G = group_num,
+			   condition = as.vector(base::levels(data_trim$condition)),
+                           stringsAsFactors = FALSE)
+
+    # This is necesary to be sure that the levels are ordeder 
+    # Without it, the order of facets can fail
+    dat_text$condition <- factor(dat_text$condition,
+                                 levels = levels(data_trim$condition),
+                                 ordered = is.ordered(data_trim$condition))
+  }
+
+  return(dat_text)
 }
