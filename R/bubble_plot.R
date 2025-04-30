@@ -122,13 +122,6 @@ bubble_plot <- function(
   data_trim$scale <- scale$scale
   size_legend <- scale$size_legend
 
-   # TODO: If 'by' is numeric should make another kind of plot.
-   # See https://github.com/daniel1noble/orchaRd/issues/18
-  if (is.numeric(by)) {
-    k <- FALSE
-    g <- FALSE
-  }
-
   # Get k/g labels for the plot based on the processed data_trim.
   kg_labels <- .get_kg_labels(data_trim)
 
@@ -167,10 +160,10 @@ bubble_plot <- function(
 #' Set the condition variable for plotting.
 #' @keywords internal
 .set_condition <- function(results, condition.order) {
-  # There are 3 cases:
+  # There are 2 cases:
   #  - No condition. 
   #  - Categorical condition
-  #  - Continuous condition  TODO: 
+  # If the condition is cuantitative it is not possible to plot bubbles (points)
 
   mod_table <- results$mod_table
   data <- results$data
@@ -181,7 +174,7 @@ bubble_plot <- function(
   } else if (is.character(mod_table$condition) || is.factor(mod_table$condition)) {
     condition_type <- "categorical"
   } else {
-    condtition_type <- "continuous"
+    stop("The condition must be categorical", call. = FALSE)
   }
 
   if (condition_type == "none") {
@@ -199,7 +192,7 @@ bubble_plot <- function(
                              levels = condition.order,
                              labels = condition.order,
                              ordered = TRUE)
-  }
+  } 
 
   results <- list(
     mod_table = mod_table,
@@ -368,8 +361,6 @@ bubble_plot <- function(
     "bottom.out"   = ggplot2::theme(legend.position = "bottom"),
     "none"         = ggplot2::theme(legend.position = "none")
   )
-
-  # TODO: The legends in the old version show the circles filled, not blank!
 
   legends_layer <- ggplot2::guides(
     size = ggplot2::guide_legend(title = latex2exp::TeX(size_legend)),
