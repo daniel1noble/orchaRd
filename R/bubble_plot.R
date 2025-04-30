@@ -23,7 +23,7 @@
 #' @param ci.col Colour of the confidence interval.
 #' @param pi.col Colour of the prediction interval.
 #' @param condition.nrow Number of rows to plot condition variable.
-#' @param condition.levels Order of the levels of the condition variable in the order to plot. Defaults to NULL.
+#' @param condition.order Order of the levels of the condition variable in the plot. Defaults to NULL.
 #' @param legend.pos Where to place the legend, or not to include a legend ("none").
 #'
 #' @return Bubble plot
@@ -73,10 +73,10 @@ bubble_plot <- function(
             "bottom.right", "bottom.left",
             "none"),
   condition.nrow = 2,
-  condition.levels = NULL
+  condition.order = NULL,
   weights = "prop",
   by = NULL,
-  at = NULL,
+  at = NULL
 ) {
   transfm <- match.arg(NULL, choices = transfm)
   legend.pos <- match.arg(NULL, choices = legend.pos)
@@ -113,7 +113,7 @@ bubble_plot <- function(
   # Set condition in mod_table and data_trim.
   # If no condition, it uses a dummy variable. Make it easier to handle
   # reordering, facets and all that, because always reference to 'condition'.
-  results <- .set_condition(results, condition.levels)
+  results <- .set_condition(results, condition.order)
   mod_table <- results$mod_table
   data_trim <- results$data
 
@@ -141,7 +141,7 @@ bubble_plot <- function(
     .bbp_axis_labels(xlab, ylab) +
     .bbp_legends(legend.pos, size_legend) +
     .bbp_kg_labels(k, g, k.pos, kg_labels) + 
-    .bbp_facets(data_trim, condition.nrow, condition.levels) +
+    .bbp_facets(data_trim, condition.nrow, condition.order) +
     .bbp_colors(data_trim, cb)
 
   return(plt)
@@ -166,7 +166,7 @@ bubble_plot <- function(
 
 #' Set the condition variable for plotting.
 #' @keywords internal
-.set_condition <- function(results, condition.levels) {
+.set_condition <- function(results, condition.order) {
   # There are 3 cases:
   #  - No condition. 
   #  - Categorical condition
@@ -188,16 +188,16 @@ bubble_plot <- function(
     data$condition <- factor(1)
     mod_table$condition <- factor(1)
   } else if (condition_type == "categorical") {
-    if (is.null(condition.levels)) {
-      condition.levels <- levels(factor(data$condition))
+    if (is.null(condition.order)) {
+      condition.order <- levels(factor(data$condition))
     } 
     mod_table$condition <- factor(mod_table$condition,
-                                  levels = condition.levels,
-                                  labels = condition.levels,
+                                  levels = condition.order,
+                                  labels = condition.order,
                                   ordered = TRUE)
     data$condition <- factor(data$condition,
-                             levels = condition.levels,
-                             labels = condition.levels,
+                             levels = condition.order,
+                             labels = condition.order,
                              ordered = TRUE)
   }
 
@@ -414,7 +414,7 @@ bubble_plot <- function(
 
 #' Add facetting to bubble plot by condition.
 #' @keywords internal
-.bbp_facets <- function(data_trim, condition.nrow, condition.levels) {
+.bbp_facets <- function(data_trim, condition.nrow, condition.order) {
   condition <- data_trim$condition
 
   if (nlevels(condition) == 1) return()

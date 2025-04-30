@@ -27,10 +27,10 @@ bubble_plot(
     "bottom.out", "none"),
   k.pos = c("top.right", "top.left", "bottom.right", "bottom.left", "none"),
   condition.nrow = 2,
+  condition.order = NULL,
   weights = "prop",
   by = NULL,
-  at = NULL,
-  condition.levels = NULL
+  at = NULL
 )
 }
 \arguments{
@@ -76,13 +76,13 @@ bubble_plot(
 
 \item{condition.nrow}{Number of rows to plot condition variable.}
 
+\item{condition.order}{Order of the levels of the condition variable in the plot. Defaults to NULL.}
+
 \item{weights}{How to marginalize categorical variables; used when one wants marginalised means. The default is \code{weights = "prop"}, which weights means for moderator levels based on their proportional representation in the data. For example, if \code{"sex"} is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal when, for example, males and females are typically roughly equally prevalent in a population. In cases such as these, you can give the moderator levels equal weight using \code{weights = "equal"}.}
 
 \item{by}{Character vector indicating the name that predictions should be conditioned on for the levels of the moderator.}
 
 \item{at}{List of levels one wishes to predict at for the corresponding variables in \code{by}. Used when one wants marginalised means. This argument can also be used to suppress levels of the moderator when argument \code{subset = TRUE}. Provide a list as follows: \code{list(mod = c("level1", "level2"))}.}
-
-\item{condition.levels}{Order of the levels of the condition variable in the order to plot. Defaults to NULL.}
 }
 \value{
 Bubble plot

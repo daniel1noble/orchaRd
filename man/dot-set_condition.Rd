@@ -4,7 +4,7 @@
 \alias{.set_condition}
 \title{Set the condition variable for plotting.}
 \usage{
-.set_condition(results, condition.levels)
+.set_condition(results, condition.order)
 }
 \description{
 Set the condition variable for plotting.

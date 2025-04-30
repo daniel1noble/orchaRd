@@ -4,7 +4,7 @@
 \alias{.bbp_facets}
 \title{Add facetting to bubble plot by condition.}
 \usage{
-.bbp_facets(data_trim, condition.nrow, condition.levels)
+.bbp_facets(data_trim, condition.nrow, condition.order)
 }
 \description{
 Add facetting to bubble plot by condition.
