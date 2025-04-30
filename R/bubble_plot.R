@@ -59,6 +59,7 @@ bubble_plot <- function(
   k = TRUE,
   g = FALSE,
   transfm = c("none", "tanh", "invlogit", "percent", "percentr"),
+  n_transfm = NULL,
   est.lwd = 1,
   ci.lwd = 0.5,
   pi.lwd = 0.5,
@@ -80,6 +81,7 @@ bubble_plot <- function(
   legend.pos <- match.arg(NULL, choices = legend.pos)
   k.pos <- match.arg(NULL, choices = k.pos)
 
+  if (missing(object)) stop("'object' must be provided. See ?bubble_plot", .call = FALSE)
   if (missing(group)) {
     stop("Please specify the 'group' argument by providing the name of the grouping variable. See ?bubble_plot")
   }
@@ -100,39 +102,33 @@ bubble_plot <- function(
     stop("object argument must be a 'metafor' model or the output from 'mod_results'", .call = FALSE)
   }
 
+  # Transform results if needed
+  if (transfm != "none") {
+    results <- .apply_transformation(results, n_transfm, transfm)
+    mod_table <- results$mod_table
+    data_trim <- results$data_trim
+  }
 
   # Set condition in mod_table and data_trim.
-  # If no condition is used, it uses a dummy variable. Make it easier to handle
+  # If no condition, it uses a dummy variable. Make it easier to handle
   # reordering, facets and all that, because always reference to 'condition'.
   results <- .set_condition(results, condition.levels)
-
   mod_table <- results$mod_table
   data_trim <- results$data
 
   # Define scale: size of points
-  if (any(N != "none")) {
-    data_trim$scale <- data_trim$N
-    size_legend <- paste0("Sample Size ($\\textit{N}$)") # we want to use italic
-  } else {
-    data_trim$scale <- (1 / sqrt(data_trim[, "vi"]))
-    size_legend <- "Precision (1/SE)"
-  }
+  scale <- .set_scale(N, data_trim)
+  data_trim$scale <- scale$scale
+  size_legend <- scale$size_legend
 
-  # Transform data if needed
-  if (transfm != "none") {
-    numeric_cols <- c("estimate", "lowerCL", "upperCL", "lowerPR", "upperPR")
-    mod_table[, numeric_cols] <- transform_data(mod_table[, numeric_cols],
-                                                n = n_transfm,
-                                                transfm = transfm)
-    data_trim$yi <- transform_data(data_trim$yi, n = n_transfm, transfm = transfm)
-  }
-
-   # TODO: If 'by' is numeric should make another kind of plot. See https://github.com/daniel1noble/orchaRd/issues/18
+   # TODO: If 'by' is numeric should make another kind of plot.
+   # See https://github.com/daniel1noble/orchaRd/issues/18
   if (is.numeric(by)) {
     k <- FALSE
     g <- FALSE
   }
 
+  # Get k/g labels for the plot based on the processed data_trim.
   kg_labels <- .get_kg_labels(data_trim)
 
   # Note: the bbp (bubble plot) prefix is to avoid clashes with other functions
@@ -151,219 +147,24 @@ bubble_plot <- function(
 }
 
 
-.base_bubble_plot <- function(data_trim, alpha) {
-  p <- ggplot2::ggplot() + 
-    ggplot2::geom_point(
-      data = data_trim,
-      ggplot2::aes(x = moderator,
-                   y = yi,
-                   size = scale,
-	                 fill = condition),
-		shape = 21,
-		alpha = alpha)
+#' Apply transformation to results
+#' @keywords internal
+.apply_transformation <- function(results, n_transfm, transfm) {
+  mod_table <- results$mod_table
+  data_trim <- results$data
 
-  return(p)
+  numeric_cols <- c("estimate", "lowerCL", "upperCL", "lowerPR", "upperPR")
+  mod_table[, numeric_cols] <- transform_data(mod_table[, numeric_cols],
+                                              n = n_transfm,
+                                              transfm = transfm)
+  data_trim$yi <- transform_data(data_trim$yi, n = n_transfm, transfm = transfm)
+
+  return(list(mod_table = mod_table, data_trim = data_trim))
 }
 
 
-.bbp_theme <- function() {
-  ggplot2::theme_bw() +
-    ggplot2::theme(
-      legend.direction = "horizontal", 
-      legend.background = ggplot2::element_blank(),
-      axis.text.y = ggplot2::element_text(size = 10, colour = "black", hjust = 0.5, angle = 90)
-    )
-}
-
-
-.bbp_pred_interval <- function(mod_table, pi.lwd, pi.col) {
-  # Note: Multiple ggplot2::geoms must be passed as a list
-  list(
-    ggplot2::geom_smooth(data = mod_table,
-      ggplot2::aes(x = moderator,
-                   y = lowerPR),
-        method = "loess",
-        formula = y ~ x,
-        se = FALSE,
-        lty = "dotted",
-        lwd = pi.lwd,
-        colour = pi.col),
-    ggplot2::geom_smooth(data = mod_table,
-      ggplot2::aes(x = moderator,
-                   y = upperPR),
-        method = "loess",
-        formula = y ~ x,
-        se = FALSE,
-        lty = "dotted",
-        lwd = pi.lwd,
-        colour = pi.col)
-  )
-}
-
-
-.bbp_conf_interval <- function(mod_table, ci.lwd, ci.col) {
-  # Note: Multiple ggplot2::geoms must be passed as a list
-  list(
-    ggplot2::geom_smooth(data = mod_table,
-      ggplot2::aes(x = moderator,
-                   y = lowerCL),
-  		  method = "loess",
-  		  formula = y ~ x,
-  		  se = FALSE,
-  		  lty = "dashed",
-  		  lwd = ci.lwd,
-  		  colour = ci.col),
-    ggplot2::geom_smooth(data = mod_table,
-      ggplot2::aes(x = moderator,
-                   y = upperCL),
-  		  method = "loess",
-  		  formula = y ~ x,
-  		  se = FALSE,
-  		  lty = "dashed",
-  		  lwd = ci.lwd,
-  		  colour = ci.col)
-    )
-}
-
-
-.bbp_estimate_line <- function(mod_table, est.lwd, est.col) {
-  ggplot2::geom_smooth(data = mod_table,
-    ggplot2::aes(x = moderator, y = estimate),
-                 method = "loess",
-                 formula = y ~ x,
-                 se = FALSE,
-                 lwd = est.lwd,
-                 colour = est.col)
-}
-
-
-.bbp_axis_labels <- function(xlab, ylab) {
-  ggplot2::labs(x = xlab,
-	       	y = ylab,
-	       	parse = TRUE) 
-}
-
-
-.bbp_legends <- function(legend.pos, size_legend) {
-  # Returns two ggplot layers:
-  # One modifies the legends positions
-  # The other are the legends
-  legend_position_layer <- switch(legend.pos,
-    "bottom.right" = ggplot2::theme(legend.position = "inside", legend.justification = c(1, 0)),
-    "bottom.left"  = ggplot2::theme(legend.position = "inside", legend.justification = c(0, 0)),
-    "top.right"    = ggplot2::theme(legend.position = "inside", legend.justification = c(1, 1)),
-    "top.left"     = ggplot2::theme(legend.position = "inside", legend.justification = c(0, 1)),
-    "top.out"      = ggplot2::theme(legend.position = "top"),
-    "bottom.out"   = ggplot2::theme(legend.position = "bottom"),
-    "none"         = ggplot2::theme(legend.position = "none")
-  )
-
-  # TODO: The legends in the old version show the circles filled, not blank!
-
-  legends_layer <- ggplot2::guides(
-    size = ggplot2::guide_legend(title = latex2exp::TeX(size_legend)),
-    colour = "none",
-    fill = "none"
-    )
-
-  return(list(legend_position_layer, legends_layer))
-}
-
-
-.bbp_facets <- function(data_trim, condition.nrow, condition.levels) {
-  condition <- data_trim$condition
-
-  if (nlevels(condition) == 1) {
-    return()
-  }
-
-  if (is.character(condition) == TRUE || is.factor(condition) == TRUE) {
-    ggplot2::facet_wrap(ggplot2::vars(condition), nrow = condition.nrow) 
-  }
-}
-
-
-.bbp_kg_labels <- function(k, g, k.pos, kg_labels) {
-  if (k == FALSE || k.pos == "none") {
-    return()
-  } 
-
-  # Build label string
-  if (g) {
-    label_str <- paste0("italic(k)==", kg_labels$K, " ~ (", kg_labels$G, ")")
-  } else {
-    label_str <- paste0("italic(k)==", kg_labels$K)
-  }
-
-  # If left, anchor at -inf. At right, at +inf. Same for bottom and top
-  x_val <- if (k.pos %in% c("top.left", "bottom.left")) -Inf else Inf
-  y_val <- if (k.pos %in% c("top.left", "top.right")) Inf else -Inf
-
-  # Set justification
-  hjust_val <- if (k.pos %in% c("top.left", "bottom.left")) -0.5 else 2
-  vjust_val <- if (k.pos %in% c("top.left", "top.right")) 2.5 else -1.5
-  if (g) {
-    # Adjust a little bit the position when adding g because of extra space needed
-    hjust_val <- hjust_val - 0.5
-    vjust_val <- vjust_val - 0.5
-  }
-
-  ggplot2::geom_text(
-    data = kg_labels,
-    mapping = ggplot2::aes(x = x_val, y = y_val),
-    inherit.aes = FALSE,  # Need this for silencing ggplot warnings 
-    label = label_str,
-    parse = TRUE,
-    hjust = hjust_val,
-    vjust = vjust_val
-  )
-}
-
-
-.get_kg_labels <- function(data_trim) {
-  cond <- data_trim$condition
-
-  K <- by(data_trim, cond, function(x) length(x[, "yi"]))
-  G <- by(data_trim, cond, function(x) length(unique(x[, "stdy"])))
-
-  # Return a table with k, g and condition.
-  # Condition must be a factor with the same levels
-  # and order than the data used
-  kg_labels <- data.frame(
-    K = as.vector(K),
-    G = as.vector(G),
-    condition = factor(levels(cond),
-                       levels = levels(cond),
-                       ordered = is.ordered(cond))
-  )
-
-  return(kg_labels)
-}
-
-
-
-.bbp_colors <- function(data_trim, cb) {
-  # # colour blind friendly colours with grey
-  cbpl <- c("#88CCEE", "#CC6677", "#DDCC77", "#117733",
-            "#332288", "#AA4499", "#44AA99", "#999933",
-            "#882255", "#661100", "#6699CC", "#888888",
-            "#E69F00", "#56B4E9", "#009E73", "#F0E442",
-            "#0072B2", "#D55E00", "#CC79A7", "#999999")
-
-  # Boolean variable to make it readable
-  has_conditions <- if (nlevels(data_trim$condition) > 1) TRUE else FALSE
-
-  if (!has_conditions) {
-    ggplot2::scale_fill_manual(values = "grey90")
-  } else if (has_conditions && cb == TRUE) {
-    ggplot2::scale_fill_manual(values = cbpl) 
-  } else {
-    ggplot2::scale_fill_hue()  # Default fill palette in ggplot2 for discrete variables
-  }
-
-}
-
-
+#' Set the condition variable for plotting.
+#' @keywords internal
 .set_condition <- function(results, condition.levels) {
   # There are 3 cases:
   #  - No condition. 
@@ -394,9 +195,9 @@ bubble_plot <- function(
                                   labels = condition.levels,
                                   ordered = TRUE)
     data$condition <- factor(data$condition,
-                                  levels = condition.levels,
-                                  labels = condition.levels,
-                                  ordered = TRUE)
+                             levels = condition.levels,
+                             labels = condition.levels,
+                             ordered = TRUE)
   }
 
   results <- list(
@@ -405,4 +206,247 @@ bubble_plot <- function(
   )
 
   return(results)
+}
+
+
+#' Set scale for bubble plot.
+#' @keywords internal
+.set_scale <- function(N, data_trim) {
+  if (any(N != "none")) {
+    scale <- data_trim$N
+    size_legend <- paste0("Sample Size ($\\textit{N}$)")
+  } else {
+    scale <- (1 / sqrt(data_trim[, "vi"]))
+    size_legend <- "Precision (1/SE)"
+  }
+  return(list(scale = scale, size_legend = size_legend))
+}
+
+
+#' Compute k and g labels for each condition.
+#' @keywords internal
+.get_kg_labels <- function(data_trim) {
+  cond <- data_trim$condition
+
+  K <- by(data_trim, cond, function(x) length(x[, "yi"]))
+  G <- by(data_trim, cond, function(x) length(unique(x[, "stdy"])))
+
+  # Return a table with k, g and condition.
+  # Condition must be a factor with the same levels
+  # and order than the data used
+  kg_labels <- data.frame(
+    K = as.vector(K),
+    G = as.vector(G),
+    condition = factor(levels(cond),
+                       levels = levels(cond),
+                       ordered = is.ordered(cond))
+  )
+
+  return(kg_labels)
+}
+
+
+#' Create the base bubble plot layer.
+#' @keywords internal
+.base_bubble_plot <- function(data_trim, alpha) {
+  p <- ggplot2::ggplot() + 
+    ggplot2::geom_point(
+      data = data_trim,
+      ggplot2::aes(x = moderator,
+                   y = yi,
+                   size = scale,
+	                 fill = condition),
+		shape = 21,
+		alpha = alpha)
+
+  return(p)
+}
+
+
+#' Bubble plot ggplot2 theme settings.
+#' @keywords internal
+.bbp_theme <- function() {
+  ggplot2::theme_bw() +
+    ggplot2::theme(
+      legend.direction = "horizontal", 
+      legend.background = ggplot2::element_blank(),
+      axis.text.y = ggplot2::element_text(size = 10, colour = "black", hjust = 0.5, angle = 90)
+    )
+}
+
+
+#' Add prediction interval lines to bubble plot.
+#' @keywords internal
+.bbp_pred_interval <- function(mod_table, pi.lwd, pi.col) {
+  # Note: Multiple ggplot2::geoms must be passed as a list
+  list(
+    ggplot2::geom_smooth(data = mod_table,
+      ggplot2::aes(x = moderator,
+                   y = lowerPR),
+        method = "loess",
+        formula = y ~ x,
+        se = FALSE,
+        lty = "dotted",
+        lwd = pi.lwd,
+        colour = pi.col),
+    ggplot2::geom_smooth(data = mod_table,
+      ggplot2::aes(x = moderator,
+                   y = upperPR),
+        method = "loess",
+        formula = y ~ x,
+        se = FALSE,
+        lty = "dotted",
+        lwd = pi.lwd,
+        colour = pi.col)
+  )
+}
+
+
+#' Add confidence interval lines to bubble plot.
+#' @keywords internal
+.bbp_conf_interval <- function(mod_table, ci.lwd, ci.col) {
+  # Note: Multiple ggplot2::geoms must be passed as a list
+  list(
+    ggplot2::geom_smooth(data = mod_table,
+      ggplot2::aes(x = moderator,
+                   y = lowerCL),
+  		  method = "loess",
+  		  formula = y ~ x,
+  		  se = FALSE,
+  		  lty = "dashed",
+  		  lwd = ci.lwd,
+  		  colour = ci.col),
+    ggplot2::geom_smooth(data = mod_table,
+      ggplot2::aes(x = moderator,
+                   y = upperCL),
+  		  method = "loess",
+  		  formula = y ~ x,
+  		  se = FALSE,
+  		  lty = "dashed",
+  		  lwd = ci.lwd,
+  		  colour = ci.col)
+    )
+}
+
+
+#' Add estimate line to bubble plot.
+#' @keywords internal
+.bbp_estimate_line <- function(mod_table, est.lwd, est.col) {
+  ggplot2::geom_smooth(data = mod_table,
+    ggplot2::aes(x = moderator, 
+    y = estimate),
+                 method = "loess",
+                 formula = y ~ x,
+                 se = FALSE,
+                 lwd = est.lwd,
+                 colour = est.col)
+}
+
+
+#' Add axis labels to bubble plot.
+#' @keywords internal
+.bbp_axis_labels <- function(xlab, ylab) {
+  ggplot2::labs(x = xlab, y = ylab, parse = TRUE)
+}
+
+
+#' Add and position legends on bubble plot.
+#' @keywords internal
+.bbp_legends <- function(legend.pos, size_legend) {
+  # Returns two ggplot layers:
+  # One modifies the legends positions
+  # The other are the legends
+  legend_position_layer <- switch(legend.pos,
+    "bottom.right" = ggplot2::theme(legend.position = "inside", legend.justification = c(1, 0)),
+    "bottom.left"  = ggplot2::theme(legend.position = "inside", legend.justification = c(0, 0)),
+    "top.right"    = ggplot2::theme(legend.position = "inside", legend.justification = c(1, 1)),
+    "top.left"     = ggplot2::theme(legend.position = "inside", legend.justification = c(0, 1)),
+    "top.out"      = ggplot2::theme(legend.position = "top"),
+    "bottom.out"   = ggplot2::theme(legend.position = "bottom"),
+    "none"         = ggplot2::theme(legend.position = "none")
+  )
+
+  # TODO: The legends in the old version show the circles filled, not blank!
+
+  legends_layer <- ggplot2::guides(
+    size = ggplot2::guide_legend(title = latex2exp::TeX(size_legend)),
+    colour = "none",
+    fill = "none"
+    )
+
+  return(list(legend_position_layer, legends_layer))
+}
+
+
+#' Add k and g annotation labels to bubble plot.
+#' @keywords internal
+.bbp_kg_labels <- function(k, g, k.pos, kg_labels) {
+  if (k == FALSE || k.pos == "none") return()
+
+  # Build label string
+  if (g) {
+    label_str <- paste0("italic(k)==", kg_labels$K, " ~ (", kg_labels$G, ")")
+  } else {
+    label_str <- paste0("italic(k)==", kg_labels$K)
+  }
+
+  # If left, anchor at -inf. At right, at +inf. Same for bottom and top
+  x_val <- if (k.pos %in% c("top.left", "bottom.left")) -Inf else Inf
+  y_val <- if (k.pos %in% c("top.left", "top.right")) Inf else -Inf
+
+  # Set justification
+  hjust_val <- if (k.pos %in% c("top.left", "bottom.left")) -0.5 else 2
+  vjust_val <- if (k.pos %in% c("top.left", "top.right")) 2.5 else -1.5
+  if (g) {
+    # Adding g needs some extra space 
+    hjust_val <- hjust_val - 0.5
+    vjust_val <- vjust_val - 0.5
+  }
+
+  ggplot2::geom_text(
+    data = kg_labels,
+    mapping = ggplot2::aes(x = x_val, y = y_val),
+    inherit.aes = FALSE,  # Need this for silencing ggplot warnings 
+    label = label_str,
+    parse = TRUE,
+    hjust = hjust_val,
+    vjust = vjust_val
+  )
+}
+
+
+#' Add facetting to bubble plot by condition.
+#' @keywords internal
+.bbp_facets <- function(data_trim, condition.nrow, condition.levels) {
+  condition <- data_trim$condition
+
+  if (nlevels(condition) == 1) return()
+
+  if (is.character(condition) || is.factor(condition)) {
+    ggplot2::facet_wrap(ggplot2::vars(condition), nrow = condition.nrow) 
+  }
+}
+
+
+#' Set fill colors for bubble plot points.
+#' @keywords internal
+.bbp_colors <- function(data_trim, cb) {
+  # # colour blind friendly colours with grey
+  cbpl <- c("#88CCEE", "#CC6677", "#DDCC77", "#117733",
+            "#332288", "#AA4499", "#44AA99", "#999933",
+            "#882255", "#661100", "#6699CC", "#888888",
+            "#E69F00", "#56B4E9", "#009E73", "#F0E442",
+            "#0072B2", "#D55E00", "#CC79A7", "#999999")
+
+  # Boolean variable to make it readable
+  has_conditions <- if (nlevels(data_trim$condition) > 1) TRUE else FALSE
+
+  if (!has_conditions) {
+    ggplot2::scale_fill_manual(values = "grey90")
+  } else if (has_conditions && cb == TRUE) {
+    ggplot2::scale_fill_manual(values = cbpl) 
+  } else {
+    ggplot2::scale_fill_hue()  # Default in ggplot2 for discrete variables
+  }
+
 }

@@ -16,6 +16,7 @@ bubble_plot(
   k = TRUE,
   g = FALSE,
   transfm = c("none", "tanh", "invlogit", "percent", "percentr"),
+  n_transfm = NULL,
   est.lwd = 1,
   ci.lwd = 0.5,
   pi.lwd = 0.5,
