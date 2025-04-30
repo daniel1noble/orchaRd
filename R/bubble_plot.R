@@ -7,6 +7,7 @@
 #' @param at List of levels one wishes to predict at for the corresponding variables in \code{by}. Used when one wants marginalised means. This argument can also be used to suppress levels of the moderator when argument \code{subset = TRUE}. Provide a list as follows: \code{list(mod = c("level1", "level2"))}.
 #' @param weights How to marginalize categorical variables; used when one wants marginalised means. The default is \code{weights = "prop"}, which weights means for moderator levels based on their proportional representation in the data. For example, if \code{"sex"} is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal when, for example, males and females are typically roughly equally prevalent in a population. In cases such as these, you can give the moderator levels equal weight using \code{weights = "equal"}.
 #' @param transfm If set to \code{"tanh"}, a tanh transformation will be applied to effect sizes, converting Zr to a correlation or pulling in extreme values for other effect sizes (lnRR, lnCVR, SMD).  \code{"invlogit"} can be used to convert lnRR to the inverse logit scale. \code{"percentr"} can convert to the percentage change scale when using response ratios and \code{"percent"} can convert to the percentage change scale of an log transformed effect size. Defaults to \code{"none"}.
+#' @param n_transfm The vector of sample sizes for each effect size estimate. This is used when \code{transfm = "inv_ft"}. Defaults to NULL.
 #' @param xlab Moderator label.
 #' @param ylab Effect size measure label.
 #' @param k.pos The position of effect size number, k.
@@ -25,7 +26,7 @@
 #' @param legend.pos Where to place the legend, or not to include a legend ("none").
 #' @param condition.levels Order of the levels of the condition variable in the order to plot. Defaults to NULL.
 #'
-#' @return Orchard plot
+#' @return Bubble plot
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
 #' @examples
@@ -38,9 +39,9 @@
 #'   random = list(~ 1 | Article, ~ 1 | Datapoint), data = na.omit(lim)
 #' )
 #' test <- orchaRd::mod_results(model, mod = "year", group = "Article", data = lim, weights = "prop", by = "Environment")
-#' orchaRd::bubble_plot(test, mod = "year", data = lim, group = "Article", legend.pos = "top.left")
+#' orchaRd::bubble_plot(test, mod = "year", group = "Article", legend.pos = "top.left")
 #' # Or just using model directly
-#' orchaRd::bubble_plot(model, mod = "year", legend.pos = "top.left", data = lim, group = "Article", weights = "prop", by = "Environment")
+#' orchaRd::bubble_plot(model, mod = "year", legend.pos = "top.left", group = "Article", weights = "prop", by = "Environment")
 #' }
 #' @export
 
@@ -133,14 +134,14 @@ bubble_plot <- function(
 
   # Note: the bbp (bubble plot) prefix is to avoid clashes with other functions
   plt <- .base_bubble_plot(data_trim, alpha) +
-	  .bbp_theme() +
-	  .bbp_pred_interval(mod_table, pi.lwd, pi.col) +
-	  .bbp_conf_interval(mod_table, ci.lwd, ci.col) +
-	  .bbp_estimate_line(mod_table, est.lwd, est.col) +
-	  .bbp_axis_labels(xlab, ylab) +
-	  .bbp_legends(legend.pos, size_legend) +
-	  .bbp_kg_labels(k, g, k.pos, kg_labels) + 
-	  .bbp_facets(data_trim, condition.nrow, condition.levels) +
+    .bbp_theme() +
+    .bbp_pred_interval(mod_table, pi.lwd, pi.col) +
+    .bbp_conf_interval(mod_table, ci.lwd, ci.col) +
+    .bbp_estimate_line(mod_table, est.lwd, est.col) +
+    .bbp_axis_labels(xlab, ylab) +
+    .bbp_legends(legend.pos, size_legend) +
+    .bbp_kg_labels(k, g, k.pos, kg_labels) + 
+    .bbp_facets(data_trim, condition.nrow, condition.levels) +
     .bbp_colors(data_trim, cb)
 
   return(plt)
@@ -389,6 +390,7 @@ bubble_plot <- function(
   } else {
     label_str <- paste0("italic(k)==", kg_labels$K)
   }
+  kg_labels$label_str <- label_str
 
   # If left, anchor at -inf. At right, at +inf. Same for bottom and top
   x_val <- if (k.pos %in% c("top.left", "bottom.left")) -Inf else Inf
@@ -405,9 +407,7 @@ bubble_plot <- function(
 
   ggplot2::geom_text(
     data = kg_labels,
-    mapping = ggplot2::aes(x = x_val, y = y_val),
-    inherit.aes = FALSE,  # Need this for silencing ggplot warnings 
-    label = label_str,
+    ggplot2::aes(x = x_val, y = y_val, label = label_str),
     parse = TRUE,
     hjust = hjust_val,
     vjust = vjust_val
