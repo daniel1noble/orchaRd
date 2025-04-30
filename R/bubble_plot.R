@@ -23,8 +23,8 @@
 #' @param ci.col Colour of the confidence interval.
 #' @param pi.col Colour of the prediction interval.
 #' @param condition.nrow Number of rows to plot condition variable.
-#' @param legend.pos Where to place the legend, or not to include a legend ("none").
 #' @param condition.levels Order of the levels of the condition variable in the order to plot. Defaults to NULL.
+#' @param legend.pos Where to place the legend, or not to include a legend ("none").
 #'
 #' @return Bubble plot
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
@@ -73,10 +73,10 @@ bubble_plot <- function(
             "bottom.right", "bottom.left",
             "none"),
   condition.nrow = 2,
+  condition.levels = NULL
   weights = "prop",
   by = NULL,
   at = NULL,
-  condition.levels = NULL
 ) {
   transfm <- match.arg(NULL, choices = transfm)
   legend.pos <- match.arg(NULL, choices = legend.pos)
