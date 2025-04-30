@@ -271,8 +271,10 @@ bubble_plot <- function(
     ggplot2::theme(
       legend.direction = "horizontal", 
       legend.background = ggplot2::element_blank(),
-      axis.text.y = ggplot2::element_text(size = 10, colour = "black", hjust = 0.5, angle = 90)
-    )
+      axis.text.y = ggplot2::element_text(size = 10, colour = "black", hjust = 0.5, angle = 90),
+      strip.text = ggplot2::element_text(size = 11)  # facet-label font size
+  )
+   
 }
 
 
@@ -397,13 +399,8 @@ bubble_plot <- function(
   y_val <- if (k.pos %in% c("top.left", "top.right")) Inf else -Inf
 
   # Set justification
-  hjust_val <- if (k.pos %in% c("top.left", "bottom.left")) -0.5 else 2
+  hjust_val <- if (k.pos %in% c("top.left", "bottom.left")) -0.5 else 1.5
   vjust_val <- if (k.pos %in% c("top.left", "top.right")) 2.5 else -1.5
-  if (g) {
-    # Adding g needs some extra space 
-    hjust_val <- hjust_val - 0.5
-    vjust_val <- vjust_val - 0.5
-  }
 
   ggplot2::geom_text(
     data = kg_labels,
