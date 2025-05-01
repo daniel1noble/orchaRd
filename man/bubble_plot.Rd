@@ -16,6 +16,7 @@ bubble_plot(
   k = TRUE,
   g = FALSE,
   transfm = c("none", "tanh", "invlogit", "percent", "percentr"),
+  n_transfm = NULL,
   est.lwd = 1,
   ci.lwd = 0.5,
   pi.lwd = 0.5,
@@ -26,10 +27,10 @@ bubble_plot(
     "bottom.out", "none"),
   k.pos = c("top.right", "top.left", "bottom.right", "bottom.left", "none"),
   condition.nrow = 2,
+  condition.order = NULL,
   weights = "prop",
   by = NULL,
-  at = NULL,
-  cond_levels = NULL
+  at = NULL
 )
 }
 \arguments{
@@ -55,6 +56,8 @@ bubble_plot(
 
 \item{transfm}{If set to \code{"tanh"}, a tanh transformation will be applied to effect sizes, converting Zr to a correlation or pulling in extreme values for other effect sizes (lnRR, lnCVR, SMD).  \code{"invlogit"} can be used to convert lnRR to the inverse logit scale. \code{"percentr"} can convert to the percentage change scale when using response ratios and \code{"percent"} can convert to the percentage change scale of an log transformed effect size. Defaults to \code{"none"}.}
 
+\item{n_transfm}{The vector of sample sizes for each effect size estimate. This is used when \code{transfm = "inv_ft"}. Defaults to NULL.}
+
 \item{est.lwd}{Size of the point estimate.}
 
 \item{ci.lwd}{Size of the confidence interval.}
@@ -73,16 +76,16 @@ bubble_plot(
 
 \item{condition.nrow}{Number of rows to plot condition variable.}
 
+\item{condition.order}{Order of the levels of the condition variable in the plot. Defaults to NULL.}
+
 \item{weights}{How to marginalize categorical variables; used when one wants marginalised means. The default is \code{weights = "prop"}, which weights means for moderator levels based on their proportional representation in the data. For example, if \code{"sex"} is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal when, for example, males and females are typically roughly equally prevalent in a population. In cases such as these, you can give the moderator levels equal weight using \code{weights = "equal"}.}
 
 \item{by}{Character vector indicating the name that predictions should be conditioned on for the levels of the moderator.}
 
 \item{at}{List of levels one wishes to predict at for the corresponding variables in \code{by}. Used when one wants marginalised means. This argument can also be used to suppress levels of the moderator when argument \code{subset = TRUE}. Provide a list as follows: \code{list(mod = c("level1", "level2"))}.}
-
-\item{cond_levels}{Order of the levels of the condition variable in the order to plot. Defaults to NULL.}
 }
 \value{
-Orchard plot
+Bubble plot
 }
 \description{
 Using a \pkg{metafor} model object of class \code{rma} or \code{rma.mv}, or a results table of class \code{orchard}, the \code{bubble_plot} function creates a bubble plot from slope estimates. In cases when a model includes interaction terms, this function creates panels of bubble plots.
@@ -91,14 +94,15 @@ Using a \pkg{metafor} model object of class \code{rma} or \code{rma.mv}, or a re
 \dontrun{
 data(lim)
 lim[, "year"] <- as.numeric(lim$year)
-lim$vi<- 1/(lim$N - 3)
-model<-metafor::rma.mv(yi=yi, V=vi, mods= ~Environment*year,
-random=list(~1|Article,~1|Datapoint), data=na.omit(lim))
+lim$vi <- 1 / (lim$N - 3)
+model <- metafor::rma.mv(
+  yi = yi, V = vi, mods = ~ Environment * year,
+  random = list(~ 1 | Article, ~ 1 | Datapoint), data = na.omit(lim)
+)
 test <- orchaRd::mod_results(model, mod = "year", group = "Article", data = lim, weights = "prop", by = "Environment")
-orchaRd::bubble_plot(test, mod = "year", data = lim, group = "Article",legend.pos = "top.left")
+orchaRd::bubble_plot(test, mod = "year", group = "Article", legend.pos = "top.left")
 # Or just using model directly
-orchaRd::bubble_plot(model, mod = "year", legend.pos = "top.left", data = lim, group = "Article", weights = "prop", by = "Environment")
-
+orchaRd::bubble_plot(model, mod = "year", legend.pos = "top.left", group = "Article", weights = "prop", by = "Environment")
 }
 }
 \author{
