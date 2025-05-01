@@ -92,34 +92,17 @@ orchard_plot <- function(
   legend.pos <- match.arg(NULL, choices = legend.pos)
   k.pos <- match.arg(NULL, choices = k.pos)
 
-  if (any(class(object) %in% c("robust.rma", "rma.mv", "rma", "rma.uni"))) {
-    # TODO: Test this. I think that the old code has a useless if-else 
-    #       to decide how to ise mod
-    results <- orchaRd::mod_results(object, mod, group, N, by = by, at = at,
-                                    weights = weights, upper = upper)
-  } 
-  
-  if (any(class(object) %in% c("orchard"))) {
-    results <- object
+  results <- .get_results(object, mod, group, N, by, at, weights)
+
+  if (transfm != "none") {
+    results <- transform_mod_results(results, transfm, n_transfm)
   }
 
-  # -----------------------------------------
-  # Prepare data
-
-  # Get model table and data.
   mod_table <- results$mod_table
   data_trim <- results$data
 
-  # Transform data if needed
-  if (transfm != "none") {
-    numeric_cols <- c("estimate", "lowerCL", "upperCL", "lowerPR", "upperPR")
-    mod_table[, numeric_cols] <- transform_data(mod_table[, numeric_cols],
-                                                n = n_transfm,
-                                                transfm = transfm)
-    data_trim$yi <- transform_data(data_trim$yi, n = n_transfm, transfm = transfm)
-  }
-
-  # making sure factor names match
+  # TODO: This should be done by mod_results: it should output table and data with
+  # using factors ordered in the same way
   data_trim$moderator <- factor(data_trim$moderator, levels = mod_table$name, labels = mod_table$name)
 
   # Reorder data if needed
@@ -136,19 +119,10 @@ orchard_plot <- function(
     mod_table <- mod_table %>% dplyr::arrange(factor(name, levels = tree.order))
   }
 
-
-  # Set scale used for points sizes and it's legend.
-  # If N is not null, it is the name of the column that has the sample size
-  if (is.null(N) == FALSE) {
-    data_trim$scale <- data_trim$N
-    legend <- paste0("Sample Size ($\\textit{N}$)") # we want to use italic
-  } else {
-    # This is the default
-    data_trim$scale <- (1 / sqrt(data_trim[, "vi"]))
-    legend <- "Precision (1/SE)"
-  }
-  size_legend <- ggplot2::guide_legend(title = latex2exp::TeX(legend))
-
+  size_scale <- .get_size_scale(N, data_trim)
+  data_trim$scale <- size_scale$scale
+  scale_legend <- size_scale$scale_legend
+ 
   # ----------------------------------------
   # Set color and fill
   # setting fruit colour
@@ -166,22 +140,6 @@ orchard_plot <- function(
   } else {
     fill <- NULL
   }
-
-  # ----------------------------------------
-  # Build orchard plot by layers:
-  #   1. Effect sizes as beeswarm and bubbles
-  #   2. Horizontal reference line (at 0 by default)
-  #   3. Confidence interval
-  #   4. Prediction interval
-  #   5. Point estimate
-  #   6. Basic theme, labels and legend
-  #   7. Colors and flip
-
-  # 1,2 and 7 are common for every plot
-  # 3 to 6 are different if conditions are used (i.e., `at` and `by` options)
-
-  # ----------------------------------------
-  # Parse options for plots with or without conditions:
 
   # If the plot has conditions it must add:
   # - Space between lines from different conditions
@@ -204,24 +162,17 @@ orchard_plot <- function(
   }
 
 
-  plt <- .base_orchard_plot(data_trim, color, fill, alpha) %>%
-    .add_reference_line(alpha) %>% 
-    .add_conf_intervals(mod_table, lines_position, branch.size) %>%
-    .add_pred_intervals(mod_table, lines_position, trunk.size, twig.size) %>%
-    .add_point_estimates(mod_table, color2, points_shapes, lines_position, trunk.size, shapes_values) %>%
-    .add_orchard_theme() %>%
-    .add_legends(legend.pos, size_legend, shape_legend) %>%
-    .add_axis_labels(xlab, angle)
-
-  if (k == TRUE && k.pos != "none") {
-    plt <- .add_k_and_g(plt, k.pos, g, data_trim, mod_table)
-  }
-  if (cb == TRUE) {
-    plt <- .add_colour_blind_palette(plt)
-  }
-  if (flip) {
-    plt <- plt + ggplot2::coord_flip()
-  }
+  plt <- .base_orchard_plot(data_trim, color, fill, alpha) +
+    .orcd_theme(angle) +
+    .orcd_reference_line(alpha) +
+    .orcd_conf_intervals(mod_table, lines_position, branch.size) +
+    .orcd_pred_intervals(mod_table, lines_position, trunk.size, twig.size) +
+    .orcd_point_estimates(mod_table, color2, points_shapes, lines_position, trunk.size, shapes_values) +
+    .orcd_legends(legend.pos, scale_legend, shape_legend) +
+    .orcd_axis_labels(xlab) +
+    .orcd_k_and_g(k, k.pos, g, data_trim, mod_table) +
+    .orcd_colour_blind_palette(cb) +
+    if(flip) ggplot2::coord_flip()
 
   return(plt)
 }
@@ -247,129 +198,131 @@ orchard_plot <- function(
   return(p)
 }
 
+#' Theme for orchard plot
+#'
+#' @keywords internal
+.orcd_theme <- function(angle) {
+  list(
+    ggplot2::theme_bw(),
+    ggplot2::theme(
+      legend.title = ggplot2::element_text(size = 9),
+      legend.direction = "horizontal",
+      legend.background = ggplot2::element_blank(),
+      axis.text.y = ggplot2::element_text(size = 10,
+                                          colour = "black",
+                                          hjust = 0.5,
+                                          angle = angle)
+      )
+  )
+}
+
 
 #' Add reference line for orchard plot
 #'
 #' @keywords internal
-.add_reference_line <- function(plt, alpha) {
-  plt +
-    ggplot2::geom_hline(
-      yintercept = 0,
-      linetype = 2,
-      colour = "black",
-      alpha = alpha
-    )
+.orcd_reference_line <- function(alpha) {
+  ggplot2::geom_hline(
+    yintercept = 0,
+    linetype = 2,
+    colour = "black",
+    alpha = alpha
+  )
 }
 
 
 #' Add confidence intervals
 #'
 #' @keywords internal
-.add_conf_intervals <- function(plt, mod_table, lines_position, branch.size) {
-  plt +
-    ggplot2::geom_linerange(
-      data = mod_table,
-      ggplot2::aes(
-        x = name,
-        ymin = lowerCL,
-        ymax = upperCL
-      ),
-      position = lines_position,
-      size = branch.size
-    )
+.orcd_conf_intervals <- function(mod_table, lines_position, branch.size) {
+  ggplot2::geom_linerange(
+    data = mod_table,
+    ggplot2::aes(
+      x = name,
+      ymin = lowerCL,
+      ymax = upperCL
+    ),
+    position = lines_position,
+    size = branch.size
+  )
 }
 
 
 #' Add prediction intervals
 #'
 #' @keywords internal
-.add_pred_intervals <- function(plt, mod_table, lines_position, trunk.size, twig.size) {
-  plt +
-    ggplot2::geom_linerange(
-      data = mod_table,
-      ggplot2::aes(y = estimate, x = name, min = lowerPR, max = upperPR),
-      position = lines_position,
-      size = trunk.size,
-      linewidth = twig.size
-    )
+.orcd_pred_intervals <- function(mod_table, lines_position, trunk.size, twig.size) {
+  ggplot2::geom_linerange(
+    data = mod_table,
+    ggplot2::aes(y = estimate, x = name, min = lowerPR, max = upperPR),
+    position = lines_position,
+    size = trunk.size,
+    linewidth = twig.size
+  )
 }
 
 
 #' Add point estimates for orchard plot
 #'
+# NOTE: Point estimate previously used in 'geom_pointrange',
+# plotting the point estimate and prediction interval at the same time.
+# However, that was less flexible.
+# Now PI are plotted with 'geom_linerange' and point estimate with 'geom_point'.
+#'
 #' @keywords internal
-.add_point_estimates <- function(plt, mod_table, color2, points_shapes, lines_position, trunk.size, shapes_values) {
-  # NOTE: Point estimate previously used in 'geom_pointrange',
-  # plotting the point estimate and prediction interval at the same time.
-  # However, that was less flexible.
-  # Now PI are plotted with 'geom_linerange' and point estimate with 'geom_point'.
-  #
+.orcd_point_estimates <- function(
+  mod_table,
+  estimates_fill,
+  points_shapes,
+  lines_position,
+  trunk.size,
+  shapes_values
+) {
   # To make points look the same as before, 'geom_point' use
   # some factors multiplying size and stroke.
-  plt +
-    ggplot2::geom_point(
-      data = mod_table,
-      ggplot2::aes(y = estimate, x = name, fill = color2, shape = points_shapes),
-      position = lines_position,
-      size = trunk.size * 4,
-      stroke = 1 + trunk.size * 0.07   # Increase the stroke of the point 7% the size of the point. I think it's nice that way
-    ) +
-    ggplot2::scale_shape_manual(values = shapes_values)
+  list(
+   ggplot2::geom_point(
+     data = mod_table,
+     ggplot2::aes(y = estimate, x = name, fill = estimates_fill, shape = points_shapes),
+     position = lines_position,
+     size = trunk.size * 4,
+     stroke = 1 + trunk.size * 0.07   # Increase the stroke of the point 7% the size of the point. I think it's nice that way
+   ),
+   ggplot2::scale_shape_manual(values = shapes_values)
+   )
 }
 
 
-#' Theme for orchard plot
+#' Add legends to orchard plot
 #'
 #' @keywords internal
-.add_orchard_theme <- function(plt) {
-  plt + ggplot2::theme_bw() +
-    ggplot2::theme(
-      legend.title = ggplot2::element_text(size = 9),
-      legend.direction = "horizontal",
-      legend.background = ggplot2::element_blank()
-    )
-}
-
-
-#' Add legends to the plot
-#'
-#' @keywords internal
-.add_legends <- function(plt, legend.pos, size_legend, shape_legend) {
+.orcd_legends <- function(legend.pos, scale_legend, shape_legend) {
   # Define legend position and add the legend
-  plt <- switch(legend.pos,
-    "bottom.right" = plt + ggplot2::theme(legend.position = "inside", legend.justification = c(1, 0)),
-    "bottom.left"  = plt + ggplot2::theme(legend.position = "inside", legend.justification = c(0, 0)),
-    "top.right"    = plt + ggplot2::theme(legend.position = "inside", legend.justification = c(1, 1)),
-    "top.left"     = plt + ggplot2::theme(legend.position = "inside", legend.justification = c(0, 1)),
-    "top.out"      = plt + ggplot2::theme(legend.position = "top"),
-    "bottom.out"   = plt + ggplot2::theme(legend.position = "bottom"),
-    "none"         = plt + ggplot2::theme(legend.position = "none"),
-    plt
+  legend_position <- switch(legend.pos,
+    "bottom.right" = ggplot2::theme(legend.position = "inside", legend.justification = c(1, 0)),
+    "bottom.left"  = ggplot2::theme(legend.position = "inside", legend.justification = c(0, 0)),
+    "top.right"    = ggplot2::theme(legend.position = "inside", legend.justification = c(1, 1)),
+    "top.left"     = ggplot2::theme(legend.position = "inside", legend.justification = c(0, 1)),
+    "top.out"      = ggplot2::theme(legend.position = "top"),
+    "bottom.out"   = ggplot2::theme(legend.position = "bottom"),
+    "none"         = ggplot2::theme(legend.position = "none")
   )
 
-  plt <- plt +
-    ggplot2::guides(
-      size   = size_legend,
-      shape  = shape_legend,
-      colour = "none",
-      fill   = "none"
+  legend_layer <- ggplot2::guides(
+    size = ggplot2::guide_legend(title = latex2exp::TeX(scale_legend)),
+    shape = shape_legend,
+    colour = "none",
+    fill = "none"
     )
 
-  return(plt)
+  return(list(legend_position, legend_layer))
 }
 
 
 #' Add axis labels to orchard plot
 #'
 #' @keywords internal
-.add_axis_labels <- function(plt, xlab, angle) {
-  plt + ggplot2::labs(y = xlab, x = "") +
-    ggplot2::theme(axis.text.y = ggplot2::element_text(
-      size = 10,
-      colour = "black",
-      hjust = 0.5,
-      angle = angle
-    ))
+.orcd_axis_labels <- function(xlab) {
+  ggplot2::labs(y = xlab, x = "")
 }
 
 
@@ -383,7 +336,10 @@ orchard_plot <- function(
 #'
 #' @return ggplot object with added text annotations.
 #' @keywords internal
-.add_k_and_g <- function(plt, k.pos, g, data_trim, mod_table) {
+.orcd_k_and_g <- function(k, k.pos, g, data_trim, mod_table) {
+  # Early return if no need of k-g labels
+  if (k == FALSE || k.pos == "none") return()
+
   # Add in total effect sizes for each level
   mod_table$K <- as.vector(by(data_trim, data_trim[, "moderator"], function(x) length(x[, "yi"])))
   # Add in total levels of a grouping variable (e.g., study ID) within each moderator level.
@@ -413,7 +369,7 @@ orchard_plot <- function(
     label_text <- paste("italic(k)==", mod_table$K[1:group_no])
   }
 
-  plt <- plt + ggplot2::annotate(
+  ggplot2::annotate(
     "text",
     x = x_pos,
     y = y_pos,
@@ -422,26 +378,20 @@ orchard_plot <- function(
     hjust = hjust_val,
     size = 3.5
   )
-
-  return(plt)
 }
 
 
 #' Set colour blind friendly palette
 #'
 #' @keywords internal
-.add_colour_blind_palette <- function(plt) {
-  colour_blind_palette <- c(
-    "#88CCEE", "#CC6677", "#DDCC77", "#117733",
-    "#332288", "#AA4499", "#44AA99", "#999933",
-    "#882255", "#661100", "#6699CC", "#888888",
-    "#E69F00", "#56B4E9", "#009E73", "#F0E442",
-    "#0072B2", "#D55E00", "#CC79A7", "#999999"
-  )
-
-  plt +
-    ggplot2::scale_fill_manual(values = colour_blind_palette) +
-    ggplot2::scale_colour_manual(values = colour_blind_palette)
+.orcd_colour_blind_palette <- function(cb) {
+  if (cb) {
+    return(list(
+      ggplot2::scale_fill_manual(values = .colour_blind_palette),
+      ggplot2::scale_colour_manual(values = .colour_blind_palette)
+      )
+    )
+  }
 }
 
 

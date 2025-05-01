@@ -54,7 +54,7 @@ bubble_plot <- function(
   group = NULL,
   xlab = "Moderator",
   ylab = "Effect size",
-  N = "none",
+  N = NULL,
   alpha = 0.5,
   cb = TRUE,
   k = TRUE,
@@ -93,6 +93,7 @@ bubble_plot <- function(
       object, 
       mod = mod,  
       group = group, 
+      N = N,
       by = by, 
       at = at, 
       weights = weights
@@ -206,13 +207,14 @@ bubble_plot <- function(
 #' Set scale for bubble plot.
 #' @keywords internal
 .set_scale <- function(N, data_trim) {
-  if (any(N != "none")) {
-    scale <- data_trim$N
-    size_legend <- paste0("Sample Size ($\\textit{N}$)")
-  } else {
+  if (is.null(N)) {
     scale <- (1 / sqrt(data_trim[, "vi"]))
     size_legend <- "Precision (1/SE)"
   }
+  else {
+    scale <- data_trim$N
+    size_legend <- paste0("Sample Size ($\\textit{N}$)")
+  } 
   return(list(scale = scale, size_legend = size_legend))
 }
 
