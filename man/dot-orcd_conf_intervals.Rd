@@ -4,7 +4,7 @@
 \alias{.orcd_conf_intervals}
 \title{Add confidence intervals}
 \usage{
-.orcd_conf_intervals(mod_table, lines_position, branch.size)
+.orcd_conf_intervals(mod_table, branch.size)
 }
 \description{
 Add confidence intervals

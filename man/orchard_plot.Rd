@@ -21,7 +21,7 @@ orchard_plot(
   twig.size = 0.5,
   transfm = c("none", "tanh", "invlogit", "percent", "percentr", "inv_ft"),
   n_transfm = NULL,
-  condition.lab = "Condition",
+  condition.lab = NULL,
   legend.pos = c("bottom.right", "bottom.left", "top.right", "top.left", "top.out",
     "bottom.out", "none"),
   k.pos = c("right", "left", "none"),

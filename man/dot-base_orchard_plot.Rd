@@ -4,7 +4,7 @@
 \alias{.base_orchard_plot}
 \title{Create base for orchard plot}
 \usage{
-.base_orchard_plot(data_trim, color, fill, alpha)
+.base_orchard_plot(data_trim, colour, fill, alpha)
 }
 \description{
 Create base for orchard plot

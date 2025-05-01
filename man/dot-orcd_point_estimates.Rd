@@ -4,14 +4,7 @@
 \alias{.orcd_point_estimates}
 \title{Add point estimates for orchard plot}
 \usage{
-.orcd_point_estimates(
-  mod_table,
-  estimates_fill,
-  points_shapes,
-  lines_position,
-  trunk.size,
-  shapes_values
-)
+.orcd_point_estimates(mod_table, colour, trunk.size)
 }
 \description{
 Add point estimates for orchard plot
