@@ -22,6 +22,7 @@
 #' @param twig.size Size of the prediction intervals.
 #' @param legend.pos Where to place the legend. To remove the legend, use \code{legend.pos = "none"}.
 #' @param k.pos Where to put k (number of effect sizes) on the plot. Users can specify the exact position or they can use specify \code{"right"}, \code{"left"},  or \code{"none"}. Note that numeric values (0, 0.5, 1) can also be specified and this would give greater precision.
+#' @param refline.pos Where to put the reference line. defaults to 0.
 #' @param colour Colour of effect size shapes. By default, effect sizes are colored according to the \code{mod} argument. If \code{TRUE}, they are colored according to the grouping variable
 #' @param fill If \code{TRUE}, effect sizes will be filled with colours. If \code{FALSE}, they will not be filled with colours.
 #' @param weights Used when one wants marginalised means. How to marginalize categorical variables. The default is \code{weights = "prop"}, which weights moderator level means based on their proportional representation in the data. For example, if "sex" is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal. In the case of sex, for example, males and females are roughly equally prevalent in a population. As such, you can give the moderator levels equal weight using \code{weights = "equal"}.
@@ -79,6 +80,7 @@ orchard_plot <- function(
   legend.pos = c("bottom.right", "bottom.left", "top.right", "top.left",
                   "top.out", "bottom.out", "none"), 
   k.pos = c("right", "left", "none"),
+  refline.pos = 0,
   colour = FALSE,
   fill = TRUE,
   weights = "prop",
@@ -119,7 +121,7 @@ orchard_plot <- function(
 
   plt <- .base_orchard_plot(data_trim, colour, fill, alpha) +
     .orcd_theme(angle) +
-    .orcd_reference_line(alpha) +
+    .orcd_reference_line(alpha, refline.pos) +
     .orcd_conf_intervals(mod_table, branch.size) +
     .orcd_pred_intervals(mod_table, trunk.size, twig.size) +
     .orcd_point_estimates(mod_table, colour, trunk.size) +
@@ -180,9 +182,9 @@ orchard_plot <- function(
 #' Add reference line for orchard plot
 #'
 #' @keywords internal
-.orcd_reference_line <- function(alpha) {
+.orcd_reference_line <- function(alpha, refline.pos) {
   ggplot2::geom_hline(
-    yintercept = 0,
+    yintercept = refline.pos,
     linetype = 2,
     colour = "black",
     alpha = alpha

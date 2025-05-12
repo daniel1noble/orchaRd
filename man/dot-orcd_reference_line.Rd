@@ -4,7 +4,7 @@
 \alias{.orcd_reference_line}
 \title{Add reference line for orchard plot}
 \usage{
-.orcd_reference_line(alpha)
+.orcd_reference_line(alpha, refline.pos)
 }
 \description{
 Add reference line for orchard plot
