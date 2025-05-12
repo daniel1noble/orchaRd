@@ -82,46 +82,28 @@ bubble_plot <- function(
   legend.pos <- match.arg(NULL, choices = legend.pos)
   k.pos <- match.arg(NULL, choices = k.pos)
 
-  if (missing(object)) stop("'object' must be provided. See ?bubble_plot", .call = FALSE)
   if (missing(group)) {
     stop("Please specify the 'group' argument by providing the name of the grouping variable. See ?bubble_plot")
   }
 
-  # Get results to be used. Only accepts metafor or orchard object objects
-  if (any(class(object) %in% c("robust.rma", "rma.mv", "rma", "rma.uni"))) {
-    results <- orchaRd::mod_results(
-      object, 
-      mod = mod,  
-      group = group, 
-      N = N,
-      by = by, 
-      at = at, 
-      weights = weights
-    )
-  } else if (any(class(object) %in% c("orchard"))) {
-    results <- object
-  } else {
-    stop("object argument must be a 'metafor' model or the output from 'mod_results'", .call = FALSE)
-  }
+  results <- .get_results(object, mod, group, N, by, at, weights)
 
-  # Transform results if needed
   if (transfm != "none") {
-    results <- .apply_transformation(results, n_transfm, transfm)
-    mod_table <- results$mod_table
-    data_trim <- results$data_trim
+    results <- transform_mod_results(results, transfm, n_transfm)
   }
 
   # Set condition in mod_table and data_trim.
   # If no condition, it uses a dummy variable. Make it easier to handle
   # reordering, facets and all that, because always reference to 'condition'.
   results <- .set_condition(results, condition.order)
+
   mod_table <- results$mod_table
   data_trim <- results$data
 
   # Define scale: size of points
-  scale <- .set_scale(N, data_trim)
+  scale <- .get_size_scale(N, data_trim)
   data_trim$scale <- scale$scale
-  size_legend <- scale$size_legend
+  scale_legend <- scale$scale_legend
 
   # Get k/g labels for the plot based on the processed data_trim.
   kg_labels <- .get_kg_labels(data_trim)
@@ -133,28 +115,12 @@ bubble_plot <- function(
     .bbp_conf_interval(mod_table, ci.lwd, ci.col) +
     .bbp_estimate_line(mod_table, est.lwd, est.col) +
     .bbp_axis_labels(xlab, ylab) +
-    .bbp_legends(legend.pos, size_legend) +
+    .bbp_legends(legend.pos, scale_legend) +
     .bbp_kg_labels(k, g, k.pos, kg_labels) + 
     .bbp_facets(data_trim, condition.nrow, condition.order) +
     .bbp_colors(data_trim, cb)
 
   return(plt)
-}
-
-
-#' Apply transformation to results
-#' @keywords internal
-.apply_transformation <- function(results, n_transfm, transfm) {
-  mod_table <- results$mod_table
-  data_trim <- results$data
-
-  numeric_cols <- c("estimate", "lowerCL", "upperCL", "lowerPR", "upperPR")
-  mod_table[, numeric_cols] <- transform_data(mod_table[, numeric_cols],
-                                              n = n_transfm,
-                                              transfm = transfm)
-  data_trim$yi <- transform_data(data_trim$yi, n = n_transfm, transfm = transfm)
-
-  return(list(mod_table = mod_table, data_trim = data_trim))
 }
 
 
@@ -201,21 +167,6 @@ bubble_plot <- function(
   )
 
   return(results)
-}
-
-
-#' Set scale for bubble plot.
-#' @keywords internal
-.set_scale <- function(N, data_trim) {
-  if (is.null(N)) {
-    scale <- (1 / sqrt(data_trim[, "vi"]))
-    size_legend <- "Precision (1/SE)"
-  }
-  else {
-    scale <- data_trim$N
-    size_legend <- paste0("Sample Size ($\\textit{N}$)")
-  } 
-  return(list(scale = scale, size_legend = size_legend))
 }
 
 
@@ -350,7 +301,7 @@ bubble_plot <- function(
 
 #' Add and position legends on bubble plot.
 #' @keywords internal
-.bbp_legends <- function(legend.pos, size_legend) {
+.bbp_legends <- function(legend.pos, scale_legend) {
   # Returns two ggplot layers:
   # One modifies the legends positions
   # The other are the legends
@@ -365,7 +316,7 @@ bubble_plot <- function(
   )
 
   legends_layer <- ggplot2::guides(
-    size = ggplot2::guide_legend(title = latex2exp::TeX(size_legend)),
+    size = ggplot2::guide_legend(title = latex2exp::TeX(scale_legend)),
     colour = "none",
     fill = "none"
     )
@@ -421,22 +372,14 @@ bubble_plot <- function(
 #' Set fill colors for bubble plot points.
 #' @keywords internal
 .bbp_colors <- function(data_trim, cb) {
-  # # colour blind friendly colours with grey
-  cbpl <- c("#88CCEE", "#CC6677", "#DDCC77", "#117733",
-            "#332288", "#AA4499", "#44AA99", "#999933",
-            "#882255", "#661100", "#6699CC", "#888888",
-            "#E69F00", "#56B4E9", "#009E73", "#F0E442",
-            "#0072B2", "#D55E00", "#CC79A7", "#999999")
-
   # Boolean variable to make it readable
   has_conditions <- if (nlevels(data_trim$condition) > 1) TRUE else FALSE
 
   if (!has_conditions) {
     ggplot2::scale_fill_manual(values = "grey90")
   } else if (has_conditions && cb == TRUE) {
-    ggplot2::scale_fill_manual(values = cbpl) 
+    ggplot2::scale_fill_manual(values = .colour_blind_palette) 
   } else {
     ggplot2::scale_fill_hue()  # Default in ggplot2 for discrete variables
   }
-
 }
