@@ -4,7 +4,7 @@
 \alias{.bbp_legends}
 \title{Add and position legends on bubble plot.}
 \usage{
-.bbp_legends(legend.pos, size_legend)
+.bbp_legends(legend.pos, scale_legend)
 }
 \description{
 Add and position legends on bubble plot.

@@ -10,7 +10,7 @@ bubble_plot(
   group = NULL,
   xlab = "Moderator",
   ylab = "Effect size",
-  N = "none",
+  N = NULL,
   alpha = 0.5,
   cb = TRUE,
   k = TRUE,

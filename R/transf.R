@@ -1,3 +1,37 @@
+#' Transform effect sizes in an orchard object
+#'
+#' Applies a transformation to the effect sizes and their confidence/prediction intervals from a model result object returned by \code{\link{mod_results}}.
+#'
+#' @param results An object of class \code{orchard}, the output from \code{\link{mod_results}}. 
+#' @param transfm A character string specifying the transformation to apply. Options include:
+#'   - \code{"none"}: No transformation (default)
+#'   - \code{"tanh"}: Hyperbolic tangent transformation
+#'   - \code{"invlogit"}: Inverse logit transformation
+#'   - \code{"percentr"}: Percentage relative change transformation
+#'   - \code{"percent"}: Percentage transformation
+#'   - \code{"inv_ft"}: Inverse Freeman-Tukey (double arcsine) transformation for proportions (use with caution)
+#' @param n_transfm A numeric vector of sample sizes, used only when \code{transfm = "inv_ft"}. Defaults to \code{NULL}.
+#'
+#' @return A modified list object of class \code{orchard}, where the effect size estimates and their intervals in both \code{mod_table} and \code{data} are transformed accordingly.
+#'
+#' @keywords internal
+transform_mod_results <- function(results, transfm, n_transfm) {
+  mod_table <- results$mod_table
+  data <- results$data
+
+  numeric_cols <- c("estimate", "lowerCL", "upperCL", "lowerPR", "upperPR")
+  mod_table[, numeric_cols] <- transform_data(mod_table[, numeric_cols],
+                                              n = n_transfm,
+                                              transfm = transfm)
+  data$yi <- transform_data(data$yi, n = n_transfm, transfm = transfm)
+
+  results <- list(mod_table = mod_table, data = data)
+  class(results) <- c("orchard", "data.frame")
+
+  return(results)
+}
+
+
 #' Apply a Transformation to Vector
 #'
 #' This function applies a specified transformation to a numeric vector.
@@ -31,12 +65,12 @@ transform_data <- function(x, n = NULL, transfm = c("none", "tanh", "invlogit", 
          call. = FALSE)
   })
 
-  if(is.null(n) && transfm == "inv_ft") {
-    stop("Sample size for each proportion, 'n', must be provided for 'inv_ft' transformation using the n_transfm argument.")
-  }
-
   if (transfm == "none") {
     return(x)
+  }
+
+  if(is.null(n) && transfm == "inv_ft") {
+    stop("Sample size for each proportion, 'n', must be provided for 'inv_ft' transformation using the n_transfm argument.")
   }
 
   transf_func <- switch(transfm,
