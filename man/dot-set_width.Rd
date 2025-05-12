@@ -2,10 +2,13 @@
 % Please edit documentation in R/orchard_plot.R
 \name{.set_width}
 \alias{.set_width}
-\title{Set width for separation}
+\title{Set width for ggplot2::position_dodge2()}
 \usage{
 .set_width(mod_table)
 }
 \description{
-Adds more space if the model used conditions
+When the model use has some condition, the plot needs separation for
+estimates from the same moderator.
+This function adds space when a condition is present.
 }
+\keyword{internal}

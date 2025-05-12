@@ -2,11 +2,11 @@
 % Please edit documentation in R/orchard_plot.R
 \name{.orcd_colour_blind_palette}
 \alias{.orcd_colour_blind_palette}
-\title{Set colour blind friendly palette}
+\title{Set a colour-blind-friendly palette}
 \usage{
 .orcd_colour_blind_palette(cb)
 }
 \description{
-Set colour blind friendly palette
+Set a colour-blind-friendly palette
 }
 \keyword{internal}

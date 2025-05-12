@@ -7,5 +7,7 @@
 .order_tree(results, tree.order)
 }
 \description{
-Reorder the tree
+Reorder the position of the moderators in the plot by reordering
+the factos in the model table and the data.
 }
+\keyword{internal}

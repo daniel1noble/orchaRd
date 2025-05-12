@@ -7,6 +7,9 @@
 .orcd_point_estimates(mod_table, colour, trunk.size)
 }
 \description{
-Add point estimates for orchard plot
+Note: Point estimate previously used 'geom_pointrange',
+plotting the estimate and prediction interval at the same time.
+However, that was less flexible.
+Now PI are plotted with 'geom_linerange' and point estimate with 'geom_point'.
 }
 \keyword{internal}

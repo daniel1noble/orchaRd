@@ -98,26 +98,14 @@ orchard_plot <- function(
     results <- transform_mod_results(results, transfm, n_transfm)
   }
 
+  if (!is.null(tree.order)) {
+    results <- .order_tree(results, tree.order)
+  }
+
   mod_table <- results$mod_table
   data_trim <- results$data
 
-
-
-  # TODO: .order_tree() is not working. 
-#  if (!is.null(tree.order)) {
-#    results <- .order_tree(results, tree.order)
-#  }
-  #if tree.order isn't equal to NULL, and length of tree order does not match number of categories in categorical moderator, then stop function and throw an error
-	if (!is.null(tree.order)&length(tree.order) != nlevels(factor(data_trim[,'moderator']))) {
-	  stop("Length of 'tree.order' does not equal number of categories in moderator")
-	}
-
-  #if tree.order isn't equal to NULL but passes above check, then reorder mod table according to custom order if there is one
-  if (!is.null(tree.order)){
-    data_trim$moderator<-factor(data_trim$moderator, levels = tree.order, labels = tree.order)
-    mod_table <- mod_table %>% dplyr::arrange(factor(name, levels = tree.order))
-  }
-
+  # Make sure levels from data and mod table are equally ordered
   # TODO: This should be done by mod_results: return factors with ordered levels
   data_trim$moderator <- factor(data_trim$moderator, levels = mod_table$name, labels = mod_table$name)
 
@@ -231,10 +219,10 @@ orchard_plot <- function(
 
 #' Add point estimates for orchard plot
 #'
-# Note: Point estimate previously used 'geom_pointrange',
-# plotting the estimate and prediction interval at the same time.
-# However, that was less flexible.
-# Now PI are plotted with 'geom_linerange' and point estimate with 'geom_point'.
+#' Note: Point estimate previously used 'geom_pointrange',
+#' plotting the estimate and prediction interval at the same time.
+#' However, that was less flexible.
+#' Now PI are plotted with 'geom_linerange' and point estimate with 'geom_point'.
 #'
 #' @keywords internal
 .orcd_point_estimates <- function(mod_table, colour, trunk.size) {
@@ -360,7 +348,7 @@ orchard_plot <- function(
 }
 
 
-#' Set colour blind friendly palette
+#' Set a colour-blind-friendly palette
 #'
 #' @keywords internal
 .orcd_colour_blind_palette <- function(cb) {
@@ -389,7 +377,10 @@ Zr_to_r <- function(df){
 
 #' Reorder the tree
 #'
+#' Reorder the position of the moderators in the plot by reordering
+#' the factos in the model table and the data.
 #'
+#' @keywords internal
 .order_tree <- function(results, tree.order) {
   mod_table <- results$mod_table
   data_trim <- results$data
@@ -407,9 +398,13 @@ Zr_to_r <- function(df){
 }
 
 
-#' Set width for separation 
+#' Set width for ggplot2::position_dodge2()
 #'
-#' Adds more space if the model used conditions 
+#' When the model use has some condition, the plot needs separation for
+#' estimates from the same moderator.
+#' This function adds space when a condition is present.
+#' 
+#' @keywords internal
 .set_width <- function(mod_table) {
   if ("condition" %in% names(mod_table)) {
     dodge_width <- 0.35  # Add spacing for conditions
