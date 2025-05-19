@@ -68,7 +68,7 @@ orchard_leave1out <- function(leave1out,
 
   # Apply transformation if needed
   if (transfm != "none") {
-    orig_results <- transform_data(orig_results, transf = transfm)
+    orig_results <- lapply(orig_results, function(x) transform_data(x, transf = transfm))
   }
   
   # Set colors for the plot. Check if 20 colours are enough 

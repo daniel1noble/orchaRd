@@ -46,57 +46,24 @@
 
 caterpillars <- function(object, mod = "1",  group, xlab, overall = TRUE, transfm = c("none", "tanh", "invlogit", "percent", "percentr", "inv_ft"), n_transfm = NULL, colerrorbar = "#00CD00", colpoint = "#FFD700", colpoly = "red",  k = TRUE, g = TRUE, at = NULL, by = NULL, weights = "prop") {
 
-  if(any(class(object) %in% c("rma.mv", "rma"))){
-
-    if(mod != "1"){
-      results <-  orchaRd::mod_results(object, mod, group,
-                                       by = by, at = at, weights = weights)
-    } else {
-      results <-  orchaRd::mod_results(object, mod = "1", group,
-                                       by = by, at = at, weights = weights)
-    }
-  }
-
-  if (any(class(object) %in% c("orchard"))) {results <- object}
-
-       ## evaluate choices
+  ## evaluate choices
   transfm <- match.arg(transfm) # if not specified it takes the first choice
 
-  # meta-analytic results
-  mod_table <- results$mod_table
+  results <- .get_results(object, mod, group, N = NULL, by, at, weights)
 
-  # data set
+  if (transfm != "none") {
+    results <- transform_mod_results(results, transfm, n_transfm)
+  }
+
+  # Meta-analytic results
+  mod_table <- results$mod_table
+  # Data set
   data <- results$data
   data$lower <- data$yi - stats::qnorm(0.975)*sqrt(data$vi)
   data$upper <- data$yi + stats::qnorm(0.975)*sqrt(data$vi)
 
-# Transform data if needed using unified method with orchard. Code below this  that is commented out was old.
-  if (transfm != "none") {
-                 numeric_cols <- sapply(mod_table, is.numeric)
-    if(mod != "1"){
-        mod_table[, numeric_cols] <- transform_data(mod_table[, numeric_cols], n = n_transfm, transfm = transfm) # Need this for moderators. TODO: Freeman-Tukey transformation will not work with moderators NEED TO FIX. This is a PATCH L77-85
-    } else{ 
-      mod_table[, numeric_cols] <- transform_data(as.numeric(mod_table[, numeric_cols]), n = n_transfm, transfm = transfm) # Only works for the intercept but generalised to back transform using freeman-tukey 
-                    
-    }
-                     data$yi <- transform_data(data$yi,    n = n_transfm, transfm = transfm)
-                  data$lower <- transform_data(data$lower, n = n_transfm, transfm = transfm)
-                  data$upper <- transform_data(data$upper, n = n_transfm, transfm = transfm)
-                       label <- xlab
-  } else{
-    label <- xlab
-  }
+  label <- xlab
 
-  #if(transfm == "tanh"){
-  #  cols <- sapply(mod_table, is.numeric)
-  #  mod_table[,cols] <- Zr_to_r(mod_table[,cols])
-  #  data$yi <- Zr_to_r(data$yi)
-  #  data$lower <- Zr_to_r(data$lower)
-  #  data$upper <- Zr_to_r(data$upper)
-    
-  #}else{
-  #  label <- xlab
-  #}
 
   if("Intrcpt" %in% mod_table$name){
     mod_table$name <- replace(as.vector(mod_table$name), which(mod_table$name == "Intrcpt"), "Overall")

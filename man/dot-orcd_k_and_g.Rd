@@ -14,8 +14,6 @@
 \item{data_trim}{A data frame containing the yi values used to calculate annotation positions.}
 
 \item{mod_table}{A data frame containing the k (and optionally g) values for each group.}
-
-\item{plot}{A ggplot object representing the base orchard plot.}
 }
 \value{
 ggplot object with added text annotations.
