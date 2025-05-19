@@ -300,7 +300,6 @@ orchard_plot <- function(
 
 #' Add k and g to base orchard plot
 #'
-#' @param plot A ggplot object representing the base orchard plot.
 #' @param k.pos Position for the annotations. Can be "right", "left", or a numeric value specifying the y-coordinate.
 #' @param g Logical. If \code{TRUE}, adds the g values in parentheses after k.
 #' @param data_trim A data frame containing the yi values used to calculate annotation positions.

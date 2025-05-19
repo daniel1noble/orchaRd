@@ -16,15 +16,22 @@
 #'
 #' @keywords internal
 transform_mod_results <- function(results, transfm, n_transfm) {
+
+  # There are two things to transform in mod_results: the numeric columns in mod_table and yi in the data
+  numeric_cols <- c("estimate", "lowerCL", "upperCL", "lowerPR", "upperPR")
   mod_table <- results$mod_table
   data <- results$data
 
-  numeric_cols <- c("estimate", "lowerCL", "upperCL", "lowerPR", "upperPR")
-  mod_table[, numeric_cols] <- transform_data(mod_table[, numeric_cols],
-                                              n = n_transfm,
-                                              transfm = transfm)
+  # Make sure are numeric values
+  mod_table[, numeric_cols] <- lapply(mod_table[, numeric_cols], as.numeric)
+  data$yi <- as.numeric(data$yi)
+
+  # Apply the transformation to each column
+  mod_table[, numeric_cols] <- lapply(mod_table[, numeric_cols], function(x) {
+                                        transform_data(x, n = n_transfm, transfm = transfm)})
   data$yi <- transform_data(data$yi, n = n_transfm, transfm = transfm)
 
+  # Rebuild 'results' and return as orchard object
   results <- list(mod_table = mod_table, data = data)
   class(results) <- c("orchard", "data.frame")
 
@@ -56,21 +63,13 @@ transform_mod_results <- function(results, transfm, n_transfm) {
 #' }
 #' @keywords internal
 transform_data <- function(x, n = NULL, transfm = c("none", "tanh", "invlogit", "percentr", "percent", "inv_ft")) {
-  tryCatch({
-    transfm <- match.arg(transfm)
-  }, error = function(e) {
-    stop(sprintf(
-                 "Invalid transformation '%s'. transf must be one of: %s",
-                 transfm, paste(c("none", "tanh", "invlogit", "percentr", "percent", "inv_ft"), collapse = ", ")),
-         call. = FALSE)
-  })
-
+  transfm <- match.arg(transfm)
   if (transfm == "none") {
     return(x)
   }
 
-  if(is.null(n) && transfm == "inv_ft") {
-    stop("Sample size for each proportion, 'n', must be provided for 'inv_ft' transformation using the n_transfm argument.")
+  if (!transfm %in% c("tanh", "invlogit", "percentr", "percent", "inv_ft")) {
+      stop(sprintf("Invalid transformation '%s'", transfm), call. = FALSE)
   }
 
   transf_func <- switch(transfm,
@@ -82,6 +81,7 @@ transform_data <- function(x, n = NULL, transfm = c("none", "tanh", "invlogit", 
 
   return(transf_func)
 }
+
 
 #' @title Hyperbolic Tangent Transformation
 #'
