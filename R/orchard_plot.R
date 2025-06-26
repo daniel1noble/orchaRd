@@ -209,6 +209,9 @@ orchard_plot <- function(
 #'
 #' @keywords internal
 .orcd_pred_intervals <- function(mod_table, trunk.size, twig.size) {
+  if (twig.size == "none" || twig.size == 0)
+    return(ggplot2::geom_blank())
+
   ggplot2::geom_linerange(
     data = mod_table,
     ggplot2::aes(y = estimate, x = name, min = lowerPR, max = upperPR),
