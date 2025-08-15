@@ -1,5 +1,50 @@
+#' @title moment_effects
+#' @description Computes the effect estimate of the difference in skewness and kurtosis between two groups along with associated sampling variance for meta-analysis.
+#' @param x1 A numeric vector.
+#' @param x2 A numeric vector.
+#' @param type Character, either "skew" or "kurt" to specify the type of moment effect.
+#' @return A data frame with the difference in moment effects and their variances.
+#' @examples
+#' \dontrun{
+#' set.seed(982)
+#' library(moments, PearsonDS)
+#' 
+#' # Just some random comparisons
+#' moment_effects(rnorm(100), rnorm(100), type = "skew")
+#' moment_effects(rnorm(40), rnorm(40), type = "skew")
+#' moment_effects(rnorm(40), rnorm(40), type = "kurt")
+#' moment_effects(rnorm(100), rnorm(100), type = "kurt")
+#'
+#' # Comparisons with known moment differences
+#' m1 <- c(mean = 0, variance = 1, skewness = 0, kurtosis = 2)
+#' m2 <- c(mean = 0, variance = 1, skewness = 0, kurtosis = 4)
+#'
+#' x1 <- PearsonDS::rpearson(1000, moments = m1)
+#' x2 <- PearsonDS::rpearson(1000, moments = m2)
+#' moment_effects(x1, x2, type = "skew") # ~0
+#' moment_effects(x1, x2, type = "kurt") # ~-2
+#' 
+#' m1 <- c(mean = 0, variance = 1, skewness = 0, kurtosis = 3)
+#' m2 <- c(mean = 0, variance = 1, skewness = 1, kurtosis = 3)
+#' x1 <- PearsonDS::rpearson(1000, moments = m1)
+#' x2 <- PearsonDS::rpearson(1000, moments = m2)
+#' moment_effects(x1, x2, type = "skew") # ~-1
+#' moment_effects(x1, x2, type = "kurt") # ~0
+#' }
+moment_effects <- function(x1, x2, type = c("skew", "kurt")) {
+  type <- match.arg(type)
 
-
+  switch(type,
+         skew = {
+           return(data.frame(  d_skew = .calc.skewness(x1) - .calc.skewness(x2),
+                             d_skew_v = .sv_jack(x1, type = "skew")$var + .sv_jack(x2, type = "skew")$var))
+         },
+         kurt = {
+           return(data.frame(  d_kurt = .calc.kurtosis(x1) - .calc.kurtosis(x2),
+                             d_kurt_v = .sv_jack(x1, type = "kurt")$var + .sv_jack(x2, type = "kurt")$var))
+         }
+	)
+}
 
 
 ##----------------------------------------------------##
@@ -9,37 +54,26 @@
 #' @title .calc.skewness
 #' @description Computes the skewness of a numeric vector using small sample correction.
 #' @param x A numeric vector.
-#' @param output Character, either "est" for estimate or "var" for variance.
 #' @return A numeric value representing the skewness estimate or variance.
-.calc.skewness <- function(x, output = "est") {
-  n <- length(x)
+.calc.skewness <- function(x) {
+	  n <- length(x)
   
-  if (output == "est") { # skewness estimate
+   # skewness estimate. Small sample correction.
     (sqrt(n * (n - 1)) / (n - 2)) *
       (((1 / n) * sum((x - mean(x)) ^ 3)) /
          (((1 / n) * sum((x - mean(x)) ^ 2)) ^ (3/2)))
-    
-  } else if (output == "var") { # skewness sampling variance
-    (6 * n * (n - 1)) /
-      ((n - 2) * (n + 1) * (n + 3))
-  }
+   
 }
 
 #' @title .calc.kurtosis
 #' @description Computes the excess kurtosis of a numeric vector using small sample correction.
 #' @param x A numeric vector.
-#' @param output Character, either "est" for estimate or "var" for variance.
 #' @return A numeric value representing the kurtosis estimate or variance.
-.calc.kurtosis <- function(x, output = "est") {
+.calc.kurtosis <- function(x) {
   n <- length(x)
-  
-  if (output == "est") { # kurtosis estimate
+# Excess kurtosis estimate. Small sample correction.
     ((((n + 1) * n * (n - 1)) / ((n - 2) * (n - 3))) *
-       (sum((x - mean(x)) ^ 4) / (sum((x - mean(x)) ^ 2) ^ 2))) -(3 * ((n - 1) ^ 2) / ((n - 2) * (n - 3))) # 
-  } else if (output == "var") { # kurtosis sampling variance
-    (24 * n * ((n - 1) ^ 2)) /
-      ((n - 3) * (n - 2) * (n + 3) * (n + 5))
-  }
+       (sum((x - mean(x)) ^ 4) / (sum((x - mean(x)) ^ 2) ^ 2))) -(3 * ((n - 1) ^ 2) / ((n - 2) * (n - 3))) 
 }
 
 #' @title Jackknife Estimation of Skewness and Kurtosis for computing sampling variances
