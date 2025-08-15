@@ -37,7 +37,8 @@ Imports:
     latex2exp,
     ape,
     moments,
-    PearsonDS
+    PearsonDS,
+    MASS
 Suggests: R.rsp, 
   testthat,
     knitr,

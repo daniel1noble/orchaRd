@@ -31,6 +31,7 @@
 #' moment_effects(x1, x2, type = "skew") # ~-1
 #' moment_effects(x1, x2, type = "kurt") # ~0
 #' }
+#' @export
 moment_effects <- function(x1, x2, type = c("skew", "kurt")) {
   type <- match.arg(type)
 
@@ -46,6 +47,59 @@ moment_effects <- function(x1, x2, type = c("skew", "kurt")) {
 	)
 }
 
+#' @title Correlation Difference
+#' @description Computes the difference in correlation coefficients between two groups along with associated sampling variance for meta-analysis. The correlation and associated sample size or the data frame of the two variables can be provided
+#' @param cor1 Numeric, the correlation coefficient for group 1.
+#' @param cor2 Numeric, the correlation coefficient for group 2.
+#' @param n1 Integer, the sample size for group 1.
+#' @param n2 Integer, the sample size for group 2.
+#' @param x1 A numeric vector for group 1.
+#' @param x2 A numeric vector for group 2.
+#' @return A data frame with the difference in correlations and the sampling variances of the difference.
+#' @examples
+#' \dontrun{
+#' set.seed(982)
+#' # Example with known correlations
+#' cor_diff(0.5, 0.3, 100, 100)
+#' cor_diff(0.2, 0.4, 40, 40)
+#' }
+#' @export
+cor_diff <- function(cor1 = NULL, cor2 = NULL, n1 = NULL, n2 = NULL, x1 = NULL, x2 = NULL) {
+  df_mode <- !is.null(x1) && !is.null(x2)
+
+  if (df_mode) {
+    if (!is.data.frame(x1) || !is.data.frame(x2))
+      stop("If x1 and x2 are provided, both must be data frames with exactly two columns.")
+    if (ncol(x1) != 2 || ncol(x2) != 2)
+      stop("If x1 and x2 are data frames, they must each have exactly two columns.")
+
+    # correlations from columns 1 and 2, pairwise complete
+    cor1 <- cor(x1[[1]], x1[[2]], use = "pairwise.complete.obs")
+    cor2 <- cor(x2[[1]], x2[[2]], use = "pairwise.complete.obs")
+
+    # effective n = number of complete pairs
+    n1 <- sum(stats::complete.cases(x1[[1]], x1[[2]]))
+    n2 <- sum(stats::complete.cases(x2[[1]], x2[[2]]))
+  } else {
+    # numeric path: require r and n for both groups
+    if (is.null(cor1) || is.null(cor2) || is.null(n1) || is.null(n2)) {
+      stop("Provide either (cor1, cor2, n1, n2) or two data frames x1 and x2 (each with two columns).")
+    }
+  }
+
+  # sanity checks
+  if (n1 <= 3 || n2 <= 3) stop("Sample sizes must be > 3 for Fisher z variance.")
+  if (!is.finite(cor1) || !is.finite(cor2)) stop("Correlations must be finite.")
+
+  # Fisher z and variances
+  zr1 <- .r.to.zr(cor1)
+  zr2 <- .r.to.zr(cor2)
+  v1  <- .zr.variance(n1)  # typically 1/(n1 - 3)
+  v2  <- .zr.variance(n2)
+
+  data.frame(zr_diff = zr1 - zr2, 
+  		 var_zr_diff = v1 + v2)
+}
 
 ##----------------------------------------------------##
 # Internal helper functions
@@ -127,3 +181,18 @@ moment_effects <- function(x1, x2, type = c("skew", "kurt")) {
     out
 }
 
+#' @title Fisher Z-transformation of Correlation Coefficient
+#' @description Converts a Pearson correlation coefficient \eqn{r} to Fisher's Zr using the inverse hyperbolic tangent.
+#' @param r A numeric vector of Pearson correlation coefficients.
+#' @return The Zr-transformed correlation value(s).
+.r.to.zr <- function(r) {
+  0.5 * log((1 + r) / (1 - r))
+}
+
+#' @title Variance of Fisher Z-transformed Correlation
+#' @description Computes the approximate sampling variance of Fisher's Zr given a sample size.
+#' @param n Sample size (must be greater than 3).
+#' @return The variance of the Zr-transformed correlation.
+.zr.variance <- function(n) {
+  1 / (n - 3)
+}
