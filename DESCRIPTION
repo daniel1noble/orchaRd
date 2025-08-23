@@ -1,6 +1,6 @@
 Package: orchaRd
 Title: Orchard Plots and Prediction Intervals for Meta-analysis and Meta-regression
-Version: 2.0
+Version: 2.1.3
 Authors@R: 
     person(given = "Shinichi",
            family = "Nakagawa",
