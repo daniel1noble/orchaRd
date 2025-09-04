@@ -141,7 +141,7 @@ leave_one_out <- function(model, group, vcalc_args = NULL, robust_args = NULL, p
     # and change de VCV and phylo matrix if needed. Then evaluate the new call.
 
     tmp_model_call <- model$call
-    tmp_model_call$data <- subset(model$data, model$data[[group]] != id_left_out)
+    tmp_model_call$data <- model$data[model$data[[group]] != id_left_out, ]
 
     # If vcalc_args are provided, create a temporary VCV matrix
     if (!is.null(vcalc_args)) {
