@@ -123,7 +123,7 @@ orchard_plot <- function(
     .orcd_theme(angle) +
     .orcd_reference_line(alpha, refline.pos) +
     .orcd_conf_intervals(mod_table, branch.size) +
-    .orcd_pred_intervals(mod_table, trunk.size, twig.size) +
+    .orcd_pred_intervals(mod_table, twig.size) +
     .orcd_point_estimates(mod_table, colour, trunk.size) +
     .orcd_legends(legend.pos, scale_legend, condition.lab) +
     .orcd_axis_labels(xlab) +
@@ -200,7 +200,7 @@ orchard_plot <- function(
     data = mod_table,
     ggplot2::aes(x = name, ymin = lowerCL, ymax = upperCL),
     position = ggplot2::position_dodge2(width = .set_width(mod_table)),
-    size = branch.size
+    linewidth = branch.size
   )
 }
 
@@ -208,7 +208,7 @@ orchard_plot <- function(
 #' Add prediction intervals
 #'
 #' @keywords internal
-.orcd_pred_intervals <- function(mod_table, trunk.size, twig.size) {
+.orcd_pred_intervals <- function(mod_table, twig.size) {
   if (twig.size == "none" || twig.size == 0)
     return(ggplot2::geom_blank())
 
@@ -216,7 +216,6 @@ orchard_plot <- function(
     data = mod_table,
     ggplot2::aes(y = estimate, x = name, min = lowerPR, max = upperPR),
     position = ggplot2::position_dodge2(width = .set_width(mod_table)),
-    size = trunk.size,
     linewidth = twig.size
   )
 }

@@ -4,7 +4,7 @@
 \alias{.orcd_pred_intervals}
 \title{Add prediction intervals}
 \usage{
-.orcd_pred_intervals(mod_table, trunk.size, twig.size)
+.orcd_pred_intervals(mod_table, twig.size)
 }
 \description{
 Add prediction intervals
