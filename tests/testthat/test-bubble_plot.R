@@ -25,7 +25,7 @@ testthat::test_that("Checking bubble_plot output ...", {
     info = "Check label of x-axis is correctly renamed...")
 
   testthat::expect_equal(
-    plot1$labels$fill, "condition",
+    ggplot2::get_labs(plot1)$fill, "condition",
     info = "Check that condition variable is present in fill...")
 
   testthat::expect_error(orchaRd::bubble_plot(test, mod = "year", legend.pos = "top.left", angle = 45))

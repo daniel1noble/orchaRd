@@ -18,11 +18,11 @@ plot2 <- orchard_plot(eklof_MR, xlab = "Grazing", group = "Grazer.type", angle =
 testthat::test_that("Checking orchard_plot output ...", {
 
   testthat::expect_equal(
-    plot1$labels$y, "Grazing",
+    ggplot2::get_labs(plot1)$y, "Grazing",
     info = "xlab for eklof is correct...")
 
   testthat::expect_equal(
-    plot1$labels$ymin, "lowerCL",
+    ggplot2::get_labs(plot1)$ymin, "lowerCL",
     info = "Check that ymin is 'lowerCL' for eklof...")
 
   testthat::expect_equal(
