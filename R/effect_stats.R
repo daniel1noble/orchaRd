@@ -261,19 +261,20 @@ cor_diff <- function(cor1 = NULL, cor2 = NULL, n1 = NULL, n2 = NULL, x1 = NULL, 
 .v_lnM <- function(x1, x2, sd1, sd2, n1, n2, r = NULL){
        n0 = (2*n1*n2) / (n1 + n2)
     theta = x1-x2
-     s2_D = sd1^2 / n1 + sd2^2 / n2
         n = n1
   
   if(is.null(r)){
           MSb = .MSb(x1, x2, n1, n2, paired = FALSE)
           MSw = .MSw(sd1, sd2, n1, n2, paired = FALSE)
         delta = MSb - MSw 
+         s2_D = sd1^2 / n1 + sd2^2 / n2
         v_lnM = (1 / (4 * delta^2)) * ((n0^2 / 2)^2 * (2 * s2_D^2 + 4 * s2_D * theta^2) + (MSb^2 / MSw^2) * ((2 * MSw^2) / (n1 + n2 -2)))
   } else {
-           MSb = .MSb(x1, x2, n1, n2, paired = TRUE)
-           MSw = .MSw(sd1, sd2, n1, n2, paired = TRUE)
-         delta = MSb - MSw 
-         v_lnM = (1 / (4 * delta^2)) * ((n / 2)^2 * (((2 * s2_D^2)/n^2) + ((4 * s2_D * theta^2)/n)) + (MSb^2 / MSw^2) * ((sd1^4 + sd2^4 + 2 * r^2 * sd1^2 * sd2^2) / 2 * (n-1)))
+          MSb = .MSb(x1, x2, n1, n2, paired = TRUE)
+          MSw = .MSw(sd1, sd2, n1, n2, paired = TRUE)
+        delta = MSb - MSw 
+         s2_D = sd1^2 + sd2^2 - 2*r*sd1*sd2
+        v_lnM = (1 / (4 * delta^2)) * ((n / 2)^2 * (((2 * s2_D^2)/n^2) + ((4 * s2_D * theta^2)/n)) + (MSb^2 / MSw^2) * ((sd1^4 + sd2^4 + 2 * r^2 * sd1^2 * sd2^2) / 2 * (n-1)))
   }
   return(v_lnM)
 }
