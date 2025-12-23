@@ -196,3 +196,42 @@ cor_diff <- function(cor1 = NULL, cor2 = NULL, n1 = NULL, n2 = NULL, x1 = NULL, 
 .zr.variance <- function(n) {
   1 / (n - 3)
 }
+
+#' @title .MSb
+#' @description Computes the between group mean-squares difference.
+#' @param x1 Mean of group 1.
+#' @param x2 Mean of group 2.
+#' @param n1 Sample size of group 1.
+#' @param n2 Sample size of group 2.
+#' @return The between group mean-squares difference.
+.MSb = function(x1, x2, n1, n2){
+  ((n1 * n2) / (n1 + n2)) * (x1 - x2)^2
+}
+
+#' @title .MSw
+#' @description Computes the within group mean-squares difference.
+#' @param sd1 Standard deviation of group 1.
+#' @param sd2 Standard deviation of group 2.
+#' @param n1 Sample size of group 1.
+#' @param n2 Sample size of group 2.
+#' @return The within group mean-squares difference.
+.MSw = function(sd1, sd2, n1, n2){
+  ((n1 - 1) * sd1^2 + (n2 - 1) * sd2^2) / (n1 + n2 - 2)
+}
+
+#' @title .lnM
+#' @description Computes the natural logarithm of the ratio of between and within group variances as a measure of the magnitude of difference.
+#' @param x1 Mean of group 1.
+#' @param x2 Mean of group 2.
+#' @param sd1 Standard deviation of group 1.
+#' @param sd2 Standard deviation of group 2.
+#' @param n1 Sample size of group 1.
+#' @param n2 Sample size of group 2.
+#' @return The natural logarithm of the ratio of between and within group variances.
+.lnM <- function(x1, x2, sd1, sd2, n1, n2){
+   n0 = 2*n1*n2/(n1 + n2)
+  sw2 = .MSw(sd1, sd2, n1, n2)
+  sb2 = (.MSb(x1, x2, n1, n2) - sw2) / n0
+  lnM = log(sqrt(sb2)) - log(sqrt(sw2))
+  return(lnM)
+}
