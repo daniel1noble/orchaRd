@@ -204,8 +204,13 @@ cor_diff <- function(cor1 = NULL, cor2 = NULL, n1 = NULL, n2 = NULL, x1 = NULL, 
 #' @param n1 Sample size of group 1.
 #' @param n2 Sample size of group 2.
 #' @return The between group mean-squares difference.
-.MSb = function(x1, x2, n1, n2){
-  ((n1 * n2) / (n1 + n2)) * (x1 - x2)^2
+.MSb = function(x1, x2, n1, n2, paired = FALSE){
+  n = n1 
+  if(paired == TRUE){
+    (n/2) * (x1 - x2)^2
+  } else {
+    ((n1 * n2) / (n1 + n2)) * (x1 - x2)^2
+  }
 }
 
 #' @title .MSw
@@ -214,9 +219,14 @@ cor_diff <- function(cor1 = NULL, cor2 = NULL, n1 = NULL, n2 = NULL, x1 = NULL, 
 #' @param sd2 Standard deviation of group 2.
 #' @param n1 Sample size of group 1.
 #' @param n2 Sample size of group 2.
+#' @param paired Logical, whether the samples are paired. Default is FALSE.
 #' @return The within group mean-squares difference.
-.MSw = function(sd1, sd2, n1, n2){
-  ((n1 - 1) * sd1^2 + (n2 - 1) * sd2^2) / (n1 + n2 - 2)
+.MSw = function(sd1, sd2, n1, n2, paired = FALSE){
+  if(paired == TRUE){
+    (sd1^2 + sd2^2) / 2
+  } else {
+    ((n1 - 1) * sd1^2 + (n2 - 1) * sd2^2) / (n1 + n2 - 2)
+  }
 }
 
 #' @title .lnM
@@ -250,18 +260,20 @@ cor_diff <- function(cor1 = NULL, cor2 = NULL, n1 = NULL, n2 = NULL, x1 = NULL, 
 
 .v_lnM <- function(x1, x2, sd1, sd2, n1, n2, r = NULL){
        n0 = (2*n1*n2) / (n1 + n2)
-      MSb = .MSb(x1, x2, n1, n2)
-      MSw = .MSw(sd1, sd2, n1, n2)
-    delta = MSb - MSw 
     theta = x1-x2
      s2_D = sd1^2 / n1 + sd2^2 / n2
-     n = n1
+        n = n1
   
   if(is.null(r)){
+          MSb = .MSb(x1, x2, n1, n2, paired = FALSE)
+          MSw = .MSw(sd1, sd2, n1, n2, paired = FALSE)
+        delta = MSb - MSw 
         v_lnM = (1 / (4 * delta^2)) * ((n0^2 / 2)^2 * (2 * s2_D^2 + 4 * s2_D * theta^2) + (MSb^2 / MSw^2) * ((2 * MSw^2) / (n1 + n2 -2)))
   } else {
-      v_lnM = (1 / (4 * delta^2)) * ((n / 2)^2 * (((2 * s2_D^2)/n^2) + ((4 * s2_D * theta^2)/n)) + (MSb^2 / MSw^2) * ((sd1^4 + sd2^4 + 2 * r^2 * sd1^2 * sd2^2) / 2 * (n-1)))
+           MSb = .MSb(x1, x2, n1, n2, paired = TRUE)
+           MSw = .MSw(sd1, sd2, n1, n2, paired = TRUE)
+         delta = MSb - MSw 
+         v_lnM = (1 / (4 * delta^2)) * ((n / 2)^2 * (((2 * s2_D^2)/n^2) + ((4 * s2_D * theta^2)/n)) + (MSb^2 / MSw^2) * ((sd1^4 + sd2^4 + 2 * r^2 * sd1^2 * sd2^2) / 2 * (n-1)))
   }
-
-   return(v_lnM)
+  return(v_lnM)
 }
