@@ -239,7 +239,7 @@ cor_diff <- function(cor1 = NULL, cor2 = NULL, n1 = NULL, n2 = NULL, x1 = NULL, 
 #' @param n2 Sample size of group 2.
 #' @return The natural logarithm of the ratio of between and within group variances.
 .lnM <- function(x1, x2, sd1, sd2, n1, n2){
-   n0 = 2*n1*n2/(n1 + n2)
+   n0 = (2*n1*n2)/(n1 + n2)
   sw2 = .MSw(sd1, sd2, n1, n2)
   sb2 = (.MSb(x1, x2, n1, n2) - sw2) / n0
   lnM = log(sqrt(sb2)) - log(sqrt(sw2))
