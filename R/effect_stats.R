@@ -278,3 +278,145 @@ cor_diff <- function(cor1 = NULL, cor2 = NULL, n1 = NULL, n2 = NULL, x1 = NULL, 
   }
   return(v_lnM)
 }
+
+
+#' @title SAFE bootstrap : independent samples
+#' @description Computes a SAFE bootstrap estimate of the effect size and its variance for independent samples.
+#' @param x1bar Mean of group 1.
+#' @param x2bar Mean of group 2.
+#' @param s1 Standard deviation of group 1.
+#' @param s2 Standard deviation of group 2.
+#' @param n1 Sample size of group 1.
+#' @param n2 Sample size of group 2.
+#' @param min_kept Minimum number of accepted bootstrap samples to keep. Default is 2000.
+#' @param chunk_init Initial chunk size for bootstrap sampling. Default is 4000.
+#' @param chunk_max Maximum chunk size for bootstrap sampling. Default is 2e6.
+#' @param max_draws Maximum total number of bootstrap draws. Default is Inf.
+#' @param patience_noaccept Number of consecutive chunks with no accepted samples before stopping. Default is 5.
+#' @return A list containing the point estimate, variance, number of kept samples, total draws, number of attempts, and status.
+#' @export
+safe_lnM_indep <- function(x1bar, x2bar, s1, s2, n1, n2,
+                           min_kept   = 2000, 
+                           chunk_init = 4000,
+                           chunk_max  = 2e6,
+                           max_draws  = Inf,
+                           patience_noaccept = 5) {
+  df1 <- n1 - 1L
+  df2 <- n2 - 1L
+  h   <- (n1 * n2) / (n1 + n2)
+  lnM_star <- numeric(0L)
+   total <- 0L 
+   kept <- 0L
+  attempts <- 0L
+  zero_streak <- 0L 
+  chunk <- as.integer(chunk_init)
+  status <- "ok"
+  
+  while (kept < min_kept && total < max_draws) {
+    attempts <- attempts + 1L
+    m1 <- rnorm(chunk, mean = x1bar, sd = s1 / sqrt(n1))
+    m2 <- rnorm(chunk, mean = x2bar, sd = s2 / sqrt(n2))
+    v1 <- s1^2 * rchisq(chunk, df = df1) / df1
+    v2 <- s2^2 * rchisq(chunk, df = df2) / df2
+    
+    MSB <- h * (m1 - m2)^2
+    MSW <- (df1 * v1 + df2 * v2) / (df1 + df2)
+    good <- which(MSB > MSW)
+    n_good <- length(good)
+    
+    if (n_good > 0L) {
+      zero_streak <- 0L
+      vals <- 0.5 * (log((MSB[good] - MSW[good]) / (2 * h)) - log(MSW[good]))
+      lnM_star <- c(lnM_star, vals)
+      kept <- length(lnM_star)
+    } else {
+      zero_streak <- zero_streak + 1L
+      if (zero_streak >= patience_noaccept) { status <- "no_usable_draws"; break }
+    }
+    total <- total + chunk
+    
+    # FIXED ADAPTIVE CHUNKING
+    acc <- if (total > 0) kept / total else 0
+    if (is_positive(acc)) {
+      # Use min() inside next_needed calculation to prevent integer overflow
+      next_needed <- min(chunk_max, ceiling(max(0, min_kept - kept) / acc))
+    } else {
+      next_needed <- chunk * 2L
+    }
+    chunk <- as.integer(max(chunk_init, min(chunk_max, next_needed)))
+  }
+  
+  list(point = if (kept >= 2) mean(lnM_star) else NA_real_,
+       var   = if (kept >= 2) var(lnM_star) else NA_real_,
+       kept  = kept, total = total, attempts = attempts, status = status)
+}
+
+#' @title SAFE bootstrap : dependent samples
+#' @description Computes a SAFE bootstrap estimate of the effect size and its variance for dependent samples.
+#' @param x1bar Mean of group 1.
+#' @param x2bar Mean of group 2.
+#' @param sd1 Standard deviation of group 1.
+#' @param sd2 Standard deviation of group 2.
+#' @param n Sample size (assumed equal for both groups).
+#' @param r Correlation between the two groups.
+#' @param min_kept Minimum number of accepted bootstrap samples to keep. Default is 2000.
+#' @param chunk_init Initial chunk size for bootstrap sampling. Default is 4000.
+#' @param chunk_max Maximum chunk size for bootstrap sampling. Default is 2e6.
+#' @param max_draws Maximum total number of bootstrap draws. Default is Inf.
+#' @param patience_noaccept Number of consecutive chunks with no accepted samples before stopping. Default is 5.
+#' @return A list containing the point estimate, variance, number of kept samples, total draws, number of attempts, and status.
+#' @export
+safe_lnM_dep <- function(x1bar, x2bar, sd1, sd2, n, r,
+                         min_kept   = 2000,
+                         chunk_init = 4000,
+                         chunk_max  = 2e6,
+                         max_draws  = Inf,
+                         patience_noaccept = 5) {
+  df <- n - 1L
+   h <- n / 2
+  Sig <- matrix(c(sd1^2, r*sd1*sd2, r*sd1*sd2, sd2^2), 2, 2)
+  lnM_star <- numeric(0L)
+  total <- 0L 
+  kept <- 0L
+  attempts <- 0L
+  zero_streak <- 0L 
+  chunk <- as.integer(chunk_init)
+  status <- "ok"
+  
+  while (kept < min_kept && total < max_draws) {
+    attempts <- attempts + 1L # Added missing 'attempts' incrementer
+    Mu <- mvrnorm(n = chunk, mu = c(x1bar, x2bar), Sigma = Sig / n)
+    W  <- rWishart(n = chunk, df = df, Sigma = Sig)
+    S11 <- W[1,1,] / df 
+    S22 <- W[2,2,] / df
+    
+       MSB <- h * (Mu[,1] - Mu[,2])^2
+       MSW <- (S11 + S22) / 2
+      good <- which(MSB > MSW)
+    n_good <- length(good)
+    
+    if (n_good > 0L) {
+      zero_streak <- 0L
+      vals <- 0.5 * (log((MSB[good] - MSW[good]) / n) - log(MSW[good]))
+      lnM_star <- c(lnM_star, vals)
+      kept <- length(lnM_star)
+    } else {
+      zero_streak <- zero_streak + 1L
+      if (zero_streak >= patience_noaccept) { status <- "no_usable_draws"; break }
+    }
+    total <- total + chunk
+    
+    # FIXED ADAPTIVE CHUNKING
+    acc <- if (total > 0) kept / total else 0
+    if (is_positive(acc)) {
+      next_needed <- min(chunk_max, ceiling(max(0, min_kept - kept) / acc))
+    } else {
+      next_needed <- chunk * 2L
+    }
+    chunk <- as.integer(max(chunk_init, min(chunk_max, next_needed)))
+  }
+  
+  list(point = if (kept >= 2) mean(lnM_star) else NA_real_,
+       var   = if (kept >= 2) var(lnM_star) else NA_real_,
+       kept  = kept, total = total, attempts = attempts, status = status)
+}
