@@ -203,6 +203,7 @@ cor_diff <- function(cor1 = NULL, cor2 = NULL, n1 = NULL, n2 = NULL, x1 = NULL, 
 #' @param x2 Mean of group 2.
 #' @param n1 Sample size of group 1.
 #' @param n2 Sample size of group 2.
+#' @param paired Logical, whether the samples are paired. Default is FALSE.
 #' @return The between group mean-squares difference.
 .MSb = function(x1, x2, n1, n2, paired = FALSE){
   n = n1 
@@ -386,7 +387,7 @@ safe_lnM_dep <- function(x1bar, x2bar, sd1, sd2, n, r,
   
   while (kept < min_kept && total < max_draws) {
     attempts <- attempts + 1L # Added missing 'attempts' incrementer
-    Mu <- mvrnorm::mvrnorm(n = chunk, mu = c(x1bar, x2bar), Sigma = Sig / n)
+    Mu <- MASS::mvrnorm(n = chunk, mu = c(x1bar, x2bar), Sigma = Sig / n)
     W  <- rWishart::rWishart(n = chunk, df = df, Sigma = Sig)
     S11 <- W[1,1,] / df 
     S22 <- W[2,2,] / df

@@ -39,7 +39,6 @@ Imports:
     moments,
     PearsonDS,
     MASS,
-    mvrnorm,
     rWishart
 Suggests: R.rsp, 
   testthat,
