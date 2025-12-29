@@ -38,7 +38,9 @@ Imports:
     ape,
     moments,
     PearsonDS,
-    MASS
+    MASS,
+    mvrnorm,
+    rWishart
 Suggests: R.rsp, 
   testthat,
     knitr,
