@@ -39,7 +39,8 @@ Imports:
     moments,
     PearsonDS,
     MASS,
-    rWishart
+    rWishart,
+    tester
 Suggests: R.rsp, 
   testthat,
     knitr,

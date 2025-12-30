@@ -3,7 +3,7 @@
 testthat::test_that(".MSb computes correct MS between groups (indep and paired)", {
   x1 <- 10
   x2 <- 7
-  n1 <- 20
+  n1 <- 30
   n2 <- 30
 
   # independent
@@ -28,7 +28,7 @@ testthat::test_that(".MSb computes correct MS between groups (indep and paired)"
 testthat::test_that(".MSw computes correct MS within groups (indep and paired)", {
   sd1 <- 2
   sd2 <- 3
-  n1 <- 20
+  n1 <- 30
   n2 <- 30
 
   # independent (pooled variance)
@@ -53,7 +53,7 @@ testthat::test_that(".lnM matches manual computation and is symmetric under swap
   x2 <- 7
   sd1 <- 2
   sd2 <- 3
-  n1 <- 20
+  n1 <- 30
   n2 <- 30
 
   n0 <- (2 * n1 * n2) / (n1 + n2)
@@ -75,7 +75,7 @@ testthat::test_that(".v_lnM returns finite positive variance in typical cases (i
   x2 <- 7
   sd1 <- 2
   sd2 <- 3
-  n1 <- 40
+  n1 <- 50
   n2 <- 50
 
   v <- .v_lnM(x1, x2, sd1, sd2, n1, n2, r = NULL)

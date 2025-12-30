@@ -228,7 +228,7 @@ cor_diff <- function(cor1 = NULL, cor2 = NULL, n1 = NULL, n2 = NULL, x1 = NULL, 
 .MSw = function(sd1, sd2, n1, n2, paired = FALSE){
 
   if(paired == TRUE & n1 != n2){stop("For paired samples, n1 and n2 must be equal")}
-  
+
   if(paired == TRUE){
     (sd1^2 + sd2^2) / 2
   } else {
@@ -345,7 +345,7 @@ safe_lnM_indep <- function(x1bar, x2bar, sd1, sd2, n1, n2,
     
     # FIXED ADAPTIVE CHUNKING
     acc <- if (total > 0) kept / total else 0
-    if (is_positive(acc)) {
+    if (tester::is_positive(acc)) {
       # Use min() inside next_needed calculation to prevent integer overflow
       next_needed <- min(chunk_max, ceiling(max(0, min_kept - kept) / acc))
     } else {
@@ -416,7 +416,7 @@ safe_lnM_dep <- function(x1bar, x2bar, sd1, sd2, n, r,
     
     # FIXED ADAPTIVE CHUNKING
     acc <- if (total > 0) kept / total else 0
-    if (is_positive(acc)) {
+    if (tester::is_positive(acc)) {
       next_needed <- min(chunk_max, ceiling(max(0, min_kept - kept) / acc))
     } else {
       next_needed <- chunk * 2L
