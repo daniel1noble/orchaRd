@@ -206,7 +206,10 @@ cor_diff <- function(cor1 = NULL, cor2 = NULL, n1 = NULL, n2 = NULL, x1 = NULL, 
 #' @param paired Logical, whether the samples are paired. Default is FALSE.
 #' @return The between group mean-squares difference.
 .MSb = function(x1, x2, n1, n2, paired = FALSE){
+  if(paired == TRUE & n1 != n2){stop("For paired samples, n1 and n2 must be equal")} 
+  
   n = n1 
+  
   if(paired == TRUE){
     (n/2) * (x1 - x2)^2
   } else {
@@ -223,6 +226,9 @@ cor_diff <- function(cor1 = NULL, cor2 = NULL, n1 = NULL, n2 = NULL, x1 = NULL, 
 #' @param paired Logical, whether the samples are paired. Default is FALSE.
 #' @return The within group mean-squares difference.
 .MSw = function(sd1, sd2, n1, n2, paired = FALSE){
+
+  if(paired == TRUE & n1 != n2){stop("For paired samples, n1 and n2 must be equal")}
+  
   if(paired == TRUE){
     (sd1^2 + sd2^2) / 2
   } else {
