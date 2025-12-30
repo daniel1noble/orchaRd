@@ -302,7 +302,7 @@ cor_diff <- function(cor1 = NULL, cor2 = NULL, n1 = NULL, n2 = NULL, x1 = NULL, 
 #' @param patience_noaccept Number of consecutive chunks with no accepted samples before stopping. Default is 5.
 #' @return A list containing the point estimate, variance, number of kept samples, total draws, number of attempts, and status.
 #' @export
-safe_lnM_indep <- function(x1bar, x2bar, sd1, sd2, n1, n2,
+.safe_lnM_indep <- function(x1bar, x2bar, sd1, sd2, n1, n2,
                            min_kept   = 2000, 
                            chunk_init = 4000,
                            chunk_max  = 2e6,
@@ -374,7 +374,7 @@ safe_lnM_indep <- function(x1bar, x2bar, sd1, sd2, n1, n2,
 #' @param patience_noaccept Number of consecutive chunks with no accepted samples before stopping. Default is 5.
 #' @return A list containing the point estimate, variance, number of kept samples, total draws, number of attempts, and status.
 #' @export
-safe_lnM_dep <- function(x1bar, x2bar, sd1, sd2, n, r,
+.safe_lnM_dep <- function(x1bar, x2bar, sd1, sd2, n, r,
                          min_kept   = 2000,
                          chunk_init = 4000,
                          chunk_max  = 2e6,
@@ -427,4 +427,53 @@ safe_lnM_dep <- function(x1bar, x2bar, sd1, sd2, n, r,
   list(point = if (kept >= 2) mean(lnM_star) else NA_real_,
        var   = if (kept >= 2) var(lnM_star) else NA_real_,
        kept  = kept, total = total, attempts = attempts, status = status)
+}
+
+#' @title Magnitude Effects using SAFE Bootstrap
+#' @description Computes the magnitude effect size and its variance using the SAFE bootstrap method for either independent or dependent samples.
+#' @param x1bar Mean of group 1.
+#' @param x2bar Mean of group 2.
+#' @param sd1 Standard deviation of group 1.
+#' @param sd2 Standard deviation of group 2.  
+#' @param n1 Sample size of group 1.
+#' @param n2 Sample size of group 2.
+#' @param min_kept Minimum number of accepted bootstrap samples to keep. Default is 2000.
+#' @param chunk_init Initial chunk size for bootstrap sampling. Default is 4000.
+#' @param chunk_max Maximum chunk size for bootstrap sampling. Default is 2e6.
+#' @param max_draws Maximum total number of bootstrap draws. Default is Inf.
+#' @param patience_noaccept Number of consecutive chunks with no accepted samples before stopping. Default is 5.
+#' @param paired Logical, whether the samples are paired. Default is FALSE.
+#' @param r Optional correlation between groups for dependent samples. Required if `paired` is TRUE.
+#' @return A list containing the point estimate, variance, number of kept samples, total draws, number of attempts, and status.
+#' @export 
+magnitude_effects <- function(x1bar, x2bar, sd1, sd2, n1, n2,
+                           min_kept   = 2000, 
+                           chunk_init = 4000,
+                           chunk_max  = 2e6,
+                           max_draws  = Inf,
+                           patience_noaccept = 5, paired = FALSE, r = NULL) {
+  if(paired == TRUE & is.null(r)){
+    stop("For paired samples, provide the correlation 'r' between groups.")
+  }
+
+  if(paired == TRUE & n1 != n2){
+    stop("For paired samples, n1 and n2 must be equal.")
+  }
+
+  if(paired == FALSE){
+    safe_res <- .safe_lnM_indep(x1bar, x2bar, sd1, sd2, n1, n2,
+                           min_kept   = min_kept, 
+                           chunk_init = chunk_init,
+                           chunk_max  = chunk_max,
+                           max_draws  = max_draws,
+                           patience_noaccept = patience_noaccept)
+  } else {
+    safe_res <- .safe_lnM_dep(x1bar, x2bar, sd1, sd2, n1, r,
+                           min_kept   = min_kept, 
+                           chunk_init = chunk_init,
+                           chunk_max  = chunk_max,
+                           max_draws  = max_draws,
+                           patience_noaccept = patience_noaccept)
+  }
+  return(safe_res)
 }
