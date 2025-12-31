@@ -354,7 +354,7 @@ cor_diff <- function(cor1 = NULL, cor2 = NULL, n1 = NULL, n2 = NULL, x1 = NULL, 
     chunk <- as.integer(max(chunk_init, min(chunk_max, next_needed)))
   }
   
-  list(point = if (kept >= 2) mean(lnM_star) else NA_real_,
+  data.frame(point = if (kept >= 2) mean(lnM_star) else NA_real_,
        var   = if (kept >= 2) var(lnM_star) else NA_real_,
        kept  = kept, total = total, attempts = attempts, status = status)
 }
@@ -424,7 +424,7 @@ cor_diff <- function(cor1 = NULL, cor2 = NULL, n1 = NULL, n2 = NULL, x1 = NULL, 
     chunk <- as.integer(max(chunk_init, min(chunk_max, next_needed)))
   }
   
-  list(point = if (kept >= 2) mean(lnM_star) else NA_real_,
+  data.frame(point = if (kept >= 2) mean(lnM_star) else NA_real_,
        var   = if (kept >= 2) var(lnM_star) else NA_real_,
        kept  = kept, total = total, attempts = attempts, status = status)
 }
@@ -446,6 +446,12 @@ cor_diff <- function(cor1 = NULL, cor2 = NULL, n1 = NULL, n2 = NULL, x1 = NULL, 
 #' @param r Optional correlation between groups for dependent samples. Required if `paired` is TRUE.
 #' @return A list containing the point estimate, variance, number of kept samples, total draws, number of attempts, and status.
 #' @export 
+#' @example \dontrun{
+#' # Independent samples
+#' magnitude_effects(x1bar = 10, x2bar = 7, sd1 = 2, sd2 = 3, n1 = 30, n2 = 30)
+#' # Dependent samples with correlation
+#' magnitude_effects(x1bar = 10, x2bar = 7, sd1 = 2, sd2 = 3, n1 = 30, n2 = 30, paired = TRUE, r = 0.5)
+#' }
 magnitude_effects <- function(x1bar, x2bar, sd1, sd2, n1, n2,
                            min_kept   = 2000, 
                            chunk_init = 4000,
