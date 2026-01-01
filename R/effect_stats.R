@@ -463,6 +463,15 @@ cor_diff <- function(cor1 = NULL, cor2 = NULL, n1 = NULL, n2 = NULL, x1 = NULL, 
 #'           n1 = ..5, n2 = ..6,
 #'           paired = FALSE))) %>%
 #'   unnest_wider(mag)
+#' 
+#' # Altetnatively you can use rowwise 
+#' res <- data %>%
+#'   rowwise() %>%
+#'   mutate(out = list(magnitude_effects(xbar1, xbar2, sd1, sd2, n1, n2,
+#'                                    min_kept = 200, chunk_init = 400))) %>%
+#'   ungroup() %>%
+#'   unnest_wider(out)
+#' 
 #' # Paired, use add correlation to dataframe
 #' data = data  %>% mutate(r = 0.4)
 #' 
