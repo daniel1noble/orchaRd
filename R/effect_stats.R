@@ -354,8 +354,8 @@ cor_diff <- function(cor1 = NULL, cor2 = NULL, n1 = NULL, n2 = NULL, x1 = NULL, 
     chunk <- as.integer(max(chunk_init, min(chunk_max, next_needed)))
   }
   
-  data.frame(point = if (kept >= 2) mean(lnM_star) else NA_real_,
-       var   = if (kept >= 2) var(lnM_star) else NA_real_,
+  data.frame(lnM_SAFE = if (kept >= 2) mean(lnM_star) else NA_real_,
+       var_lnM_SAFE   = if (kept >= 2) var(lnM_star) else NA_real_,
        kept  = kept, total = total, attempts = attempts, status = status)
 }
 
@@ -424,8 +424,8 @@ cor_diff <- function(cor1 = NULL, cor2 = NULL, n1 = NULL, n2 = NULL, x1 = NULL, 
     chunk <- as.integer(max(chunk_init, min(chunk_max, next_needed)))
   }
   
-  data.frame(point = if (kept >= 2) mean(lnM_star) else NA_real_,
-       var   = if (kept >= 2) var(lnM_star) else NA_real_,
+  data.frame(lnM_SAFE = if (kept >= 2) mean(lnM_star) else NA_real_,
+       var_lnM_SAFE   = if (kept >= 2) var(lnM_star) else NA_real_,
        kept  = kept, total = total, attempts = attempts, status = status)
 }
 
@@ -451,6 +451,18 @@ cor_diff <- function(cor1 = NULL, cor2 = NULL, n1 = NULL, n2 = NULL, x1 = NULL, 
 #' magnitude_effects(x1bar = 10, x2bar = 7, sd1 = 2, sd2 = 3, n1 = 30, n2 = 30)
 #' # Dependent samples with correlation
 #' magnitude_effects(x1bar = 10, x2bar = 7, sd1 = 2, sd2 = 3, n1 = 30, n2 = 30, paired = TRUE, r = 0.5)
+#' # Example across rows of data frame
+#' data = data.frame(xbar1 = rep(5, 5), xbar2 = rep(20, 5), sd1= rep(5, 5), sd2= rep(6, 5), n1= rep(30, 5), n2= rep(30, 5))
+#' res <- data %>%
+#'   mutate(
+#'     mag = pmap(
+#'       list(xbar1, xbar2, sd1, sd2, n1, n2),
+#'       ~ magnitude_effects(
+#'           x1bar = ..1, x2bar = ..2,
+#'           sd1 = ..3, sd2 = ..4,
+#'           n1 = ..5, n2 = ..6,
+#'           paired = FALSE))) %>%
+#'   unnest_wider(mag)
 #' }
 magnitude_effects <- function(x1bar, x2bar, sd1, sd2, n1, n2,
                            min_kept   = 2000, 
