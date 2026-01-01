@@ -455,7 +455,7 @@ cor_diff <- function(cor1 = NULL, cor2 = NULL, n1 = NULL, n2 = NULL, x1 = NULL, 
 #' data = data.frame(xbar1 = rep(5, 5), xbar2 = rep(20, 5), sd1= rep(5, 5), sd2= rep(6, 5), n1= rep(30, 5), n2= rep(30, 5))
 #' res <- data %>%
 #'   mutate(
-#'     mag = pmap(
+#'     mag = purrr::pmap(
 #'       list(xbar1, xbar2, sd1, sd2, n1, n2),
 #'       ~ magnitude_effects(
 #'           x1bar = ..1, x2bar = ..2,
@@ -463,6 +463,20 @@ cor_diff <- function(cor1 = NULL, cor2 = NULL, n1 = NULL, n2 = NULL, x1 = NULL, 
 #'           n1 = ..5, n2 = ..6,
 #'           paired = FALSE))) %>%
 #'   unnest_wider(mag)
+#' # Paired, use add correlation to dataframe
+#' data = data  %>% mutate(r = 0.4)
+#' 
+#' res2 <- data %>%
+#'   mutate(
+#'     mag = purrr::pmap(
+#'       list(xbar1, xbar2, sd1, sd2, n1, n2, r),
+#'       ~ magnitude_effects(
+#'           x1bar = ..1, x2bar = ..2,
+#'           sd1 = ..3, sd2 = ..4,
+#'           n1 = ..5, n2 = ..6, r = ..7,
+#'           paired = TRUE))) %>%
+#'   unnest_wider(mag)
+#' 
 #' }
 magnitude_effects <- function(x1bar, x2bar, sd1, sd2, n1, n2,
                            min_kept   = 2000, 
