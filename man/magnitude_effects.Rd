@@ -53,3 +53,46 @@ A list containing the point estimate, variance, number of kept samples, total dr
 \description{
 Computes the magnitude effect size and its variance using the SAFE bootstrap method for either independent or dependent samples.
 }
+\examples{
+\dontrun{
+# Independent samples
+magnitude_effects(x1bar = 10, x2bar = 7, sd1 = 2, sd2 = 3, n1 = 30, n2 = 30)
+# Dependent samples with correlation
+magnitude_effects(x1bar = 10, x2bar = 7, sd1 = 2, sd2 = 3, n1 = 30, n2 = 30, paired = TRUE, r = 0.5)
+# Example across rows of data frame
+data = data.frame(xbar1 = rep(5, 5), xbar2 = rep(20, 5), sd1= rep(5, 5), sd2= rep(6, 5), n1= rep(30, 5), n2= rep(30, 5))
+res <- data \%>\%
+  mutate(
+    mag = purrr::pmap(
+      list(xbar1, xbar2, sd1, sd2, n1, n2),
+      ~ magnitude_effects(
+          x1bar = ..1, x2bar = ..2,
+          sd1 = ..3, sd2 = ..4,
+          n1 = ..5, n2 = ..6,
+          paired = FALSE))) \%>\%
+  unnest_wider(mag)
+
+# Alternatively, you can use `rowwise()` 
+res <- data \%>\%
+  rowwise() \%>\%
+  mutate(out = list(magnitude_effects(xbar1, xbar2, sd1, sd2, n1, n2,
+                                   min_kept = 200, chunk_init = 400))) \%>\%
+  ungroup() \%>\%
+  unnest_wider(out)
+
+# Paired, use add correlation to dataframe
+data = data  \%>\% mutate(r = 0.4)
+
+res2 <- data \%>\%
+  mutate(
+    mag = purrr::pmap(
+      list(xbar1, xbar2, sd1, sd2, n1, n2, r),
+      ~ magnitude_effects(
+          x1bar = ..1, x2bar = ..2,
+          sd1 = ..3, sd2 = ..4,
+          n1 = ..5, n2 = ..6, r = ..7,
+          paired = TRUE))) \%>\%
+  unnest_wider(mag)
+
+}
+}
