@@ -464,7 +464,7 @@ cor_diff <- function(cor1 = NULL, cor2 = NULL, n1 = NULL, n2 = NULL, x1 = NULL, 
 #'           paired = FALSE))) %>%
 #'   unnest_wider(mag)
 #' 
-#' # Altetnatively you can use rowwise 
+#' # Alternatively, you can use `rowwise()` 
 #' res <- data %>%
 #'   rowwise() %>%
 #'   mutate(out = list(magnitude_effects(xbar1, xbar2, sd1, sd2, n1, n2,
