@@ -493,6 +493,8 @@ magnitude_effects <- function(x1bar, x2bar, sd1, sd2, n1, n2,
                            chunk_max  = 2e6,
                            max_draws  = Inf,
                            patience_noaccept = 5, paired = FALSE, r = NULL) {
+  
+  # Check if paired samples have all the required inputs
   if(paired == TRUE & is.null(r)){
     stop("For paired samples, provide the correlation 'r' between groups.")
   }
