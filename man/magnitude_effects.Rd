@@ -17,7 +17,8 @@ magnitude_effects(
   max_draws = Inf,
   patience_noaccept = 5,
   paired = FALSE,
-  r = NULL
+  r = NULL,
+  seed = 565
 )
 }
 \arguments{
@@ -46,6 +47,8 @@ magnitude_effects(
 \item{paired}{Logical, whether the samples are paired. Default is FALSE.}
 
 \item{r}{Optional correlation between groups for dependent samples. Required if `paired` is TRUE.}
+
+\item{seed}{Random seed for reproducibility. Default is 565.}
 }
 \value{
 A list containing the point estimate, variance, number of kept samples, total draws, number of attempts, and status.
@@ -77,7 +80,6 @@ res <- data \%>\%
   rowwise() \%>\%
   mutate(out = list(magnitude_effects(xbar1, xbar2, sd1, sd2, n1, n2,
                                    min_kept = 200, chunk_init = 400))) \%>\%
-  ungroup() \%>\%
   unnest_wider(out)
 
 # Paired, use add correlation to dataframe

@@ -300,6 +300,7 @@ cor_diff <- function(cor1 = NULL, cor2 = NULL, n1 = NULL, n2 = NULL, x1 = NULL, 
 #' @param chunk_max Maximum chunk size for bootstrap sampling. Default is 2e6.
 #' @param max_draws Maximum total number of bootstrap draws. Default is Inf.
 #' @param patience_noaccept Number of consecutive chunks with no accepted samples before stopping. Default is 5.
+#' @param seed Random seed for reproducibility. Default is 565.
 #' @return A list containing the point estimate, variance, number of kept samples, total draws, number of attempts, and status.
 #' @export
 .safe_lnM_indep <- function(x1bar, x2bar, sd1, sd2, n1, n2,
@@ -307,7 +308,10 @@ cor_diff <- function(cor1 = NULL, cor2 = NULL, n1 = NULL, n2 = NULL, x1 = NULL, 
                            chunk_init = 4000,
                            chunk_max  = 2e6,
                            max_draws  = Inf,
-                           patience_noaccept = 5) {
+                           patience_noaccept = 5, seed = 565) {
+
+      set.seed(seed)
+
        df1 <- n1 - 1L
        df2 <- n2 - 1L
        h   <- (n1 * n2) / (n1 + n2)
@@ -372,6 +376,7 @@ cor_diff <- function(cor1 = NULL, cor2 = NULL, n1 = NULL, n2 = NULL, x1 = NULL, 
 #' @param chunk_max Maximum chunk size for bootstrap sampling. Default is 2e6.
 #' @param max_draws Maximum total number of bootstrap draws. Default is Inf.
 #' @param patience_noaccept Number of consecutive chunks with no accepted samples before stopping. Default is 5.
+#' @param seed Random seed for reproducibility. Default is 565.
 #' @return A list containing the point estimate, variance, number of kept samples, total draws, number of attempts, and status.
 #' @export
 .safe_lnM_dep <- function(x1bar, x2bar, sd1, sd2, n, r,
@@ -379,7 +384,9 @@ cor_diff <- function(cor1 = NULL, cor2 = NULL, n1 = NULL, n2 = NULL, x1 = NULL, 
                          chunk_init = 4000,
                          chunk_max  = 2e6,
                          max_draws  = Inf,
-                         patience_noaccept = 5) {
+                         patience_noaccept = 5, seed = 565) {
+
+  set.seed(seed)
   df <- n - 1L
    h <- n / 2
   Sig <- matrix(c(sd1^2, r*sd1*sd2, r*sd1*sd2, sd2^2), 2, 2)
@@ -444,6 +451,7 @@ cor_diff <- function(cor1 = NULL, cor2 = NULL, n1 = NULL, n2 = NULL, x1 = NULL, 
 #' @param patience_noaccept Number of consecutive chunks with no accepted samples before stopping. Default is 5.
 #' @param paired Logical, whether the samples are paired. Default is FALSE.
 #' @param r Optional correlation between groups for dependent samples. Required if `paired` is TRUE.
+#' @param seed Random seed for reproducibility. Default is 565.
 #' @return A list containing the point estimate, variance, number of kept samples, total draws, number of attempts, and status.
 #' @export 
 #' @examples \dontrun{
@@ -491,7 +499,7 @@ magnitude_effects <- function(x1bar, x2bar, sd1, sd2, n1, n2,
                            chunk_init = 4000,
                            chunk_max  = 2e6,
                            max_draws  = Inf,
-                           patience_noaccept = 5, paired = FALSE, r = NULL) {
+                           patience_noaccept = 5, paired = FALSE, r = NULL, seed = 565) {
   
   # Check if paired samples have all the required inputs
   if(paired == TRUE & is.null(r)){
@@ -508,14 +516,14 @@ magnitude_effects <- function(x1bar, x2bar, sd1, sd2, n1, n2,
                            chunk_init = chunk_init,
                            chunk_max  = chunk_max,
                            max_draws  = max_draws,
-                           patience_noaccept = patience_noaccept)
+                           patience_noaccept = patience_noaccept, seed = seed)
   } else {
     safe_res <- .safe_lnM_dep(x1bar, x2bar, sd1, sd2, n1, r,
                            min_kept   = min_kept, 
                            chunk_init = chunk_init,
                            chunk_max  = chunk_max,
                            max_draws  = max_draws,
-                           patience_noaccept = patience_noaccept)
+                           patience_noaccept = patience_noaccept, seed = seed)
   }
   return(safe_res)
 }

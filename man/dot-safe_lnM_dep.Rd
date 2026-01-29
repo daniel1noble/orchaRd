@@ -15,7 +15,8 @@
   chunk_init = 4000,
   chunk_max = 2e+06,
   max_draws = Inf,
-  patience_noaccept = 5
+  patience_noaccept = 5,
+  seed = 565
 )
 }
 \arguments{
@@ -40,6 +41,8 @@
 \item{max_draws}{Maximum total number of bootstrap draws. Default is Inf.}
 
 \item{patience_noaccept}{Number of consecutive chunks with no accepted samples before stopping. Default is 5.}
+
+\item{seed}{Random seed for reproducibility. Default is 565.}
 }
 \value{
 A list containing the point estimate, variance, number of kept samples, total draws, number of attempts, and status.
