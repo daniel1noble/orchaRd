@@ -44,4 +44,6 @@ Imports:
 Suggests: R.rsp, 
   testthat,
     knitr,
-    rmarkdown
+    rmarkdown,
+    glmmTMB,
+    lme4

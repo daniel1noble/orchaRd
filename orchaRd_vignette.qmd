@@ -31,6 +31,14 @@ editor_options:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, cache = FALSE, tidy = TRUE)
 options(digits=2)
+
+library(orchaRd)
+library(metafor)
+library(ggplot2)
+library(emmeans)
+library(patchwork)
+library(flextable)
+pkgload::load_all(".")
 ```
 
 
@@ -69,7 +77,7 @@ If you want to download the development branch, which contains newer features yo
 #| code-fold: true
 rm(list = ls())
 devtools::install_github("daniel1noble/orchaRd", ref = "dev", force = TRUE)
-pacman::p_load(devtools, tidyverse, metafor, patchwork, R.rsp, orchaRd, emmeans, ape, phytools, flextable, rotl, clubSandwich)
+pacman::p_load(devtools, tidyverse, metafor, patchwork, R.rsp, orchaRd, emmeans, ape, phytools, flextable, rotl, clubSandwich, glmmTMB, lme4)
 ```
 
 It's important to note that this version may not be as stable as the master branch.
@@ -77,11 +85,11 @@ It's important to note that this version may not be as stable as the master bran
 :::
 :::
 
-```{r echo = TRUE, eval = TRUE, results = 'hide', warning=FALSE, message=FALSE,  class.source='klippy'}
+```{r echo = TRUE, eval = FALSE, results = 'hide', warning=FALSE, message=FALSE,  class.source='klippy'}
 #install.packages("pacman")
 rm(list = ls())
 devtools::install_github("daniel1noble/orchaRd", ref = "main", force = TRUE)
-pacman::p_load(devtools, tidyverse, metafor, patchwork, R.rsp, orchaRd, emmeans, ape, phytools, flextable)
+pacman::p_load(devtools, tidyverse, metafor, patchwork, R.rsp, orchaRd, emmeans, ape, phytools, flextable, glmmTMB, lme4)
 ```
 
 Installation will make the primary functions accessible to users along with their help files. You will also need the `tidyverse` and `metafor` packages.
@@ -872,6 +880,163 @@ loo_test_phylo$mod_table |>
   coord_flip() 
 ```
 
+# ***New* Converting `glmmTMB` Models for use with `orchaRd`**
+
+Recent developments in `glmmTMB` mean that users can fit multilevel
+meta-analytic models outside of `metafor`, while retaining a highly flexible
+mixed-model framework. To make these models work with `orchaRd`, we have added
+the function `glmmTMB_to_rma()`. This function takes a fitted `glmmTMB` model
+and wraps it in an object that behaves like an `rma.mv` model for the purposes
+of `orchaRd` plotting and summary functions.
+
+In practice, this means users can fit a model with `glmmTMB`, convert it, and
+then pass it directly to `mod_results()`, `orchard_plot()`, `bubble_plot()`,
+`caterpillars()`, `i2_ml()`, and related summaries.
+
+## **Example 9: Converting a `glmmTMB` model and using it with `orchaRd`**
+
+It is now possible to fit mixed models in `glmmTMB` [@Williams2026] and convert them for use with `orchaRd`. To demonstrate how this works with a real example from this vignette, we return to the fish dataset from Example 6 and fit a model with both a categorical moderator (`trait.type`) and a continuous moderator (`deg_dif`). We then convert the fitted `glmmTMB` object with `glmmTMB_to_rma()` and use it directly in `orchaRd`.
+
+For this worked example, we fit a weighted Gaussian mixed model in `glmmTMB` using inverse-variance weights and compare it with the corresponding `metafor` model. The fitted moderator coefficients are very similar, showing that the converted model behaves sensibly in downstream `orchaRd` functions.
+
+```{r, glmmtmbsetup}
+#| label: glmmtmbsetup
+#| message: false
+#| warning: false
+
+library(glmmTMB)
+
+data(fish)
+
+fish_tmb <- fish
+fish_tmb$obs <- factor(1:nrow(fish_tmb))
+fish_tmb$g  <- 1L #constant grouping variable for the residual variance structure
+```
+
+We now fit the corresponding `metafor` and `glmmTMB` models:
+
+```{r, glmmtmbfit}
+#| label: glmmtmbfit
+#| message: false
+#| warning: false
+
+fish_meta <- metafor::rma.mv(
+  yi = lnrr,
+  V = lnrr_vi,
+  mods = ~ trait.type + deg_dif,
+  random = list(~1 | group_ID, ~1 | obs),
+  data = fish_tmb
+)
+
+V <- diag(fish_tmb$lnrr_vi)
+
+fish_glmmTMB <- glmmTMB(
+  lnrr ~ trait.type + deg_dif + (1 | group_ID) + equalto(0 + obs | g, V),
+  data = fish_tmb,
+  REML = TRUE
+)
+
+summary(fish_meta)
+summary(fish_glmmTMB)
+```
+
+To interface this model with `orchaRd`, we convert it using
+`glmmTMB_to_rma()`:
+
+```{r, glmmtmbconvert}
+#| label: glmmtmbconvert
+#| message: false
+#| warning: false
+
+fish_tmb_rma <- glmmTMB_to_rma(
+  fish_glmmTMB,
+  yi = "lnrr",
+  vi = "lnrr_vi",
+  data = fish_tmb,
+  measure = "GEN"
+)
+
+class(fish_tmb_rma)
+```
+
+Before plotting the results, we can check that the `metafor` and `glmmTMB`
+fits agree closely in their fixed effects:
+
+```{r, glmmtmbcompare}
+#| label: glmmtmbcompare
+#| message: false
+#| warning: false
+
+fe_compare <- data.frame(
+  Term = rownames(fish_meta$b),
+  metafor = round(as.numeric(fish_meta$b), 4),
+  glmmTMB_conv = round(as.numeric(fish_tmb_rma$b), 4)
+)
+
+knitr::kable(fe_compare, caption = "Fixed effects comparison between metafor and glmmTMB")
+```
+
+Once converted, we can use the `glmmTMB` model exactly as we would a fitted
+`metafor` model. First, we can recreate an orchard plot for the categorical
+moderator:
+
+```{r, fig-figglmmtmborchard}
+#| label: fig-figglmmtmborchard
+#| fig-cap: "Orchard plot from a `glmmTMB` model fit to the fish dataset and converted for use with `orchaRd`."
+#| message: false
+#| warning: false
+
+fish_trait_tmb <- orchaRd::mod_results(
+  fish_tmb_rma,
+  mod = "trait.type",
+  group = "group_ID"
+)
+
+orchaRd::orchard_plot(
+  fish_trait_tmb,
+  xlab = "lnRR",
+  angle = 45,
+  g = FALSE
+)
+```
+
+And because the same converted object retains the sampling variances and model
+matrix needed by `orchaRd`, we can also create a bubble plot for the continuous
+moderator:
+
+```{r, fig-figglmmtmbbubble}
+#| label: fig-figglmmtmbbubble
+#| fig-cap: "Bubble plot from a `glmmTMB` model fit to the fish dataset and converted for use with `orchaRd`."
+#| message: false
+#| warning: false
+
+orchaRd::bubble_plot(
+  fish_tmb_rma,
+  mod = "deg_dif",
+  group = "group_ID",
+  xlab = "Temperature difference",
+  ylab = "lnRR",
+  legend.pos = "top.left"
+)
+```
+
+We can also calculate common heterogeneity summaries directly from the
+converted object:
+
+```{r, glmmtmbi2}
+#| label: glmmtmbi2
+#| message: false
+#| warning: false
+
+i2_ml(fish_tmb_rma, method = "ratio")
+```
+
+At present, the conversion pathway is intended for downstream plotting and
+summary of a fitted `glmmTMB` model. Procedures that require repeated refitting
+of a `metafor` model, such as bootstrap refits in some helper functions or the
+current `leave_one_out()` workflow, are not yet implemented for converted
+objects.
+
 # ***New* Bias-Corrected Meta-analytic Mean Plots**
 
 Publication bias is a common issue in meta-analysis but can be challenging to deal with the multi-level meta-analyses [@nakagawa2022methods]. @yang2024robust proposed a new method to correct for publication bias in multi-level meta-analyses. We have implemented a new plot which can visualise how overall meta-analytic means change when correcting for publication bias.
@@ -918,5 +1083,3 @@ plot2
 
 \newpage
 # **References**
-
-

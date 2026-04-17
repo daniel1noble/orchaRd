@@ -85,12 +85,19 @@ caterpillars <- function(object, mod = "1",  group, xlab, overall = TRUE, transf
   # use dplyr here - need to change....
   # Dan can you make this basic R code - maybe I got it
   # data <- data[order(data$moderator, -data$yi),]
-  data <- data %>% dplyr::group_by(moderator) %>% dplyr::arrange(moderator, dplyr::desc(yi)) %>%
+  data <- data %>%
+    dplyr::group_by(moderator) %>%
+    dplyr::arrange(moderator, dplyr::desc(yi)) %>%
     dplyr::ungroup() %>%
-    dplyr::mutate(Y = 1:data_no +
-             unlist(mapply(function(x, y) rep(x*6 , y) , x = 1:group_no, y = mod_table$K))
-    ) %>%
     data.frame()
+
+  y_offsets <- unlist(
+    mapply(function(x, y) rep(x * 6, y),
+           x = seq_len(group_no),
+           y = mod_table$K,
+           SIMPLIFY = FALSE)
+  )
+  data$Y <- seq_len(data_no) + y_offsets
 
   # mod ID
   mod_table$Y <- data %>% dplyr::group_by(moderator) %>%

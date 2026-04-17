@@ -52,6 +52,11 @@ i2_ml <- function(model,
 
   if(all(class(model) %in% c("robust.rma", "rma.mv", "rma", "rma.uni")) == FALSE) {stop("Sorry, you need to fit a metafor model of class robust.rma, rma.mv, rma, rma.uni")}
 
+  if (!is.null(boot) && identical(model$backend, "glmmTMB")) {
+    stop("Bootstrap refits are not supported for objects converted with glmmTMB_to_rma().",
+         call. = FALSE)
+  }
+
   if(any(model$tau2 > 0)) { stop("Sorry. At the moment i2_ml cannot take models with heterogeneous variance.")}
 
   ## evaluate choices
@@ -154,7 +159,7 @@ matrix_i2 <- function(model){
   if(all(class(model) %in% c("robust.rma", "rma.mv", "rma", "rma.uni")) == FALSE) {stop("Sorry, you need to fit a metafor model of class robust.rma, rma.mv, rma, rma.uni")}
 
     W <- solve(model$V)
-    X <- model.matrix(model)
+    X <- stats::model.matrix(model)
     P <- W - W %*% X %*% solve(t(X) %*% W %*% X) %*% t(X) %*% W
     I2_total <- 100* (sum(model$sigma2) / (sum(model$sigma2) + (model$k - model$p) / sum(diag(P))))
     I2_each <- 100* (model$sigma2 / (sum(model$sigma2) + (model$k - model$p) / sum(diag(P))))
@@ -198,4 +203,3 @@ ratio_i2 <- function(model){
   I2s <- c(I2_total, I2_each)
   return(I2s)
 }
-

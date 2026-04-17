@@ -207,7 +207,7 @@ mod_results <- function(model, mod = "1", group,  N = NULL,  weights = "prop", b
 pred_interval_esmeans <- function(model, mm, mod, ...) {
   tmp <- summary(mm)
   tmp <- tmp[ , ]
-  test.stat <- qt(0.975, tmp$df[[1]])
+  test.stat <- stats::qt(0.975, tmp$df[[1]])
 
   # NOTE: this should fix #46.
   # Other issue is how this plays with different rma. objects.

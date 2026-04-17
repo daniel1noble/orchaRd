@@ -7,3 +7,11 @@
     packageStartupMessage(loadmsg, domain=NULL, appendLF=TRUE)
 
   }
+
+utils::globalVariables(
+  c(
+    "Y", "ci.lb", "ci.ub", "condition", "estimate", "lower", "lowerCL",
+    "lowerPR", "moderator", "name", "pred", "stdy", "upper", "upperCL",
+    "upperPR", "x.diamond", "y.diamond", "yi"
+  )
+)
