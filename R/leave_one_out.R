@@ -62,6 +62,12 @@
 leave_one_out <- function(model, group, vcalc_args = NULL, robust_args = NULL, phylo_args = NULL) {
   # Check model is a metafor object
   .is_model_valid(model)
+
+  if (identical(model$backend, "glmmTMB")) {
+    stop("leave_one_out() is not supported for objects converted with glmmTMB_to_rma(). Refit the leave-one-out models with glmmTMB directly and convert them afterwards if needed.",
+         call. = FALSE)
+  }
+
   # Check if group is in model data
   .is_group_valid(model$data, group)
 
@@ -434,7 +440,7 @@ leave_one_out <- function(model, group, vcalc_args = NULL, robust_args = NULL, p
     stop("phylo_args must contain at least the following elements: 'tree', 'species_colname'", call. = FALSE)
   }
 
-  if (class(phylo_args$tree) != "phylo") {
+  if (!inherits(phylo_args$tree, "phylo")) {
     stop("The 'tree' argument in phylo_args must be a phylogenetic tree object", call. = FALSE)
   }
 

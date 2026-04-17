@@ -74,8 +74,8 @@ cor_diff <- function(cor1 = NULL, cor2 = NULL, n1 = NULL, n2 = NULL, x1 = NULL, 
       stop("If x1 and x2 are data frames, they must each have exactly two columns.")
 
     # correlations from columns 1 and 2, pairwise complete
-    cor1 <- cor(x1[[1]], x1[[2]], use = "pairwise.complete.obs")
-    cor2 <- cor(x2[[1]], x2[[2]], use = "pairwise.complete.obs")
+    cor1 <- stats::cor(x1[[1]], x1[[2]], use = "pairwise.complete.obs")
+    cor2 <- stats::cor(x2[[1]], x2[[2]], use = "pairwise.complete.obs")
 
     # effective n = number of complete pairs
     n1 <- sum(stats::complete.cases(x1[[1]], x1[[2]]))
@@ -325,10 +325,10 @@ cor_diff <- function(cor1 = NULL, cor2 = NULL, n1 = NULL, n2 = NULL, x1 = NULL, 
   
   while (kept < min_kept && total < max_draws) {
     attempts <- attempts + 1L
-    m1 <- rnorm(chunk, mean = x1bar, sd = sd1 / sqrt(n1))
-    m2 <- rnorm(chunk, mean = x2bar, sd = sd2 / sqrt(n2))
-    v1 <- sd1^2 * rchisq(chunk, df = df1) / df1
-    v2 <- sd2^2 * rchisq(chunk, df = df2) / df2
+    m1 <- stats::rnorm(chunk, mean = x1bar, sd = sd1 / sqrt(n1))
+    m2 <- stats::rnorm(chunk, mean = x2bar, sd = sd2 / sqrt(n2))
+    v1 <- sd1^2 * stats::rchisq(chunk, df = df1) / df1
+    v2 <- sd2^2 * stats::rchisq(chunk, df = df2) / df2
     
     MSB <- h * (m1 - m2)^2
     MSW <- ((df1 * v1 + df2 * v2) / (df1 + df2))
@@ -359,7 +359,7 @@ cor_diff <- function(cor1 = NULL, cor2 = NULL, n1 = NULL, n2 = NULL, x1 = NULL, 
   }
   
   data.frame(lnM_SAFE = if (kept >= 2) mean(lnM_star) else NA_real_,
-       var_lnM_SAFE   = if (kept >= 2) var(lnM_star) else NA_real_,
+       var_lnM_SAFE   = if (kept >= 2) stats::var(lnM_star) else NA_real_,
        kept  = kept, total = total, attempts = attempts, status = status)
 }
 
@@ -432,7 +432,7 @@ cor_diff <- function(cor1 = NULL, cor2 = NULL, n1 = NULL, n2 = NULL, x1 = NULL, 
   }
   
   data.frame(lnM_SAFE = if (kept >= 2) mean(lnM_star) else NA_real_,
-       var_lnM_SAFE   = if (kept >= 2) var(lnM_star) else NA_real_,
+       var_lnM_SAFE   = if (kept >= 2) stats::var(lnM_star) else NA_real_,
        kept  = kept, total = total, attempts = attempts, status = status)
 }
 

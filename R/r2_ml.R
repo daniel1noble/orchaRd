@@ -19,6 +19,11 @@ r2_ml <- function(model, data, boot = NULL) {
 
   if(all(class(model) %in% c("robust.rma", "rma.mv", "rma", "rma.uni")) == FALSE) {stop("Sorry, you need to fit a metafor model of class robust.rma, rma.mv, rma, rma.uni")}
 
+  if (!is.null(boot) && identical(model$backend, "glmmTMB")) {
+    stop("Bootstrap refits are not supported for objects converted with glmmTMB_to_rma().",
+         call. = FALSE)
+  }
+
   if(any(model$tau2 > 0)) { stop("Sorry. At the moment r2_ml cannot take models with heterogeneous variance.")}
 
   R2 <- R2_calc(model)
