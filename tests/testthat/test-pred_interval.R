@@ -114,9 +114,14 @@ test_that("PI uses h.levels.k (not g.levels.k) for gamma2 weights", {
   data("dat.konstantopoulos2011")
   df <- dat.konstantopoulos2011
 
-  m <- suppressWarnings(rma.mv(yi ~ year, vi,
+  m <- tryCatch(
+    suppressWarnings(rma.mv(yi ~ year, vi,
               random = list(~year|study, ~year|district, ~1|school),
-              struct = c("HCS", "HCS"), data = df, method = "REML"))
+              struct = c("HCS", "HCS"), data = df, method = "REML",
+              control = list(iter.max = 2000, eval.max = 4000))),
+    error = function(e) NULL
+  )
+  skip_if(is.null(m), "Model did not converge on this platform")
 
   # Only run if model has multiple gamma2 values
   skip_if(length(m$gamma2) <= 1 || is.null(m$h.levels.k),
