@@ -95,6 +95,8 @@ mod_results <- function(model, mod = "1", group,  N = NULL,  weights = "prop", b
   data <- .extract_model_data(model)
 
   # Get the column in the data used as moderator
+  # Trim whitespace to prevent level mismatches downstream
+  data[[mod]] <- .trimws_col(data[[mod]])
   mod_vector <- data[[mod]]  
 
 
@@ -277,6 +279,10 @@ get_data_raw <- function(model, mod, group, N = NULL, at = NULL, subset = TRUE, 
  
   data <- .extract_model_data(model)
 
+  # Trim whitespace from moderator and group columns to prevent level mismatches
+  data[[mod]]   <- .trimws_col(data[[mod]])
+  data[[group]] <- .trimws_col(data[[group]])
+
   if(!is.null(at) & subset){
     # Find the at slot in list that pertains to the moderator and extract levels
     at_mod <- at[[mod]]
@@ -333,6 +339,11 @@ get_data_raw_cont <- function(model, mod, group, N = NULL, by){
 
   # Extract the data from the model object
   data <- .extract_model_data(model)
+
+  # Trim whitespace from moderator, group, and condition columns
+  data[[mod]]   <- .trimws_col(data[[mod]])
+  data[[group]] <- .trimws_col(data[[group]])
+  if (!is.null(by)) data[[by]] <- .trimws_col(data[[by]])
 
   # Extract effect sizes
   yi <- model$yi
@@ -539,4 +550,24 @@ mod_is_valid <- function(model, mod) {
     data <- subset_data[model$not.na, ]
   }
   return(data)
+}
+
+#' Trim whitespace from a single column in a data frame
+#'
+#' Strips leading and trailing whitespace from character or factor columns.
+#' This prevents mismatches between moderator levels, tree.order values,
+#' and model coefficient names (e.g., "Echinodermata " vs "Echinodermata").
+#'
+#' @param x A vector (character, factor, or other type).
+#' @return The same vector with whitespace trimmed (character/factor only).
+#' @keywords internal
+.trimws_col <- function(x) {
+  if (is.character(x)) {
+    return(trimws(x))
+  }
+  if (is.factor(x)) {
+    levels(x) <- trimws(levels(x))
+    return(x)
+  }
+  x
 }

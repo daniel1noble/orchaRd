@@ -122,6 +122,11 @@ bubble_plot <- function(
       moderator = object[[mod]],
       stdy = object[[stdy]]
     )
+
+    # Trim whitespace from character/factor columns to prevent level mismatches
+    if (is.character(data_trim$stdy))    data_trim$stdy    <- trimws(data_trim$stdy)
+    if (is.factor(data_trim$stdy))       levels(data_trim$stdy) <- trimws(levels(data_trim$stdy))
+
     if (!is.null(by)) {
       if (!by %in% names(object)) {
         stop(sprintf("Column '%s' not found in the data.frame.", by), call. = FALSE)
@@ -130,6 +135,8 @@ bubble_plot <- function(
         stop("The 'by' column must be categorical (character or factor), not numeric.", call. = FALSE)
       }
       data_trim$condition <- object[[by]]
+      if (is.character(data_trim$condition)) data_trim$condition <- trimws(data_trim$condition)
+      if (is.factor(data_trim$condition))    levels(data_trim$condition) <- trimws(levels(data_trim$condition))
     }
     # Remove rows with NA or non-finite values in yi/vi/moderator
     finite_rows <- is.finite(data_trim$yi) & is.finite(data_trim$vi) &

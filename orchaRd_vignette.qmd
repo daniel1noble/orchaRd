@@ -427,6 +427,48 @@ We may also at times want to revert back to a normal plot with catagorical varia
   orchaRd::orchard_plot(lim_MR_results, xlab = "Fishers z-transformed Correlation (Zr)", g = TRUE, flip = FALSE)
 ```
 
+### Controlling bubble point sizes
+
+When creating small figures (e.g., for multi-panel layouts or journal column widths), the default point sizes can cause bubbles to overlap heavily. The `point.size` argument accepts a numeric vector of length 2 specifying the minimum and maximum bubble size. Points are still scaled by precision (or sample size), but within the specified range (@fig-pointsize):
+
+```{r}
+#| label: fig-pointsize
+#| fig-cap: "Orchard plot with reduced point sizes, useful for compact figures."
+#| eval: true
+#| warning: false
+#| message: false
+
+orchaRd::orchard_plot(lim_MR, mod = "Phylum", group = "Article",
+  xlab = "Correlation coefficient (r)", transfm = "tanh", N = "N",
+  point.size = c(0.5, 2), angle = 45)
+```
+
+### Keeping original category capitalisation and reordering
+
+By default, `orchard_plot()` capitalises the first letter of each moderator level. Set `upper = FALSE` to preserve the original case. This is also compatible with `tree.order`, which lets you reorder categories in the plot. When `upper = FALSE`, pass `tree.order` values in the same case as your data (@fig-upperlower):
+
+```{r}
+#| label: fig-upperlower
+#| fig-cap: "Orchard plot with original lowercase category names in a custom order."
+#| eval: true
+#| warning: false
+#| message: false
+
+# Lowercase phylum names
+lim_lower <- lim
+lim_lower$Phylum <- tolower(lim_lower$Phylum)
+lim_lower_MR <- metafor::rma.mv(yi = yi, V = vi, mods = ~ Phylum - 1,
+  random = list(~1 | Article, ~1 | Datapoint), data = lim_lower)
+
+# Custom order using original lowercase names
+my_order <- c("chordata", "arthropoda", "mollusca", "echinodermata",
+              "nematoda", "platyhelminthes", "rotifera")
+
+orchaRd::orchard_plot(lim_lower_MR, mod = "Phylum", group = "Article",
+  xlab = "Correlation coefficient (r)", transfm = "tanh", N = "N",
+  upper = FALSE, tree.order = my_order, angle = 45)
+```
+
 # **Orchard Plots with Meta-regression Models: Marginalised and conditional means with heteroscedastic residual variances**
 
 In `orchaRd` 2.0 we've made some major updates to the types of models that can be used with the package. Meta-analyses in ecology and evolution often fit a multitude of moderators and random effects within a single model. This is even desirable in many cases to deal with high heterogeneity and disentangle the independent contributions of moderators to changes in mean effect size. The challenge with the previous version of the package was that it was difficult to accommodate these models. However, the `emmeans` package is an excellent solution to the problem. It will produce marginsalised or conditional mean estimates for a given level of moderator. This includes models with categorical and continuous moderators. 
@@ -582,6 +624,16 @@ lim_bubble <- orchaRd::mod_results(model, mod = "year", group = "Article",
                     weights = "prop", by = "Environment")
 
 orchaRd::bubble_plot(lim_bubble, group = "Article",  mod = "year", xlab = "Year", legend.pos = "top.left")
+```
+
+The `point.size` argument also works with `bubble_plot()`. Here we reduce the bubble sizes to `c(0.5, 2)` for a more compact presentation (@fig-bubbleslim-pointsize):
+
+```{r, echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE}
+#| label: fig-bubbleslim-pointsize
+#| fig-cap: "Bubble plot with reduced point sizes for compact figures."
+
+orchaRd::bubble_plot(lim_bubble, group = "Article", mod = "year",
+  xlab = "Year", legend.pos = "top.left", point.size = c(0.5, 2))
 ```
 
 ### Bubble plots from raw data (no model)

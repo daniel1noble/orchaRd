@@ -103,6 +103,7 @@ orchard_plot <- function(
   }
 
   if (!is.null(tree.order)) {
+    tree.order <- trimws(tree.order)
     tree.order <- firstup(tree.order, upper = upper)
     results <- .order_tree(results, tree.order)
   }
