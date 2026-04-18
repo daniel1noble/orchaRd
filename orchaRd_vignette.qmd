@@ -445,7 +445,7 @@ orchaRd::orchard_plot(lim_MR, mod = "Phylum", group = "Article",
 
 ### Keeping original category capitalisation and reordering
 
-By default, `orchard_plot()` capitalises the first letter of each moderator level. Set `upper = FALSE` to preserve the original case. This is also compatible with `tree.order`, which lets you reorder categories in the plot. When `upper = FALSE`, pass `tree.order` values in the same case as your data (@fig-upperlower):
+By default, `orchard_plot()` capitalises the first letter of each moderator level. Set `upper = FALSE` to preserve the original case. This is also compatible with `mod.order`, which lets you reorder categories in the plot. When `upper = FALSE`, pass `mod.order` values in the same case as your data (@fig-upperlower):
 
 ```{r}
 #| label: fig-upperlower
@@ -466,7 +466,53 @@ my_order <- c("chordata", "arthropoda", "mollusca", "echinodermata",
 
 orchaRd::orchard_plot(lim_lower_MR, mod = "Phylum", group = "Article",
   xlab = "Correlation coefficient (r)", transfm = "tanh", N = "N",
-  upper = FALSE, tree.order = my_order, angle = 45)
+  upper = FALSE, mod.order = my_order, angle = 45)
+```
+
+### Adjusting annotation text size
+
+When plots have many moderator levels, the default *k* and *g* labels can feel crowded. The `k.size` argument controls the font size of these annotations. Compare the default (`k.size = 3.5`) with a larger size (@fig-ksize):
+
+```{r}
+#| label: fig-ksize
+#| fig-cap: "Orchard plot with larger k and g annotations (k.size = 5)."
+#| eval: true
+#| warning: false
+#| message: false
+
+orchaRd::orchard_plot(lim_MR, mod = "Phylum", group = "Article",
+  xlab = "Correlation coefficient (r)", transfm = "tanh",
+  angle = 45, k.size = 5)
+```
+
+### Displaying point estimates and confidence intervals
+
+Sometimes it is useful to print the numerical estimate and its confidence interval directly on the plot. Setting `est = TRUE` adds a formatted label (e.g., *0.25 [0.10, 0.40]*) beneath each *k*/*g* annotation. The `est.size` argument controls the font size of these estimate labels independently from `k.size` (@fig-estlabels):
+
+```{r}
+#| label: fig-estlabels
+#| fig-cap: "Orchard plot with point estimates and 95% CIs displayed alongside k labels."
+#| eval: true
+#| warning: false
+#| message: false
+
+orchaRd::orchard_plot(lim_MR, mod = "Phylum", group = "Article",
+  xlab = "Correlation coefficient (r)", transfm = "tanh",
+  angle = 45, est = TRUE, est.size = 2.5)
+```
+
+You can also show estimates without the *k*/*g* labels by setting `k = FALSE`. This can be useful when sample sizes are already reported in accompanying tables (@fig-estonly):
+
+```{r}
+#| label: fig-estonly
+#| fig-cap: "Orchard plot showing only point estimates and CIs (k labels suppressed)."
+#| eval: true
+#| warning: false
+#| message: false
+
+orchaRd::orchard_plot(lim_MR, mod = "Phylum", group = "Article",
+  xlab = "Correlation coefficient (r)", transfm = "tanh",
+  angle = 45, est = TRUE, k = FALSE, est.size = 3)
 ```
 
 # **Orchard Plots with Meta-regression Models: Marginalised and conditional means with heteroscedastic residual variances**

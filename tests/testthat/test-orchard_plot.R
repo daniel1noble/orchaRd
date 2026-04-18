@@ -137,7 +137,7 @@ testthat::test_that("upper=FALSE keeps lowercase moderator names", {
 })
 
 
-testthat::test_that("tree.order works with original-case category names", {
+testthat::test_that("mod.order works with original-case category names", {
   data(lim)
   lim$Phylum <- tolower(lim$Phylum)
   lim$vi <- (1/sqrt(lim$N - 3))^2
@@ -146,17 +146,17 @@ testthat::test_that("tree.order works with original-case category names", {
 
   new_order <- rev(sort(unique(lim_MR$data$Phylum)))
 
-  # Should not error with lowercase tree.order and default upper=TRUE
+  # Should not error with lowercase mod.order and default upper=TRUE
   testthat::expect_no_error(
     orchard_plot(lim_MR, mod = "Phylum", group = "Article",
-      xlab = "Zr", transfm = "tanh", N = "N", tree.order = new_order)
+      xlab = "Zr", transfm = "tanh", N = "N", mod.order = new_order)
   )
 
-  # Should not error with lowercase tree.order and upper=FALSE
+  # Should not error with lowercase mod.order and upper=FALSE
   testthat::expect_no_error(
     orchard_plot(lim_MR, mod = "Phylum", group = "Article",
       xlab = "Zr", transfm = "tanh", N = "N",
-      tree.order = new_order, upper = FALSE)
+      mod.order = new_order, upper = FALSE)
   )
 })
 
@@ -221,5 +221,149 @@ testthat::test_that("k labels are centered on moderator when flip=FALSE (#34)", 
   # flip=FALSE: labels at integer positions (centered on moderator)
   testthat::expect_true(all(x_noflip %% 1 == 0),
     info = "k labels should be at integer positions when flip=FALSE")
+})
+
+
+# --- Issue #92: Legend order matches plotted estimates ---
+
+testthat::test_that("condition legend order matches data order (#92)", {
+  data(lim)
+  lim[, "year"] <- suppressWarnings(as.numeric(lim$year))
+  lim$vi <- 1 / (lim$N - 3)
+  lim_clean <- na.omit(lim)
+
+  model <- metafor::rma.mv(
+    yi = yi, V = vi, mods = ~ Environment,
+    random = list(~1 | Article, ~1 | Datapoint), data = lim_clean
+  )
+
+  plt <- orchard_plot(model, mod = "Environment", group = "Article",
+                      xlab = "Zr", by = "Environment")
+
+  # Extract the shape scale from the built plot
+  shape_scale <- plt$scales$get_scales("shape")
+  # The shape factor levels should match the order in mod_table
+  results <- mod_results(model, mod = "Environment",
+                         group = "Article", by = "Environment")
+  expected_order <- unique(results$mod_table$condition)
+
+  # Find the point layer and check the shape factor levels
+  for (l in plt$layers) {
+    if (inherits(l$geom, "GeomPoint") && !is.null(l$data)) {
+      shape_col <- l$mapping$shape %||% l$data$shape
+      if (is.factor(l$data$shape)) {
+        testthat::expect_equal(
+          levels(l$data$shape), as.character(expected_order),
+          info = "Shape factor levels should match mod_table condition order"
+        )
+      }
+    }
+  }
+  testthat::expect_s3_class(plt, "ggplot")
+})
+
+
+# --- Issue #88: k.size and est parameters ---
+
+testthat::test_that("k.size controls annotation text size (#88)", {
+  results <- mod_results(eklof_MR, mod = "Grazer.type", group = "ExptID")
+
+  p_default <- orchard_plot(results, mod = "Grazer.type", group = "ExptID",
+                            xlab = "lnRR")
+  p_big <- orchard_plot(results, mod = "Grazer.type", group = "ExptID",
+                        xlab = "lnRR", k.size = 6)
+
+  # Find k-label annotation layers and compare sizes
+  get_annot_size <- function(layers) {
+    for (l in layers) {
+      if (inherits(l$geom, "GeomText") && !is.null(l$aes_params$size)) {
+        return(l$aes_params$size)
+      }
+    }
+    return(NULL)
+  }
+
+  testthat::expect_equal(get_annot_size(p_default$layers), 3.5)
+  testthat::expect_equal(get_annot_size(p_big$layers), 6)
+})
+
+
+testthat::test_that("est=TRUE adds estimate and CI annotations (#88)", {
+  results <- mod_results(eklof_MR, mod = "Grazer.type", group = "ExptID")
+
+  p_no_est <- orchard_plot(results, mod = "Grazer.type", group = "ExptID",
+                           xlab = "lnRR", est = FALSE)
+  p_est <- orchard_plot(results, mod = "Grazer.type", group = "ExptID",
+                        xlab = "lnRR", est = TRUE)
+
+  # Count GeomText layers (annotations)
+  count_text_layers <- function(layers) {
+    sum(sapply(layers, function(l) inherits(l$geom, "GeomText")))
+  }
+
+  # est=TRUE should add one extra text layer
+  testthat::expect_gt(
+    count_text_layers(p_est$layers),
+    count_text_layers(p_no_est$layers)
+  )
+
+  # The extra layer should contain CI-formatted text (e.g. "[")
+  found_ci <- FALSE
+  for (l in p_est$layers) {
+    if (inherits(l$geom, "GeomText")) {
+      labels <- l$aes_params$label %||% l$data$label
+      if (!is.null(labels) && any(grepl("\\[", labels))) {
+        found_ci <- TRUE
+        testthat::expect_true(
+          all(grepl("\\[.*,.*\\]", labels)),
+          info = "Estimate labels should be in format 'X.XX [X.XX, X.XX]'"
+        )
+      }
+    }
+  }
+  testthat::expect_true(found_ci, info = "Should find CI-formatted labels")
+})
+
+
+testthat::test_that("est=TRUE works without k labels (#88)", {
+  results <- mod_results(eklof_MR, mod = "Grazer.type", group = "ExptID")
+
+  # Should not error
+  p <- orchard_plot(results, mod = "Grazer.type", group = "ExptID",
+                    xlab = "lnRR", est = TRUE, k = FALSE)
+  testthat::expect_s3_class(p, "ggplot")
+
+  # Should have estimate text layer but no parsed k labels
+  has_parsed <- FALSE
+  has_ci <- FALSE
+  for (l in p$layers) {
+    if (inherits(l$geom, "GeomText")) {
+      labels <- l$aes_params$label %||% l$data$label
+      if (!is.null(labels)) {
+        if (any(grepl("italic", labels))) has_parsed <- TRUE
+        if (any(grepl("\\[", labels))) has_ci <- TRUE
+      }
+    }
+  }
+  testthat::expect_false(has_parsed, info = "No parsed k labels when k=FALSE")
+  testthat::expect_true(has_ci, info = "CI labels present when est=TRUE")
+})
+
+
+testthat::test_that("est.size controls estimate annotation size (#88)", {
+  results <- mod_results(eklof_MR, mod = "Grazer.type", group = "ExptID")
+
+  p <- orchard_plot(results, mod = "Grazer.type", group = "ExptID",
+                    xlab = "lnRR", est = TRUE, est.size = 5)
+
+  # Find the non-parsed text layer (estimate layer)
+  for (l in p$layers) {
+    if (inherits(l$geom, "GeomText")) {
+      labels <- l$aes_params$label %||% l$data$label
+      if (!is.null(labels) && any(grepl("\\[", labels))) {
+        testthat::expect_equal(l$aes_params$size, 5)
+      }
+    }
+  }
 })
 

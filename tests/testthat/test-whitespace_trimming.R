@@ -69,14 +69,14 @@ test_that("orchard_plot renders with whitespace in moderator levels", {
   expect_s3_class(p, "gg")
 })
 
-test_that("orchard_plot with tree.order works despite whitespace in data", {
+test_that("orchard_plot with mod.order works despite whitespace in data", {
   skip_on_cran()
-  # Use clean tree.order values (no whitespace) — should still work
+  # Use clean mod.order values (no whitespace) — should still work
   # because the package trims internally
   clean_order <- c("Chordata", "Arthropoda", "Mollusca", "Echinodermata",
                    "Nematoda", "Platyhelminthes", "Rotifera")
   p <- orchaRd::orchard_plot(model_ws, mod = "Phylum", group = "Article",
-    xlab = "Zr", N = "N", tree.order = clean_order)
+    xlab = "Zr", N = "N", mod.order = clean_order)
   expect_s3_class(p, "gg")
 })
 

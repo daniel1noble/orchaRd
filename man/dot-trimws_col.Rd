@@ -14,7 +14,7 @@ The same vector with whitespace trimmed (character/factor only).
 }
 \description{
 Strips leading and trailing whitespace from character or factor columns.
-This prevents mismatches between moderator levels, tree.order values,
+This prevents mismatches between moderator levels, mod.order values,
 and model coefficient names (e.g., "Echinodermata " vs "Echinodermata").
 }
 \keyword{internal}

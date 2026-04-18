@@ -649,7 +649,7 @@ mod_is_valid <- function(model, mod) {
 #' Trim whitespace from a single column in a data frame
 #'
 #' Strips leading and trailing whitespace from character or factor columns.
-#' This prevents mismatches between moderator levels, tree.order values,
+#' This prevents mismatches between moderator levels, mod.order values,
 #' and model coefficient names (e.g., "Echinodermata " vs "Echinodermata").
 #'
 #' @param x A vector (character, factor, or other type).

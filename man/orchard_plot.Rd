@@ -15,7 +15,8 @@ orchard_plot(
   cb = TRUE,
   k = TRUE,
   g = TRUE,
-  tree.order = NULL,
+  est = FALSE,
+  mod.order = NULL,
   trunk.size = 0.5,
   branch.size = 1.2,
   twig.size = 0.5,
@@ -26,6 +27,8 @@ orchard_plot(
   legend.pos = c("bottom.right", "bottom.left", "top.right", "top.left", "top.out",
     "bottom.out", "none"),
   k.pos = c("right", "left", "none"),
+  k.size = 3.5,
+  est.size = 3,
   refline.pos = 0,
   colour = FALSE,
   fill = TRUE,
@@ -57,7 +60,9 @@ orchard_plot(
 
 \item{g}{If \code{TRUE}, it displays g (number of grouping levels for each level of the moderator) on the plot.}
 
-\item{tree.order}{Order in which to plot the groups of the moderator when it is a categorical one. Should be a vector of equal length to number of groups in the categorical moderator, in the desired order (bottom to top, or left to right for flipped orchard plot)}
+\item{est}{If \code{TRUE}, it displays the mean estimate and confidence interval (e.g., \code{0.25 [0.10, 0.40]}) alongside or below the k labels on the plot. Defaults to \code{FALSE}.}
+
+\item{mod.order}{Order in which to plot the groups of the moderator when it is a categorical one. Should be a vector of equal length to number of groups in the categorical moderator, in the desired order (bottom to top, or left to right for flipped orchard plot)}
 
 \item{trunk.size}{Size of the mean, or central point.}
 
@@ -76,6 +81,10 @@ orchard_plot(
 \item{legend.pos}{Where to place the legend. To remove the legend, use \code{legend.pos = "none"}.}
 
 \item{k.pos}{Where to put k (number of effect sizes) on the plot. Users can specify the exact position or they can use specify \code{"right"}, \code{"left"},  or \code{"none"}. Note that numeric values (0, 0.5, 1) can also be specified and this would give greater precision.}
+
+\item{k.size}{Numeric, the font size for k (and g) labels on the plot. Defaults to \code{3.5}.}
+
+\item{est.size}{Numeric, the font size for estimate and CI labels when \code{est = TRUE}. Defaults to \code{3.0}.}
 
 \item{refline.pos}{Where to put the reference line. defaults to 0.}
 

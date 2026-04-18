@@ -16,13 +16,16 @@
 #' @param transfm If set to \code{"tanh"}, a tanh transformation will be applied to effect sizes, converting Zr to a correlation or pulling in extreme values for other effect sizes (lnRR, lnCVR, SMD).  \code{"invlogit"} can be used to convert lnRR to the inverse logit scale. \code{"percentr"} can convert to the percentage change scale when using response ratios and \code{"percent"} can convert to the percentage change scale of an log transformed effect size. Defaults to \code{"none"}.
 #' @param n_transfm The vector of sample sizes for each effect size estimate. This is used when \code{transfm = "inv_ft"}. Defaults to NULL.
 #' @param condition.lab Label for the condition being marginalized over.
-#' @param tree.order Order in which to plot the groups of the moderator when it is a categorical one. Should be a vector of equal length to number of groups in the categorical moderator, in the desired order (bottom to top, or left to right for flipped orchard plot)
+#' @param mod.order Order in which to plot the groups of the moderator when it is a categorical one. Should be a vector of equal length to number of groups in the categorical moderator, in the desired order (bottom to top, or left to right for flipped orchard plot)
 #' @param trunk.size Size of the mean, or central point.
 #' @param branch.size Size of the confidence intervals.
 #' @param twig.size Size of the prediction intervals.
 #' @param point.size Numeric vector of length 2, specifying the minimum and maximum point sizes for effect size bubbles. Defaults to \code{c(1, 3.5)}. Useful for controlling bubble size in small figures.
 #' @param legend.pos Where to place the legend. To remove the legend, use \code{legend.pos = "none"}.
 #' @param k.pos Where to put k (number of effect sizes) on the plot. Users can specify the exact position or they can use specify \code{"right"}, \code{"left"},  or \code{"none"}. Note that numeric values (0, 0.5, 1) can also be specified and this would give greater precision.
+#' @param k.size Numeric, the font size for k (and g) labels on the plot. Defaults to \code{3.5}.
+#' @param est If \code{TRUE}, it displays the mean estimate and confidence interval (e.g., \code{0.25 [0.10, 0.40]}) alongside or below the k labels on the plot. Defaults to \code{FALSE}.
+#' @param est.size Numeric, the font size for estimate and CI labels when \code{est = TRUE}. Defaults to \code{3.0}.
 #' @param refline.pos Where to put the reference line. defaults to 0.
 #' @param colour Colour of effect size shapes. By default, effect sizes are colored according to the \code{mod} argument. If \code{TRUE}, they are colored according to the grouping variable
 #' @param fill If \code{TRUE}, effect sizes will be filled with colours. If \code{FALSE}, they will not be filled with colours.
@@ -71,7 +74,8 @@ orchard_plot <- function(
   cb = TRUE,
   k = TRUE,
   g = TRUE,
-  tree.order = NULL,
+  est = FALSE,
+  mod.order = NULL,
   trunk.size = 0.5,
   branch.size = 1.2,
   twig.size = 0.5,
@@ -82,6 +86,8 @@ orchard_plot <- function(
   legend.pos = c("bottom.right", "bottom.left", "top.right", "top.left",
                   "top.out", "bottom.out", "none"), 
   k.pos = c("right", "left", "none"),
+  k.size = 3.5,
+  est.size = 3.0,
   refline.pos = 0,
   colour = FALSE,
   fill = TRUE,
@@ -102,10 +108,10 @@ orchard_plot <- function(
     results <- transform_mod_results(results, transfm, n_transfm)
   }
 
-  if (!is.null(tree.order)) {
-    tree.order <- trimws(tree.order)
-    tree.order <- firstup(tree.order, upper = upper)
-    results <- .order_tree(results, tree.order)
+  if (!is.null(mod.order)) {
+    mod.order <- trimws(mod.order)
+    mod.order <- firstup(mod.order, upper = upper)
+    results <- .order_mod(results, mod.order)
   }
 
   mod_table <- results$mod_table
@@ -132,7 +138,7 @@ orchard_plot <- function(
     ggplot2::scale_size_continuous(range = point.size) +
     .orcd_legends(legend.pos, scale_legend, condition.lab, flip) +
     .orcd_axis_labels(xlab) +
-    .orcd_k_and_g(k, k.pos, g, data_trim, mod_table, flip) +
+    .orcd_k_and_g(k, k.pos, g, data_trim, mod_table, flip, k.size, est, est.size) +
     .orcd_colour_blind_palette(cb) +
     if (flip) ggplot2::coord_flip()
 
@@ -257,9 +263,11 @@ orchard_plot <- function(
   estimates_fill  <- if (colour) factor(1) else mod_table$name  # Default: colour == FALSE
 
   if ("condition" %in% names(mod_table)) {
-    condition_no    <- nlevels(factor(mod_table$condition))
-    shapes_values   <- 20 + (1:condition_no)           
-    estimates_shape <- as.factor(mod_table$condition)  
+    # Preserve data order for legend-to-plot alignment (#92)
+    estimates_shape <- factor(mod_table$condition,
+                              levels = unique(mod_table$condition))
+    condition_no    <- nlevels(estimates_shape)
+    shapes_values   <- 20 + (1:condition_no)
   } 
 
   # To make points look the same as before, multiply size and stroke by those factors (found them by try and error)
@@ -330,9 +338,10 @@ orchard_plot <- function(
 #'
 #' @return ggplot object with added text annotations.
 #' @keywords internal
-.orcd_k_and_g <- function(k, k.pos, g, data_trim, mod_table, flip = TRUE) {
-  # Early return if no need of k-g labels
-  if (k == FALSE || k.pos == "none") return()
+.orcd_k_and_g <- function(k, k.pos, g, data_trim, mod_table, flip = TRUE,
+                          k.size = 3.5, est = FALSE, est.size = 3.0) {
+  # Early return if nothing to show
+  if ((k == FALSE && est == FALSE) || k.pos == "none") return()
 
   mod_table$K <- as.vector(by(data_trim, data_trim[, "moderator"], function(x) length(x[, "yi"])))
   mod_table$g <- as.vector(num_studies(data_trim, moderator, stdy)[, 2])
@@ -364,22 +373,54 @@ orchard_plot <- function(
     y_pos <- y_pos + yi_range * 0.05
   }
 
-  # Determine label based on whether g should be included
-  if (g) {
-    label_text <- paste("italic(k)==", mod_table$K[1:group_no], "~", "(", mod_table$g[1:group_no], ")")
-  } else {
-    label_text <- paste("italic(k)==", mod_table$K[1:group_no])
+  layers <- list()
+
+  # k (and g) labels
+  if (k) {
+    if (g) {
+      label_text <- paste("italic(k)==", mod_table$K[1:group_no], "~", "(", mod_table$g[1:group_no], ")")
+    } else {
+      label_text <- paste("italic(k)==", mod_table$K[1:group_no])
+    }
+    layers[[length(layers) + 1]] <- ggplot2::annotate(
+      "text",
+      x = x_pos,
+      y = y_pos,
+      label = label_text,
+      parse = TRUE,
+      hjust = hjust_val,
+      size = k.size
+    )
   }
 
-  ggplot2::annotate(
-    "text",
-    x = x_pos,
-    y = y_pos,
-    label = label_text,
-    parse = TRUE,
-    hjust = hjust_val,
-    size = 3.5
-  )
+  # Estimate and CI labels
+  if (est) {
+    est_labels <- sprintf(
+      "%.2f [%.2f, %.2f]",
+      mod_table$estimate[1:group_no],
+      mod_table$lowerCL[1:group_no],
+      mod_table$upperCL[1:group_no]
+    )
+    # Offset estimate labels below k labels
+    est_offset <- if (flip) 0.15 else 0
+    est_x <- if (k) x_pos + est_offset else x_pos
+    est_y <- if (!flip && k) {
+      yi_range <- max(data_trim$yi) - min(data_trim$yi)
+      y_pos - yi_range * 0.05
+    } else {
+      y_pos
+    }
+    layers[[length(layers) + 1]] <- ggplot2::annotate(
+      "text",
+      x = est_x,
+      y = est_y,
+      label = est_labels,
+      hjust = hjust_val,
+      size = est.size
+    )
+  }
+
+  layers
 }
 
 
@@ -413,21 +454,21 @@ Zr_to_r <- function(df){
 #' Reorder the tree
 #'
 #' Reorder the position of the moderators in the plot by reordering
-#' the factos in the model table and the data.
+#' the factors in the model table and the data.
 #'
 #' @keywords internal
-.order_tree <- function(results, tree.order) {
+.order_mod <- function(results, mod.order) {
   mod_table <- results$mod_table
   data_trim <- results$data
 
-  # If length of tree order does not match number of categories
+  # If length of mod order does not match number of categories
   # in categorical moderator, then stop with error.
-  if (length(tree.order)!= nlevels(factor(data_trim[,'moderator']))) {
-    stop("Length of 'tree.order' does not equal number of categories in moderator")
+  if (length(mod.order)!= nlevels(factor(data_trim[,'moderator']))) {
+    stop("Length of 'mod.order' does not equal number of categories in moderator")
   }
 
-  data_trim$moderator <- factor(data_trim$moderator, levels = tree.order, labels = tree.order)
-  mod_table <- mod_table %>% dplyr::arrange(factor(name, levels = tree.order))
+  data_trim$moderator <- factor(data_trim$moderator, levels = mod.order, labels = mod.order)
+  mod_table <- mod_table %>% dplyr::arrange(factor(name, levels = mod.order))
 
   return(list(mod_table = mod_table, data = data_trim))
 }

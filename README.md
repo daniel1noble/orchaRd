@@ -32,4 +32,31 @@ library(orchaRd)
 We detail how to use the `orchaRd` package in the [vignette](https://daniel1noble.github.io/orchaRd/). 
 
 # Issues with orchaRd 2.0?
-Please note that orchaRd 2.0 is still under active development and testing. If you use it, you should check that the results are what you expect. We do have a number of tests already in place, but there may still be situations where it fails. If you find a bug or a situation that doesn't match your expectations let us know by lodging an [issue](https://github.com/daniel1noble/orchaRd/issues) on GitHub. 
+Please note that orchaRd 2.0 is still under active development and testing. If you use it, you should check that the results are what you expect. We do have a number of tests already in place, but there may still be situations where it fails. If you find a bug or a situation that doesn't match your expectations let us know by lodging an [issue](https://github.com/daniel1noble/orchaRd/issues) on GitHub.
+
+# Changelog
+
+## Version 2.2.0 (2026-04-18)
+
+- **Breaking change:** Renamed `tree.order` argument to `mod.order` throughout the package, vignette, and documentation for clarity and consistency.
+- Added `k.size`, `est`, and `est.size` arguments to `orchard_plot()` for flexible annotation of sample size and effect estimates.
+- `orchard_plot()` now preserves the order of moderator levels as they appear in the data (fixes legend/plot alignment, #92).
+- Improved whitespace trimming for moderator/group/condition columns to prevent matching errors.
+- Enhanced warning for random-slope prediction intervals.
+- All @examples lines in documentation now ≤100 characters for CRAN compliance.
+- Fixed: angle/rotation for moderator labels works regardless of `flip` (#33).
+- Fixed: k labels are centered when `flip=FALSE` (#34).
+- Fixed: Windows CI convergence issue for HCS models.
+- Added new vignette examples for `k.size`, `est`, and `est.size`.
+- All tests updated and passing (335 tests).
+- Version bumped to 2.2.0.
+- Fix Windows CI: increase iter limits for gamma2 convergence test
+- Fix angle and k-label alignment when flip=FALSE (#33, #34)
+- Fix Rd line widths >100 chars and improve random-slope PI warning (#71)
+- Fix whitespace in moderator levels & add vignette examples
+- Fix orchard_plot() with non-capitalised moderator categories (closes #64)
+- Add point.size parameter to orchard_plot() and bubble_plot() (closes #57)
+- Fix prediction interval calculation for HCS/GEN models (closes #46)
+- Fix for #92
+
+See the [vignette](https://daniel1noble.github.io/orchaRd/) for usage examples of new features.
