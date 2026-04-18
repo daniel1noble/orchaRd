@@ -2,21 +2,19 @@
 ## Ensures that leading/trailing whitespace in data columns does not cause
 ## mismatches, errors, or silent failures throughout the orchaRd pipeline.
 
-# ---------- Setup: model with whitespace-polluted moderator ----------
+# ---------- Shared fixture: model with whitespace-polluted moderator ----------
 
-test_that("setup: create model with whitespace in moderator levels", {
-  skip_on_cran()
+.make_ws_model <- function() {
   data(lim, package = "orchaRd")
-  # Inject trailing and leading whitespace into Phylum
   lim$Phylum <- paste0(" ", lim$Phylum, " ")
   lim$vi <- 1 / (lim$N - 3)
-
-  lim_ws <<- lim
-  model_ws <<- metafor::rma.mv(
+  metafor::rma.mv(
     yi = yi, V = vi, mods = ~ Phylum - 1,
     random = list(~1 | Article, ~1 | Datapoint), data = lim
   )
-})
+}
+
+model_ws <- .make_ws_model()
 
 # ---------- .trimws_col ----------
 
