@@ -584,6 +584,30 @@ lim_bubble <- orchaRd::mod_results(model, mod = "year", group = "Article",
 orchaRd::bubble_plot(lim_bubble, group = "Article",  mod = "year", xlab = "Year", legend.pos = "top.left")
 ```
 
+### Bubble plots from raw data (no model)
+
+Sometimes you may want to create a quick exploratory bubble plot directly from a raw `data.frame`, without fitting a meta-analytic model first. Since `orchaRd` 2.0, `bubble_plot()` accepts a `data.frame` as input. When you do this, the function plots the raw effect sizes against the moderator — no fitted regression line, confidence interval, or prediction interval is drawn. You simply need to tell `bubble_plot()` which columns contain the effect sizes (`yi`), sampling variances (`vi`), study identifier (`stdy`), and the continuous moderator (`mod`). You can also pass a `by` argument to facet by a categorical variable (@fig-bubbleslim-raw).
+
+```{r, echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE}
+#| label: fig-bubbleslim-raw
+#| fig-cap: "Raw data bubble plot using the @Lim2014 dataset, without any model fit. Points are sized by precision (1/SE) and faceted by environment type."
+lim_raw <- na.omit(lim)
+orchaRd::bubble_plot(
+  object = lim_raw,
+  yi    = "yi",
+  vi    = "vi",
+  stdy  = "Article",
+  mod   = "year",
+  group = "Article",
+  by    = "Environment",
+  xlab  = "Year",
+  ylab  = "Effect size (Zr)",
+  legend.pos = "top.left"
+)
+```
+
+This can be useful for initial data exploration, checking for outliers, or when you want to visualise the raw data alongside a separate model-based plot for comparison.
+
 As second example, we'll return back to @Pottier2021, who collected data on body mass for species in the data set where the acclimation response ratio (ARR) was calculated. We might expect the ARR to vary by body mass because small species might be able to acclimate faster than larger species. Using a simplified version of @Pottier2021's model, we can look at this effect (@fig-bubblespatrice):
 
 ```{r, echo = TRUE, eval = TRUE, warning=FALSE, message=FALSE}

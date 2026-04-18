@@ -1,11 +1,14 @@
 #' @title bubble_plot
-#' @description Using a \pkg{metafor} model object of class \code{rma} or \code{rma.mv}, or a results table of class \code{orchard}, the \code{bubble_plot} function creates a bubble plot from slope estimates. In cases when a model includes interaction terms, this function creates panels of bubble plots.
-#' @param object Model object of class \code{rma}, \code{rma.mv}, or \code{orchard} table of model results
+#' @description Using a \pkg{metafor} model object of class \code{rma} or \code{rma.mv}, a results table of class \code{orchard}, or a raw \code{data.frame}, the \code{bubble_plot} function creates a bubble plot from slope estimates or raw effect sizes. When a raw \code{data.frame} is provided, only the data points are plotted (no model fit lines). In cases when a model includes interaction terms, this function creates panels of bubble plots.
+#' @param object Model object of class \code{rma}, \code{rma.mv}, \code{orchard} table of model results, or a \code{data.frame} containing raw effect sizes.
 #' @param mod The name of a continuous moderator, to be plotted on the x-axis of the bubble plot.
 #' @param group The grouping variable that one wishes to plot beside total effect sizes, k. This could be study, species, or any grouping variable one wishes to present sample sizes for. Not needed if an \code{orchard_plot} is provided with a \code{mod_results} object of class \code{orchard}.
 #' @param by Character vector indicating the name that predictions should be conditioned on for the levels of the moderator.
 #' @param at List of levels one wishes to predict at for the corresponding variables in \code{by}. Used when one wants marginalised means. This argument can also be used to suppress levels of the moderator when argument \code{subset = TRUE}. Provide a list as follows: \code{list(mod = c("level1", "level2"))}.
 #' @param weights How to marginalize categorical variables; used when one wants marginalised means. The default is \code{weights = "prop"}, which weights means for moderator levels based on their proportional representation in the data. For example, if \code{"sex"} is a moderator, and males have a larger sample size than females, then this will produce a weighted average, where males are weighted more towards the mean than females. This may not always be ideal when, for example, males and females are typically roughly equally prevalent in a population. In cases such as these, you can give the moderator levels equal weight using \code{weights = "equal"}.
+#' @param yi Character string. The name of the effect size column in the data.frame. Only used when \code{object} is a \code{data.frame}.
+#' @param vi Character string. The name of the sampling variance column in the data.frame. Only used when \code{object} is a \code{data.frame}.
+#' @param stdy Character string. The name of the study identifier column in the data.frame, used for computing k and g labels. Only used when \code{object} is a \code{data.frame}.
 #' @param transfm If set to \code{"tanh"}, a tanh transformation will be applied to effect sizes, converting Zr to a correlation or pulling in extreme values for other effect sizes (lnRR, lnCVR, SMD).  \code{"invlogit"} can be used to convert lnRR to the inverse logit scale. \code{"percentr"} can convert to the percentage change scale when using response ratios and \code{"percent"} can convert to the percentage change scale of an log transformed effect size. Defaults to \code{"none"}.
 #' @param n_transfm The vector of sample sizes for each effect size estimate. This is used when \code{transfm = "inv_ft"}. Defaults to NULL.
 #' @param xlab Moderator label.
@@ -76,7 +79,10 @@ bubble_plot <- function(
   condition.order = NULL,
   weights = "prop",
   by = NULL,
-  at = NULL
+  at = NULL,
+  yi = NULL,
+  vi = NULL,
+  stdy = NULL
 ) {
   transfm <- match.arg(NULL, choices = transfm)
   legend.pos <- match.arg(NULL, choices = legend.pos)
@@ -86,9 +92,70 @@ bubble_plot <- function(
     stop("Please specify the 'group' argument by providing the name of the grouping variable. See ?bubble_plot")
   }
 
-  results <- .get_results(object, mod, group, N, by, at, weights)
+  # Determine if the input is a raw data.frame (no model)
+  is_dataframe <- is.data.frame(object) &&
+    !any(class(object) %in% c("robust.rma", "rma.mv", "rma", "rma.uni", "orchard"))
 
-  if (transfm != "none") {
+  if (is_dataframe) {
+    # Validate required arguments for data.frame input
+    if (is.null(yi))   stop("'yi' must be specified when 'object' is a data.frame. See ?bubble_plot", call. = FALSE)
+    if (is.null(vi))   stop("'vi' must be specified when 'object' is a data.frame. See ?bubble_plot", call. = FALSE)
+    if (is.null(stdy)) stop("'stdy' must be specified when 'object' is a data.frame. See ?bubble_plot", call. = FALSE)
+    if (missing(mod))  stop("'mod' must be specified when 'object' is a data.frame. See ?bubble_plot", call. = FALSE)
+
+    for (col in c(yi, vi, stdy, mod)) {
+      if (!col %in% names(object)) {
+        stop(sprintf("Column '%s' not found in the data.frame.", col), call. = FALSE)
+      }
+    }
+
+    # Validate column types
+    if (!is.numeric(object[[yi]]))  stop("Column '", yi, "' must be numeric.", call. = FALSE)
+    if (!is.numeric(object[[vi]]))  stop("Column '", vi, "' must be numeric.", call. = FALSE)
+    if (!is.numeric(object[[mod]])) stop("Column '", mod, "' must be numeric (continuous moderator).", call. = FALSE)
+
+    data_trim <- data.frame(
+      yi = object[[yi]],
+      vi = object[[vi]],
+      moderator = object[[mod]],
+      stdy = object[[stdy]]
+    )
+    if (!is.null(by)) {
+      if (!by %in% names(object)) {
+        stop(sprintf("Column '%s' not found in the data.frame.", by), call. = FALSE)
+      }
+      if (is.numeric(object[[by]]) && !is.factor(object[[by]])) {
+        stop("The 'by' column must be categorical (character or factor), not numeric.", call. = FALSE)
+      }
+      data_trim$condition <- object[[by]]
+    }
+    # Remove rows with NA or non-finite values in yi/vi/moderator
+    finite_rows <- is.finite(data_trim$yi) & is.finite(data_trim$vi) &
+                   is.finite(data_trim$moderator) & !is.na(data_trim$stdy)
+    if (!is.null(data_trim$condition)) {
+      finite_rows <- finite_rows & !is.na(data_trim$condition)
+    }
+    data_trim <- data_trim[finite_rows, , drop = FALSE]
+
+    if (nrow(data_trim) == 0) {
+      stop("No complete observations remaining after removing NA/non-finite values.", call. = FALSE)
+    }
+
+    if (any(data_trim$vi <= 0)) {
+      warning("Some sampling variances (vi) are zero or negative; precision-based sizing may be unreliable.", call. = FALSE)
+    }
+
+    if (transfm != "none") {
+      warning("'transfm' is ignored when 'object' is a data.frame (no model estimates to transform).", call. = FALSE)
+    }
+
+    # Build a minimal results structure for .set_condition
+    results <- list(mod_table = NULL, data = data_trim)
+  } else {
+    results <- .get_results(object, mod, group, N, by, at, weights)
+  }
+
+  if (!is_dataframe && transfm != "none") {
     results <- transform_mod_results(results, transfm, n_transfm)
   }
 
@@ -111,14 +178,19 @@ bubble_plot <- function(
   # Note: the bbp (bubble plot) prefix is to avoid clashes with other functions
   plt <- .base_bubble_plot(data_trim, alpha) +
     .bbp_theme() +
-    .bbp_pred_interval(mod_table, pi.lwd, pi.col) +
-    .bbp_conf_interval(mod_table, ci.lwd, ci.col) +
-    .bbp_estimate_line(mod_table, est.lwd, est.col) +
     .bbp_axis_labels(xlab, ylab) +
     .bbp_legends(legend.pos, scale_legend) +
     .bbp_kg_labels(k, g, k.pos, kg_labels) + 
     .bbp_facets(data_trim, condition.nrow, condition.order) +
     .bbp_colors(data_trim, cb)
+
+  # Only add model fit layers when a model or orchard object was provided
+  if (!is_dataframe) {
+    plt <- plt +
+      .bbp_pred_interval(mod_table, pi.lwd, pi.col) +
+      .bbp_conf_interval(mod_table, ci.lwd, ci.col) +
+      .bbp_estimate_line(mod_table, est.lwd, est.col)
+  }
 
   return(plt)
 }
@@ -136,9 +208,17 @@ bubble_plot <- function(
   data <- results$data
 
   # This is not necessary but helps with readability
-  if (is.null(mod_table$condition)) {
+  cond_col <- if (!is.null(mod_table$condition)) {
+    mod_table$condition
+  } else if (!is.null(data$condition)) {
+    data$condition
+  } else {
+    NULL
+  }
+
+  if (is.null(cond_col)) {
     condition_type <- "none"
-  } else if (is.character(mod_table$condition) || is.factor(mod_table$condition)) {
+  } else if (is.character(cond_col) || is.factor(cond_col)) {
     condition_type <- "categorical"
   } else {
     stop("The condition must be categorical", call. = FALSE)
@@ -146,15 +226,17 @@ bubble_plot <- function(
 
   if (condition_type == "none") {
     data$condition <- factor(1)
-    mod_table$condition <- factor(1)
+    if (!is.null(mod_table)) mod_table$condition <- factor(1)
   } else if (condition_type == "categorical") {
     if (is.null(condition.order)) {
       condition.order <- levels(factor(data$condition))
     } 
-    mod_table$condition <- factor(mod_table$condition,
-                                  levels = condition.order,
-                                  labels = condition.order,
-                                  ordered = TRUE)
+    if (!is.null(mod_table)) {
+      mod_table$condition <- factor(mod_table$condition,
+                                    levels = condition.order,
+                                    labels = condition.order,
+                                    ordered = TRUE)
+    }
     data$condition <- factor(data$condition,
                              levels = condition.order,
                              labels = condition.order,
