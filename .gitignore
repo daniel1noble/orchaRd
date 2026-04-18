@@ -10,6 +10,7 @@ _bookdown.yml
 inst/doc
 .DS_Store
 figures/*.pdf
+Rplots.pdf
 figures/*.pptx
 figures/*.png
 figures/Table1.docx

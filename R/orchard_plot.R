@@ -130,7 +130,7 @@ orchard_plot <- function(
     .orcd_pred_intervals(mod_table, twig.size) +
     .orcd_point_estimates(mod_table, colour, trunk.size) +
     ggplot2::scale_size_continuous(range = point.size) +
-    .orcd_legends(legend.pos, scale_legend, condition.lab) +
+    .orcd_legends(legend.pos, scale_legend, condition.lab, flip) +
     .orcd_axis_labels(xlab) +
     .orcd_k_and_g(k, k.pos, g, data_trim, mod_table) +
     .orcd_colour_blind_palette(cb) +
@@ -267,7 +267,7 @@ orchard_plot <- function(
 #' Add legends to orchard plot
 #'
 #' @keywords internal
-.orcd_legends <- function(legend.pos, scale_legend, condition.lab) {
+.orcd_legends <- function(legend.pos, scale_legend, condition.lab, flip = TRUE) {
   # Define legend position and add the legend
   legend_position <- switch(legend.pos,
     "bottom.right" = ggplot2::theme(legend.position = "inside", legend.justification = c(1, 0)),
@@ -283,7 +283,7 @@ orchard_plot <- function(
   shape_legend <- if (is.null(condition.lab)) {
     "none" 
   } else {
-    ggplot2::guide_legend(title = latex2exp::TeX(condition.lab))
+    ggplot2::guide_legend(title = latex2exp::TeX(condition.lab), reverse = flip)
   }
 
   legend_layer <- ggplot2::guides(
