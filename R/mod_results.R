@@ -209,26 +209,36 @@ pred_interval_esmeans <- function(model, mm, mod, ...) {
   tmp <- tmp[ , ]
   test.stat <- stats::qt(0.975, tmp$df[[1]])
 
-  # NOTE: this should fix #46.
-  # Other issue is how this plays with different rma. objects.
-  # uni models will treat slots for gamma NULL and we need to deal with this.
-
   se2    <- tmp$SE^2
   sigmas <- sum(model$sigma2)
-  taus   <- model$tau2
-  gammas <- model$gamma2
 
-  if (length(taus) <= 1 || length(gammas) <= 1) {
-    tau_val   <- taus
-    gamma_val <- ifelse(is.null(gammas), 0, gammas)
+  # --- tau2 component ---
+  # For models with a single tau2 (scalar), use it directly.
+  # For models with multiple tau2 values (HCS/GEN/UN structures), compute a
+  # weighted average across levels. This mirrors metafor::predict() which
+  # requires specifying which tau2.level applies to each new prediction; since
+  # orchaRd predicts at arbitrary moderator values (not specific levels), we use
+  # the weighted average as the best available approximation.
+  taus <- model$tau2
+  if (is.null(taus) || length(taus) == 0) {
+    tau_val <- 0
+  } else if (length(taus) == 1) {
+    tau_val <- taus
   } else {
-    if (mod == "1") {
-      tau_val   <- weighted_var(taus,   weights = model$g.levels.k)
-      gamma_val <- weighted_var(gammas, weights = model$g.levels.k)
-    } else {
-      tau_val   <- taus
-      gamma_val <- gammas
-    }
+    w_tau <- model$g.levels.k
+    tau_val <- weighted_var(taus, weights = w_tau)
+  }
+
+  # --- gamma2 component ---
+  # Same logic as tau2 but using h.levels.k for weights (not g.levels.k).
+  gammas <- model$gamma2
+  if (is.null(gammas) || length(gammas) == 0) {
+    gamma_val <- 0
+  } else if (length(gammas) == 1) {
+    gamma_val <- gammas
+  } else {
+    w_gamma <- model$h.levels.k
+    gamma_val <- weighted_var(gammas, weights = w_gamma)
   }
 
   PI <- test.stat * sqrt(se2 + sigmas + tau_val + gamma_val)
