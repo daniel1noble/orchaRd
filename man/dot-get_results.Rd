@@ -4,7 +4,7 @@
 \alias{.get_results}
 \title{Get the output from mod_results}
 \usage{
-.get_results(object, mod, group, N, by, at, weights)
+.get_results(object, mod, group, N, by, at, weights, upper = TRUE)
 }
 \description{
 Take the inputs passed to plotting functions and make sure to convert them

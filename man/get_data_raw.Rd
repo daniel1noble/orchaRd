@@ -4,7 +4,15 @@
 \alias{get_data_raw}
 \title{get_data_raw}
 \usage{
-get_data_raw(model, mod, group, N = NULL, at = NULL, subset = TRUE)
+get_data_raw(
+  model,
+  mod,
+  group,
+  N = NULL,
+  at = NULL,
+  subset = TRUE,
+  upper = TRUE
+)
 }
 \arguments{
 \item{model}{\code{rma.mv} object.}
@@ -18,6 +26,8 @@ get_data_raw(model, mod, group, N = NULL, at = NULL, subset = TRUE)
 \item{at}{List of moderators. If \code{at} is equal to \code{mod} then levels specified within \code{at} will be used to subset levels when \code{subset = TRUE}. Otherwise, it will marginalise over the moderators at the specified levels.}
 
 \item{subset}{Whether or not to subset levels within the \code{mod} argument. Defaults to \code{FALSE}.}
+
+\item{upper}{Logical indicating if the first letter of the moderator levels should be capitalized. Defaults to \code{TRUE}.}
 }
 \value{
 Returns a data frame

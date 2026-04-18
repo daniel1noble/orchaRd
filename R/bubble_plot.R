@@ -25,6 +25,7 @@
 #' @param est.col Colour of the point estimate.
 #' @param ci.col Colour of the confidence interval.
 #' @param pi.col Colour of the prediction interval.
+#' @param point.size Numeric vector of length 2, specifying the minimum and maximum point sizes for effect size bubbles. Defaults to \code{c(1, 3.5)}. Useful for controlling bubble size in small figures.
 #' @param condition.nrow Number of rows to plot condition variable.
 #' @param condition.order Order of the levels of the condition variable in the plot. Defaults to NULL.
 #' @param legend.pos Where to place the legend, or not to include a legend ("none").
@@ -70,6 +71,7 @@ bubble_plot <- function(
   est.col = "black",
   ci.col = "black",
   pi.col = "black",
+  point.size = c(1, 3.5),
   legend.pos = c("top.left", "top.right", "bottom.right", "bottom.left",
                  "top.out", "bottom.out", "none"),
   k.pos = c("top.right", "top.left",
@@ -120,6 +122,11 @@ bubble_plot <- function(
       moderator = object[[mod]],
       stdy = object[[stdy]]
     )
+
+    # Trim whitespace from character/factor columns to prevent level mismatches
+    if (is.character(data_trim$stdy))    data_trim$stdy    <- trimws(data_trim$stdy)
+    if (is.factor(data_trim$stdy))       levels(data_trim$stdy) <- trimws(levels(data_trim$stdy))
+
     if (!is.null(by)) {
       if (!by %in% names(object)) {
         stop(sprintf("Column '%s' not found in the data.frame.", by), call. = FALSE)
@@ -128,6 +135,8 @@ bubble_plot <- function(
         stop("The 'by' column must be categorical (character or factor), not numeric.", call. = FALSE)
       }
       data_trim$condition <- object[[by]]
+      if (is.character(data_trim$condition)) data_trim$condition <- trimws(data_trim$condition)
+      if (is.factor(data_trim$condition))    levels(data_trim$condition) <- trimws(levels(data_trim$condition))
     }
     # Remove rows with NA or non-finite values in yi/vi/moderator
     finite_rows <- is.finite(data_trim$yi) & is.finite(data_trim$vi) &
@@ -179,6 +188,7 @@ bubble_plot <- function(
   plt <- .base_bubble_plot(data_trim, alpha) +
     .bbp_theme() +
     .bbp_axis_labels(xlab, ylab) +
+    ggplot2::scale_size_continuous(range = point.size) +
     .bbp_legends(legend.pos, scale_legend) +
     .bbp_kg_labels(k, g, k.pos, kg_labels) + 
     .bbp_facets(data_trim, condition.nrow, condition.order) +

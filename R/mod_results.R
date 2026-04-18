@@ -95,6 +95,8 @@ mod_results <- function(model, mod = "1", group,  N = NULL,  weights = "prop", b
   data <- .extract_model_data(model)
 
   # Get the column in the data used as moderator
+  # Trim whitespace to prevent level mismatches downstream
+  data[[mod]] <- .trimws_col(data[[mod]])
   mod_vector <- data[[mod]]  
 
 
@@ -161,7 +163,7 @@ mod_results <- function(model, mod = "1", group,  N = NULL,  weights = "prop", b
                          common_columns)
     }
     # Extract data
-    data2 <- get_data_raw(model, mod, group, N, at = at, subset)
+    data2 <- get_data_raw(model, mod, group, N, at = at, subset, upper = upper)
     mod_table$name <- factor(mod_table$name,
                              levels = mod_table$name,
                              labels = mod_table$name)
@@ -262,6 +264,7 @@ pred_interval_esmeans <- function(model, mm, mod, ...) {
 #' @param N The name of the column in the data specifying the sample size, N. Defaults to \code{NULL}, so precision is plotted instead of sample size.
 #' @param at List of moderators. If \code{at} is equal to \code{mod} then levels specified within \code{at} will be used to subset levels when \code{subset = TRUE}. Otherwise, it will marginalise over the moderators at the specified levels.
 #' @param subset Whether or not to subset levels within the \code{mod} argument. Defaults to \code{FALSE}.
+#' @param upper Logical indicating if the first letter of the moderator levels should be capitalized. Defaults to \code{TRUE}.
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
 #' @return Returns a data frame
@@ -279,12 +282,16 @@ pred_interval_esmeans <- function(model, mm, mod, ...) {
 #'  model <- rma.mv(yi = SMD, V = vSMD, random = list( ~ 1 | StudyNo, ~ 1 | EffectID), data = english)
 #'  test3 <-  get_data_raw(model, mod = "1", group = "StudyNo")}
 
-get_data_raw <- function(model, mod, group, N = NULL, at = NULL, subset = TRUE){
+get_data_raw <- function(model, mod, group, N = NULL, at = NULL, subset = TRUE, upper = TRUE){
   if(missing(group)){
     stop("Please specify the 'group' argument by providing the name of the grouping variable. See ?mod_results")
   }
  
   data <- .extract_model_data(model)
+
+  # Trim whitespace from moderator and group columns to prevent level mismatches
+  data[[mod]]   <- .trimws_col(data[[mod]])
+  data[[group]] <- .trimws_col(data[[group]])
 
   if(!is.null(at) & subset){
     # Find the at slot in list that pertains to the moderator and extract levels
@@ -306,7 +313,7 @@ get_data_raw <- function(model, mod, group, N = NULL, at = NULL, subset = TRUE){
   }else{
     # Get moderator
     moderator <- as.character(data[[mod]]) # Could default to base instead of tidy
-    moderator <- firstup(moderator)
+    moderator <- firstup(moderator, upper = upper)
   }
   # Extract study grouping variable to calculate the
   stdy <- data[[group]] # Could default to base instead of tidy
@@ -342,6 +349,11 @@ get_data_raw_cont <- function(model, mod, group, N = NULL, by){
 
   # Extract the data from the model object
   data <- .extract_model_data(model)
+
+  # Trim whitespace from moderator, group, and condition columns
+  data[[mod]]   <- .trimws_col(data[[mod]])
+  data[[group]] <- .trimws_col(data[[group]])
+  if (!is.null(by)) data[[by]] <- .trimws_col(data[[by]])
 
   # Extract effect sizes
   yi <- model$yi
@@ -548,4 +560,24 @@ mod_is_valid <- function(model, mod) {
     data <- subset_data[model$not.na, ]
   }
   return(data)
+}
+
+#' Trim whitespace from a single column in a data frame
+#'
+#' Strips leading and trailing whitespace from character or factor columns.
+#' This prevents mismatches between moderator levels, tree.order values,
+#' and model coefficient names (e.g., "Echinodermata " vs "Echinodermata").
+#'
+#' @param x A vector (character, factor, or other type).
+#' @return The same vector with whitespace trimmed (character/factor only).
+#' @keywords internal
+.trimws_col <- function(x) {
+  if (is.character(x)) {
+    return(trimws(x))
+  }
+  if (is.factor(x)) {
+    levels(x) <- trimws(levels(x))
+    return(x)
+  }
+  x
 }
