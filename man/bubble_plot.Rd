@@ -30,11 +30,14 @@ bubble_plot(
   condition.order = NULL,
   weights = "prop",
   by = NULL,
-  at = NULL
+  at = NULL,
+  yi = NULL,
+  vi = NULL,
+  stdy = NULL
 )
 }
 \arguments{
-\item{object}{Model object of class \code{rma}, \code{rma.mv}, or \code{orchard} table of model results}
+\item{object}{Model object of class \code{rma}, \code{rma.mv}, \code{orchard} table of model results, or a \code{data.frame} containing raw effect sizes.}
 
 \item{mod}{The name of a continuous moderator, to be plotted on the x-axis of the bubble plot.}
 
@@ -83,12 +86,18 @@ bubble_plot(
 \item{by}{Character vector indicating the name that predictions should be conditioned on for the levels of the moderator.}
 
 \item{at}{List of levels one wishes to predict at for the corresponding variables in \code{by}. Used when one wants marginalised means. This argument can also be used to suppress levels of the moderator when argument \code{subset = TRUE}. Provide a list as follows: \code{list(mod = c("level1", "level2"))}.}
+
+\item{yi}{Character string. The name of the effect size column in the data.frame. Only used when \code{object} is a \code{data.frame}.}
+
+\item{vi}{Character string. The name of the sampling variance column in the data.frame. Only used when \code{object} is a \code{data.frame}.}
+
+\item{stdy}{Character string. The name of the study identifier column in the data.frame, used for computing k and g labels. Only used when \code{object} is a \code{data.frame}.}
 }
 \value{
 Bubble plot
 }
 \description{
-Using a \pkg{metafor} model object of class \code{rma} or \code{rma.mv}, or a results table of class \code{orchard}, the \code{bubble_plot} function creates a bubble plot from slope estimates. In cases when a model includes interaction terms, this function creates panels of bubble plots.
+Using a \pkg{metafor} model object of class \code{rma} or \code{rma.mv}, a results table of class \code{orchard}, or a raw \code{data.frame}, the \code{bubble_plot} function creates a bubble plot from slope estimates or raw effect sizes. When a raw \code{data.frame} is provided, only the data points are plotted (no model fit lines). In cases when a model includes interaction terms, this function creates panels of bubble plots.
 }
 \examples{
 \dontrun{
