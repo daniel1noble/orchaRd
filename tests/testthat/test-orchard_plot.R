@@ -160,3 +160,66 @@ testthat::test_that("tree.order works with original-case category names", {
   )
 })
 
+
+# --- Issue #33: angle applies to the correct axis based on flip ---
+
+testthat::test_that("angle rotates moderator labels regardless of flip (#33)", {
+  # flip=TRUE (default): angle should be on axis.text.y
+  p_flip <- orchard_plot(eklof_MR, xlab = "Grazing", group = "ExptID",
+                         angle = 45, flip = TRUE)
+  testthat::expect_equal(p_flip$theme$axis.text.y$angle, 45)
+
+  # flip=FALSE: angle should be on axis.text.x, NOT axis.text.y
+  p_noflip <- orchard_plot(eklof_MR, xlab = "Grazing", group = "ExptID",
+                           angle = 45, flip = FALSE)
+  testthat::expect_equal(p_noflip$theme$axis.text.x$angle, 45)
+  # axis.text.y should not have the custom angle when flip=FALSE
+  testthat::expect_null(p_noflip$theme$axis.text.y$angle)
+})
+
+
+# --- Issue #34: k labels centered when flip=FALSE ---
+
+testthat::test_that("k labels are centered on moderator when flip=FALSE (#34)", {
+  results <- mod_results(eklof_MR, mod = "Grazer.type", group = "ExptID")
+
+  p_flip   <- orchard_plot(results, mod = "Grazer.type", group = "ExptID",
+                           xlab = "lnRR", flip = TRUE)
+  p_noflip <- orchard_plot(results, mod = "Grazer.type", group = "ExptID",
+                           xlab = "lnRR", flip = FALSE)
+
+  # Both should be valid ggplots
+  testthat::expect_s3_class(p_flip, "ggplot")
+  testthat::expect_s3_class(p_noflip, "ggplot")
+
+  # When flip=TRUE, coord_flip should be present
+  testthat::expect_true(inherits(p_flip$coordinates, "CoordFlip"))
+  # When flip=FALSE, no coord_flip
+  testthat::expect_false(inherits(p_noflip$coordinates, "CoordFlip"))
+
+  # Extract k-label annotation layer x positions
+  # Annotations are added via annotate(), which creates a GeomText layer
+  layers_flip <- p_flip$layers
+  layers_noflip <- p_noflip$layers
+
+  # Find the annotation layer (GeomText with parsed labels)
+  get_annot_x <- function(layers) {
+    for (l in layers) {
+      if (inherits(l$geom, "GeomText") && !is.null(l$data$x)) {
+        return(l$data$x)
+      }
+    }
+    return(NULL)
+  }
+
+  x_flip   <- get_annot_x(layers_flip)
+  x_noflip <- get_annot_x(layers_noflip)
+
+  # flip=TRUE: labels offset by 0.3
+  testthat::expect_true(all(x_flip %% 1 != 0),
+    info = "k labels should be offset from integer positions when flip=TRUE")
+  # flip=FALSE: labels at integer positions (centered on moderator)
+  testthat::expect_true(all(x_noflip %% 1 == 0),
+    info = "k labels should be at integer positions when flip=FALSE")
+})
+

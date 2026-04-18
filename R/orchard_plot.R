@@ -124,7 +124,7 @@ orchard_plot <- function(
   }
 
   plt <- .base_orchard_plot(data_trim, colour, fill, alpha) +
-    .orcd_theme(angle) +
+    .orcd_theme(angle, flip) +
     .orcd_reference_line(alpha, refline.pos) +
     .orcd_conf_intervals(mod_table, branch.size) +
     .orcd_pred_intervals(mod_table, twig.size) +
@@ -132,7 +132,7 @@ orchard_plot <- function(
     ggplot2::scale_size_continuous(range = point.size) +
     .orcd_legends(legend.pos, scale_legend, condition.lab, flip) +
     .orcd_axis_labels(xlab) +
-    .orcd_k_and_g(k, k.pos, g, data_trim, mod_table) +
+    .orcd_k_and_g(k, k.pos, g, data_trim, mod_table, flip) +
     .orcd_colour_blind_palette(cb) +
     if (flip) ggplot2::coord_flip()
 
@@ -168,18 +168,34 @@ orchard_plot <- function(
 #' Theme for orchard plot
 #'
 #' @keywords internal
-.orcd_theme <- function(angle) {
+.orcd_theme <- function(angle, flip = TRUE) {
+  # When flip=TRUE, coord_flip() swaps axes, so axis.text.y
+  # controls the moderator labels. When flip=FALSE, the
+  # moderator labels are on axis.text.x instead.
+  if (flip) {
+    angle_layer <- ggplot2::theme(
+      axis.text.y = ggplot2::element_text(
+        size = 10, colour = "black",
+        hjust = 0.5, angle = angle
+      )
+    )
+  } else {
+    angle_layer <- ggplot2::theme(
+      axis.text.x = ggplot2::element_text(
+        size = 10, colour = "black",
+        hjust = 0.5, angle = angle
+      )
+    )
+  }
+
   list(
     ggplot2::theme_bw(),
     ggplot2::theme(
       legend.title = ggplot2::element_text(size = 9),
       legend.direction = "horizontal",
-      legend.background = ggplot2::element_blank(),
-      axis.text.y = ggplot2::element_text(size = 10,
-                                          colour = "black",
-                                          hjust = 0.5,
-                                          angle = angle)
-      )
+      legend.background = ggplot2::element_blank()
+    ),
+    angle_layer
   )
 }
 
@@ -314,7 +330,7 @@ orchard_plot <- function(
 #'
 #' @return ggplot object with added text annotations.
 #' @keywords internal
-.orcd_k_and_g <- function(k, k.pos, g, data_trim, mod_table) {
+.orcd_k_and_g <- function(k, k.pos, g, data_trim, mod_table, flip = TRUE) {
   # Early return if no need of k-g labels
   if (k == FALSE || k.pos == "none") return()
 
@@ -322,10 +338,7 @@ orchard_plot <- function(
   mod_table$g <- as.vector(num_studies(data_trim, moderator, stdy)[, 2])
   group_no <- nlevels(factor(mod_table$name))
 
-  # Define x position
-  x_pos <- seq(1, group_no, 1) + 0.3
-
-  # Define y position based on k.pos parameter
+  # Define y position (effect size axis) based on k.pos parameter
   if (k.pos == "right") {
     y_pos <- max(data_trim$yi) * 1.1
     hjust_val <- "right"
@@ -334,7 +347,21 @@ orchard_plot <- function(
     hjust_val <- "left"
   } else {
     y_pos <- k.pos # Manually defined by user
-    hjust_val <- 0.5 # 0.5 because this is centered in ggplot
+    hjust_val <- 0.5
+  }
+
+  # Define x position (moderator axis).
+  # When flip=TRUE, coord_flip() swaps axes visually, so the
+  # +0.3 offset shifts labels above each moderator line.
+  # When flip=FALSE, x is horizontal, so we keep labels centered
+  # on the moderator tick and offset via y instead.
+  if (flip) {
+    x_pos <- seq(1, group_no, 1) + 0.3
+  } else {
+    x_pos <- seq(1, group_no, 1)
+    # Shift labels above the data points
+    yi_range <- max(data_trim$yi) - min(data_trim$yi)
+    y_pos <- y_pos + yi_range * 0.05
   }
 
   # Determine label based on whether g should be included

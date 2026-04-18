@@ -4,7 +4,7 @@
 \alias{.orcd_theme}
 \title{Theme for orchard plot}
 \usage{
-.orcd_theme(angle)
+.orcd_theme(angle, flip = TRUE)
 }
 \description{
 Theme for orchard plot

@@ -4,7 +4,7 @@
 \alias{.orcd_k_and_g}
 \title{Add k and g to base orchard plot}
 \usage{
-.orcd_k_and_g(k, k.pos, g, data_trim, mod_table)
+.orcd_k_and_g(k, k.pos, g, data_trim, mod_table, flip = TRUE)
 }
 \arguments{
 \item{k.pos}{Position for the annotations. Can be "right", "left", or a numeric value specifying the y-coordinate.}
