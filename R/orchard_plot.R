@@ -96,13 +96,14 @@ orchard_plot <- function(
   legend.pos <- match.arg(NULL, choices = legend.pos)
   k.pos <- match.arg(NULL, choices = k.pos)
 
-  results <- .get_results(object, mod, group, N, by, at, weights)
+  results <- .get_results(object, mod, group, N, by, at, weights, upper)
 
   if (transfm != "none") {
     results <- transform_mod_results(results, transfm, n_transfm)
   }
 
   if (!is.null(tree.order)) {
+    tree.order <- firstup(tree.order, upper = upper)
     results <- .order_tree(results, tree.order)
   }
 

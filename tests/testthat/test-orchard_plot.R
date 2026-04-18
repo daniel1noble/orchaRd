@@ -51,3 +51,44 @@ testthat::test_that("point.size controls the size scale range in orchard_plot", 
   testthat::expect_lt(max(small_sizes), max(default_sizes))
 })
 
+
+testthat::test_that("upper=FALSE keeps lowercase moderator names", {
+  data(lim)
+  lim$Phylum <- tolower(lim$Phylum)
+  lim$vi <- (1/sqrt(lim$N - 3))^2
+  lim_MR <- metafor::rma.mv(yi = yi, V = vi, mods = ~ Phylum,
+    random = list(~1 | Article, ~1 | Datapoint), data = lim)
+
+  p <- orchard_plot(lim_MR, mod = "Phylum", group = "Article",
+    xlab = "Zr", transfm = "tanh", N = "N", upper = FALSE)
+  built <- ggplot2::ggplot_build(p)
+
+  # Moderator levels in the data should be lowercase
+  mod_levels <- levels(built$plot$data$moderator)
+  testthat::expect_true(all(mod_levels == tolower(mod_levels)))
+})
+
+
+testthat::test_that("tree.order works with original-case category names", {
+  data(lim)
+  lim$Phylum <- tolower(lim$Phylum)
+  lim$vi <- (1/sqrt(lim$N - 3))^2
+  lim_MR <- metafor::rma.mv(yi = yi, V = vi, mods = ~ Phylum,
+    random = list(~1 | Article, ~1 | Datapoint), data = lim)
+
+  new_order <- rev(sort(unique(lim_MR$data$Phylum)))
+
+  # Should not error with lowercase tree.order and default upper=TRUE
+  testthat::expect_no_error(
+    orchard_plot(lim_MR, mod = "Phylum", group = "Article",
+      xlab = "Zr", transfm = "tanh", N = "N", tree.order = new_order)
+  )
+
+  # Should not error with lowercase tree.order and upper=FALSE
+  testthat::expect_no_error(
+    orchard_plot(lim_MR, mod = "Phylum", group = "Article",
+      xlab = "Zr", transfm = "tanh", N = "N",
+      tree.order = new_order, upper = FALSE)
+  )
+})
+

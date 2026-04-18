@@ -15,7 +15,7 @@
 #' into the results from \code{mod_results}. 
 #'
 #' @keywords internal
-.get_results <- function(object, mod, group, N, by, at, weights) {
+.get_results <- function(object, mod, group, N, by, at, weights, upper = TRUE) {
   # Get results to be used. Only accepts metafor or orchard object objects
   if (any(class(object) %in% c("robust.rma", "rma.mv", "rma", "rma.uni"))) {
     results <- orchaRd::mod_results(
@@ -25,7 +25,8 @@
       N = N,
       by = by, 
       at = at, 
-      weights = weights
+      weights = weights,
+      upper = upper
     )
   } else if (any(class(object) %in% c("orchard"))) {
     results <- object

@@ -161,7 +161,7 @@ mod_results <- function(model, mod = "1", group,  N = NULL,  weights = "prop", b
                          common_columns)
     }
     # Extract data
-    data2 <- get_data_raw(model, mod, group, N, at = at, subset)
+    data2 <- get_data_raw(model, mod, group, N, at = at, subset, upper = upper)
     mod_table$name <- factor(mod_table$name,
                              levels = mod_table$name,
                              labels = mod_table$name)
@@ -252,6 +252,7 @@ pred_interval_esmeans <- function(model, mm, mod, ...) {
 #' @param N The name of the column in the data specifying the sample size, N. Defaults to \code{NULL}, so precision is plotted instead of sample size.
 #' @param at List of moderators. If \code{at} is equal to \code{mod} then levels specified within \code{at} will be used to subset levels when \code{subset = TRUE}. Otherwise, it will marginalise over the moderators at the specified levels.
 #' @param subset Whether or not to subset levels within the \code{mod} argument. Defaults to \code{FALSE}.
+#' @param upper Logical indicating if the first letter of the moderator levels should be capitalized. Defaults to \code{TRUE}.
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
 #' @return Returns a data frame
@@ -269,7 +270,7 @@ pred_interval_esmeans <- function(model, mm, mod, ...) {
 #'  model <- rma.mv(yi = SMD, V = vSMD, random = list( ~ 1 | StudyNo, ~ 1 | EffectID), data = english)
 #'  test3 <-  get_data_raw(model, mod = "1", group = "StudyNo")}
 
-get_data_raw <- function(model, mod, group, N = NULL, at = NULL, subset = TRUE){
+get_data_raw <- function(model, mod, group, N = NULL, at = NULL, subset = TRUE, upper = TRUE){
   if(missing(group)){
     stop("Please specify the 'group' argument by providing the name of the grouping variable. See ?mod_results")
   }
@@ -296,7 +297,7 @@ get_data_raw <- function(model, mod, group, N = NULL, at = NULL, subset = TRUE){
   }else{
     # Get moderator
     moderator <- as.character(data[[mod]]) # Could default to base instead of tidy
-    moderator <- firstup(moderator)
+    moderator <- firstup(moderator, upper = upper)
   }
   # Extract study grouping variable to calculate the
   stdy <- data[[group]] # Could default to base instead of tidy
