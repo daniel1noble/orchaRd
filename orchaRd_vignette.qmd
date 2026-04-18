@@ -1203,5 +1203,74 @@ plot2 <- pub_bias_plot(plot, english_MA2_1, english_MA4)
 plot2
 ```
 
+# **Combining orchard plots with summary tables**
+
+A common request (see [#93](https://github.com/daniel1noble/orchaRd/issues/93), contributed by `@EIvimeyCook`) is to display an orchard plot together with a formatted summary table of model coefficients and heterogeneity statistics in a single figure. This can be done by pairing `orchard_plot()` with `broom::tidy()`, `gt`, and `patchwork`. The example below refits the `lim` meta-regression from *Example 3* and stacks a styled `gt` table above the orchard plot.
+
+```{r fig-orchaRd-table, echo=TRUE, eval=TRUE, warning=FALSE, message=FALSE}
+#| fig-cap: "Orchard plot of the lim meta-regression combined with a styled `gt` summary table via `patchwork`. The table reports coefficient-level estimates, confidence intervals, and test statistics; the source note reports heterogeneity (Q_E) and omnibus moderator (Q_M) tests extracted from the `rma.mv` object."
+#| fig-align: center
+#| fig-width: 8
+#| fig-height: 9
+library(broom)
+library(gt)
+library(patchwork)
+library(dplyr)
+
+# Refit the lim meta-regression (same specification as Example 3)
+data(lim)
+lim$vi <- (1/sqrt(lim$N - 3))^2
+lim_MR <- metafor::rma.mv(yi = yi, V = vi, mods = ~ Phylum - 1,
+                          random = list(~1 | Article, ~1 | Datapoint),
+                          data = lim)
+
+# Orchard plot of the lim meta-regression
+gg_orchard <- orchaRd::orchard_plot(lim_MR, mod = "Phylum", group = "Article",
+                                    xlab = "Correlation coefficient (r)",
+                                    transfm = "tanh", angle = 45, cb = TRUE)
+
+# Tidy the model coefficients and format for display.
+# Keep the raw numeric p in `p_num` so we can drive conditional styling from it.
+tidy_raw <- broom::tidy(lim_MR, conf.int = TRUE)
+coef_tab <- tidy_raw |>
+  dplyr::mutate(
+    Predictor = sub("^Phylum", "", term),
+    Estimate  = sprintf("%.3f", estimate),
+    SE        = sprintf("%.3f", std.error),
+    `CI Low`  = sprintf("%.3f", conf.low),
+    `CI High` = sprintf("%.3f", conf.high),
+    Statistic = sprintf("%.3f", statistic),
+    p         = ifelse(p.value < 0.001, "<0.001", sprintf("%.3f", p.value)),
+    p_num     = p.value
+  ) |>
+  dplyr::select(Predictor, Estimate, SE, `CI Low`, `CI High`, Statistic, p, p_num)
+
+# Heterogeneity and omnibus moderator stats pulled from the rma.mv object
+src_note <- paste0(
+  "Q_E(df = ", lim_MR$k - lim_MR$p, ") = ", round(lim_MR$QE, 2),
+  ", p = ", ifelse(lim_MR$QEp < 0.001, "<0.001", round(lim_MR$QEp, 3)),
+  "  |  Q_M(df = ", lim_MR$QMdf[1], ") = ", round(lim_MR$QM, 2),
+  ", p = ", ifelse(lim_MR$QMp < 0.001, "<0.001", round(lim_MR$QMp, 3))
+)
+
+gt_tab <- gt::gt(coef_tab) |>
+  gt::tab_style(style = gt::cell_text(weight = "bold"),
+                locations = gt::cells_body(rows = p_num < 0.05)) |>
+  gt::cols_hide(columns = "p_num") |>
+  gt::tab_style(style = gt::cell_text(style = "italic"),
+                locations = gt::cells_column_labels()) |>
+  gt::tab_style(style = gt::cell_borders(sides = "bottom", color = "black",
+                                         weight = gt::px(3)),
+                locations = gt::cells_column_labels()) |>
+  gt::cols_align("left") |>
+  gt::tab_source_note(source_note = src_note)
+
+# Stack the table above the orchard plot; give the plot more vertical space
+patchwork::wrap_table(gt_tab) / gg_orchard +
+  patchwork::plot_layout(heights = c(2, 5))
+```
+
+The same pattern works for any `rma`/`rma.mv` model: `broom::tidy(..., conf.int = TRUE)` yields one row per coefficient, `gt` handles formatting/styling, and `patchwork::wrap_table()` lets the table participate in a `patchwork` layout alongside the orchard plot. To display a publication-bias-corrected orchard plot alongside the raw coefficient table, pass a bias-correction moderator to `mod_results()` via the `at` argument (e.g. `at = list(vi = 0)`) and plot that result in place of `lim_MR`.
+
 \newpage
 # **References**

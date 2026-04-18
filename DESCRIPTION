@@ -41,9 +41,12 @@ Imports:
     MASS,
     rWishart,
     tester
-Suggests: R.rsp, 
+Suggests: R.rsp,
   testthat,
     knitr,
     rmarkdown,
     glmmTMB,
-    lme4
+    lme4,
+    broom,
+    gt,
+    patchwork

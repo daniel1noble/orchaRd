@@ -48,6 +48,7 @@ Please note that orchaRd 2.0 is still under active development and testing. If y
 - Fixed: k labels are centered when `flip=FALSE` (#34).
 - Fixed: Windows CI convergence issue for HCS models.
 - Added new vignette examples for `k.size`, `est`, and `est.size`.
+- Added a worked example to the vignette showing how to combine orchard plots with summary tables using `broom`, `gt`, and `patchwork` (closes #93).
 - All tests updated and passing (335 tests).
 - Version bumped to 2.2.0.
 - Fix Windows CI: increase iter limits for gamma2 convergence test
