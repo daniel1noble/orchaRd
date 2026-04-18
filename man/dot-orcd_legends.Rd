@@ -4,7 +4,7 @@
 \alias{.orcd_legends}
 \title{Add legends to orchard plot}
 \usage{
-.orcd_legends(legend.pos, scale_legend, condition.lab)
+.orcd_legends(legend.pos, scale_legend, condition.lab, flip = TRUE)
 }
 \description{
 Add legends to orchard plot

@@ -42,10 +42,17 @@
 #'   yi = yi, V = vi, mods = ~ Environment * year,
 #'   random = list(~ 1 | Article, ~ 1 | Datapoint), data = na.omit(lim)
 #' )
-#' test <- orchaRd::mod_results(model, mod = "year", group = "Article", data = lim, weights = "prop", by = "Environment")
-#' orchaRd::bubble_plot(test, mod = "year", group = "Article", legend.pos = "top.left")
+#' test <- orchaRd::mod_results(
+#'   model, mod = "year", group = "Article",
+#'   data = lim, weights = "prop", by = "Environment")
+#' orchaRd::bubble_plot(
+#'   test, mod = "year", group = "Article",
+#'   legend.pos = "top.left")
 #' # Or just using model directly
-#' orchaRd::bubble_plot(model, mod = "year", legend.pos = "top.left", group = "Article", weights = "prop", by = "Environment")
+#' orchaRd::bubble_plot(
+#'   model, mod = "year", legend.pos = "top.left",
+#'   group = "Article", weights = "prop",
+#'   by = "Environment")
 #' }
 #' @export
 

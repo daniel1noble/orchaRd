@@ -39,13 +39,29 @@ Collects and builds the data used to fit the \code{rma.mv} or \code{rma} model i
 \dontrun{
 data(fish)
 warm_dat <- fish
-model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 | es_ID), mods = ~ experimental_design + trait.type + deg_dif + treat_end_days, method = "REML", test = "t", data = warm_dat, control=list(optimizer="optim", optmethod="Nelder-Mead"))
- test <- get_data_raw(model, mod = "trait.type", group = "group_ID", at = list(trait.type = c("physiology", "morphology")))
+model <- metafor::rma.mv(
+  yi = lnrr, V = lnrr_vi,
+  random = list(~1 | group_ID, ~1 | es_ID),
+  mods = ~ experimental_design + trait.type +
+    deg_dif + treat_end_days,
+  method = "REML", test = "t", data = warm_dat,
+  control = list(optimizer = "optim",
+    optmethod = "Nelder-Mead"))
+test <- get_data_raw(
+  model, mod = "trait.type",
+  group = "group_ID",
+  at = list(trait.type = c("physiology",
+    "morphology")))
  test2 <- get_data_raw(model, mod = "1", group = "group_ID")
 
  data(english)
  # We need to calculate the effect sizes, in this case d
- english <- escalc(measure = "SMD", n1i = NStartControl, sd1i = SD_C, m1i = MeanC, n2i = NStartExpt, sd2i = SD_E, m2i = MeanE, var.names=c("SMD","vSMD"))
+ english <- escalc(
+   measure = "SMD", n1i = NStartControl,
+   sd1i = SD_C, m1i = MeanC,
+   n2i = NStartExpt, sd2i = SD_E,
+   m2i = MeanE,
+   var.names = c("SMD", "vSMD"))
  model <- rma.mv(yi = SMD, V = vSMD, random = list( ~ 1 | StudyNo, ~ 1 | EffectID), data = english)
  test3 <-  get_data_raw(model, mod = "1", group = "StudyNo")}
 }

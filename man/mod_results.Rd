@@ -44,6 +44,37 @@ A data frame containing all the model results including mean effect size estimat
 \description{
 Using a \pkg{metafor} model object of class \code{rma} or \code{rma.mv}, this function creates a table of model results containing the mean effect size estimates for all levels of a given categorical moderator, and their corresponding confidence and prediction intervals. The function is capable of calculating marginal means from meta-regression models, including those with multiple moderator variables of mixed types (i.e. continuous and categorical variables).
 }
+\details{
+\strong{Prediction intervals with random-slope models (struct = "GEN" or "HCS"):}
+
+When your \code{rma.mv} model includes a random-slope term (e.g.,
+\code{random = ~ moderator | study} with \code{struct = "GEN"} or
+\code{"HCS"}), prediction intervals require the full variance-covariance
+matrix of the random effects — not just the sum of the variance components.
+In a random-slope model the random intercept and slope are typically
+correlated, and a correct prediction interval at a given moderator value
+\emph{x} must incorporate:
+
+\deqn{Var(u_{0j} + u_{1j} x) = \tau^2_0 + 2 x \rho \tau_0 \tau_1 + x^2 \tau^2_1}
+
+where \eqn{\tau^2_0} and \eqn{\tau^2_1} are the random intercept and slope
+variances, and \eqn{\rho} is their correlation. Simply summing
+\code{tau2}, \code{gamma2}, and \code{sigma2} ignores the slope variance
+contribution and the covariance, producing intervals that may be too narrow
+or too wide depending on the moderator value.
+
+\code{metafor::predict.rma()} does not currently return prediction intervals
+for models with GEN or HCS structures for this reason. \code{orchaRd} will
+issue a warning when it detects such a structure. Users should verify
+prediction intervals manually using the approach described by Pustejovsky
+(2024, R-sig-meta-analysis mailing list):
+\url{https://stat.ethz.ch/pipermail/r-sig-meta-analysis/2024-March/005152.html}.
+
+A practical workaround is to re-centre the moderator at the value of interest
+(so the random slope term evaluates at zero) and then compare the resulting
+prediction interval with a manual calculation using the full
+variance-covariance matrix from the model.
+}
 \examples{
 \dontrun{
 # Simple eklof data
@@ -83,8 +114,21 @@ mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)
 by = "treat_end_days", weights = "prop")
 
 # Fish data example with a heteroscedastic error
-model_het <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 + trait.type| es_ID), mods = ~ trait.type + deg_dif, method = "REML", test = "t", rho = 0, struc = "HCS", control=list(optimizer="optim", optmethod="Nelder-Mead"), data = warm_dat)
-HetModel <- mod_results(model_het, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif", weights = "prop")
+model_het <- metafor::rma.mv(
+  yi = lnrr, V = lnrr_vi,
+  random = list(~1 | group_ID,
+    ~1 + trait.type | es_ID),
+  mods = ~ trait.type + deg_dif,
+  method = "REML", test = "t", rho = 0,
+  struc = "HCS",
+  control = list(optimizer = "optim",
+    optmethod = "Nelder-Mead"),
+  data = warm_dat)
+HetModel <- mod_results(
+  model_het, group = "group_ID",
+  mod = "trait.type",
+  at = list(deg_dif = c(5, 10, 15)),
+  by = "deg_dif", weights = "prop")
 orchard_plot(HetModel, xlab = "lnRR")
 }
 }

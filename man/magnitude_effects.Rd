@@ -63,7 +63,10 @@ magnitude_effects(x1bar = 10, x2bar = 7, sd1 = 2, sd2 = 3, n1 = 30, n2 = 30)
 # Dependent samples with correlation
 magnitude_effects(x1bar = 10, x2bar = 7, sd1 = 2, sd2 = 3, n1 = 30, n2 = 30, paired = TRUE, r = 0.5)
 # Example across rows of data frame
-data = data.frame(xbar1 = rep(5, 5), xbar2 = rep(20, 5), sd1= rep(5, 5), sd2= rep(6, 5), n1= rep(30, 5), n2= rep(30, 5))
+data = data.frame(
+  xbar1 = rep(5, 5), xbar2 = rep(20, 5),
+  sd1 = rep(5, 5), sd2 = rep(6, 5),
+  n1 = rep(30, 5), n2 = rep(30, 5))
 res <- data \%>\%
   mutate(
     mag = purrr::pmap(

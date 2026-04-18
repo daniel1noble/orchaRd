@@ -19,7 +19,8 @@ CVH2 for mulilevel meta-analytic models, based on Yang et al. (2023). Under mult
 }
 \examples{
 \dontrun{
-# IMPORTANT NOTE ** boot = 10 is set LOW deliberately to make the models run fast. You should always run for at least boot = 1000
+# IMPORTANT NOTE ** boot = 10 is set LOW deliberately
+# to make the models run fast. Always use boot >= 1000
 # English example
 data(english)
 english <- escalc(measure = "SMD", n1i = NStartControl,
@@ -45,9 +46,11 @@ CVH2_fish_2 <- cvh2_ml(model)
 data(lim)
 # Add in the sampling variance
 lim$vi<-(1/sqrt(lim$N - 3))^2
-# Lets fit a meta-regression - I will do Article non-independence.
-The phylogenetic model found phylogenetic effects, however, instead we could fit Phylum as a fixed effect and explore them with an Orchard Plot
-lim_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~Phylum-1, random=list(~1|Article, ~1|Datapoint), data=lim)
+# Fit a meta-regression with Phylum as fixed effect
+lim_MR <- metafor::rma.mv(
+  yi = yi, V = vi, mods = ~ Phylum - 1,
+  random = list(~1 | Article, ~1 | Datapoint),
+  data = lim)
 CVH2_lim_1 <- cvh2_ml(lim_MR, boot = 10)
 CVH2_lim_2 <- cvh2_ml(lim_MR)
 }

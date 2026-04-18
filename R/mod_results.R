@@ -13,6 +13,38 @@
 #' @param upper Logical, defaults to \code{TRUE}, indicating that the first letter of the character string for the moderator variable should be capitalized.
 #' @param ... Additional arguments passed to \code{emmeans::emmeans()}.
 #' @return A data frame containing all the model results including mean effect size estimate, confidence and prediction intervals
+#'
+#' @details
+#' \strong{Prediction intervals with random-slope models (struct = "GEN" or "HCS"):}
+#'
+#' When your \code{rma.mv} model includes a random-slope term (e.g.,
+#' \code{random = ~ moderator | study} with \code{struct = "GEN"} or
+#' \code{"HCS"}), prediction intervals require the full variance-covariance
+#' matrix of the random effects — not just the sum of the variance components.
+#' In a random-slope model the random intercept and slope are typically
+#' correlated, and a correct prediction interval at a given moderator value
+#' \emph{x} must incorporate:
+#'
+#' \deqn{Var(u_{0j} + u_{1j} x) = \tau^2_0 + 2 x \rho \tau_0 \tau_1 + x^2 \tau^2_1}
+#'
+#' where \eqn{\tau^2_0} and \eqn{\tau^2_1} are the random intercept and slope
+#' variances, and \eqn{\rho} is their correlation. Simply summing
+#' \code{tau2}, \code{gamma2}, and \code{sigma2} ignores the slope variance
+#' contribution and the covariance, producing intervals that may be too narrow
+#' or too wide depending on the moderator value.
+#'
+#' \code{metafor::predict.rma()} does not currently return prediction intervals
+#' for models with GEN or HCS structures for this reason. \code{orchaRd} will
+#' issue a warning when it detects such a structure. Users should verify
+#' prediction intervals manually using the approach described by Pustejovsky
+#' (2024, R-sig-meta-analysis mailing list):
+#' \url{https://stat.ethz.ch/pipermail/r-sig-meta-analysis/2024-March/005152.html}.
+#'
+#' A practical workaround is to re-centre the moderator at the value of interest
+#' (so the random slope term evaluates at zero) and then compare the resulting
+#' prediction interval with a manual calculation using the full
+#' variance-covariance matrix from the model.
+#'
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
 #' @examples \dontrun{
@@ -53,8 +85,21 @@
 #' by = "treat_end_days", weights = "prop")
 #'
 #' # Fish data example with a heteroscedastic error
-#' model_het <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 + trait.type| es_ID), mods = ~ trait.type + deg_dif, method = "REML", test = "t", rho = 0, struc = "HCS", control=list(optimizer="optim", optmethod="Nelder-Mead"), data = warm_dat)
-#' HetModel <- mod_results(model_het, group = "group_ID", mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif", weights = "prop")
+#' model_het <- metafor::rma.mv(
+#'   yi = lnrr, V = lnrr_vi,
+#'   random = list(~1 | group_ID,
+#'     ~1 + trait.type | es_ID),
+#'   mods = ~ trait.type + deg_dif,
+#'   method = "REML", test = "t", rho = 0,
+#'   struc = "HCS",
+#'   control = list(optimizer = "optim",
+#'     optmethod = "Nelder-Mead"),
+#'   data = warm_dat)
+#' HetModel <- mod_results(
+#'   model_het, group = "group_ID",
+#'   mod = "trait.type",
+#'   at = list(deg_dif = c(5, 10, 15)),
+#'   by = "deg_dif", weights = "prop")
 #' orchard_plot(HetModel, xlab = "lnRR")
 #' }
 #' @export
@@ -74,7 +119,23 @@ mod_results <- function(model, mod = "1", group,  N = NULL,  weights = "prop", b
   }
 
   if(any(model$struct %in% c("GEN", "HCS"))){
-    warning("We noticed you're fitting an ~inner|outer rma model ('random slope'). There are circumstances where the prediction intervals for such models are calculated incorrectly. Please check your results carefully.")
+    warning(
+      "Your model includes a random-slope structure (struct = '",
+      paste(model$struct[model$struct %in% c("GEN", "HCS")], collapse = "', '"),
+      "'), which uses an ~inner|outer formula for one or more random effects. ",
+      "Prediction intervals for these models require accounting for the ",
+      "covariance between random intercepts and slopes. Simply summing the ",
+      "variance components (tau2, gamma2, sigma2) is not correct when random ",
+      "slopes are present (see Viechtbauer & Pustejovsky, R-sig-meta-analysis, ",
+      "March 2024: https://stat.ethz.ch/pipermail/r-sig-meta-analysis/2024-March/005152.html). ",
+      "metafor's predict() does not currently return prediction intervals for ",
+      "GEN/HCS structures for the same reason. orchaRd may therefore report ",
+      "inaccurate prediction intervals for these models. ",
+      "To verify, you can re-centre your moderator at the value of interest ",
+      "and compare the PI width with a manual calculation that uses the full ",
+      "variance-covariance matrix of the random effects.",
+      call. = FALSE
+    )
   }
 
 
@@ -272,13 +333,29 @@ pred_interval_esmeans <- function(model, mm, mod, ...) {
 #' @examples \dontrun{
 #' data(fish)
 #' warm_dat <- fish
-#' model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list(~1 | group_ID, ~1 | es_ID), mods = ~ experimental_design + trait.type + deg_dif + treat_end_days, method = "REML", test = "t", data = warm_dat, control=list(optimizer="optim", optmethod="Nelder-Mead"))
-#'  test <- get_data_raw(model, mod = "trait.type", group = "group_ID", at = list(trait.type = c("physiology", "morphology")))
+#' model <- metafor::rma.mv(
+#'   yi = lnrr, V = lnrr_vi,
+#'   random = list(~1 | group_ID, ~1 | es_ID),
+#'   mods = ~ experimental_design + trait.type +
+#'     deg_dif + treat_end_days,
+#'   method = "REML", test = "t", data = warm_dat,
+#'   control = list(optimizer = "optim",
+#'     optmethod = "Nelder-Mead"))
+#' test <- get_data_raw(
+#'   model, mod = "trait.type",
+#'   group = "group_ID",
+#'   at = list(trait.type = c("physiology",
+#'     "morphology")))
 #'  test2 <- get_data_raw(model, mod = "1", group = "group_ID")
 #'
 #'  data(english)
 #'  # We need to calculate the effect sizes, in this case d
-#'  english <- escalc(measure = "SMD", n1i = NStartControl, sd1i = SD_C, m1i = MeanC, n2i = NStartExpt, sd2i = SD_E, m2i = MeanE, var.names=c("SMD","vSMD"))
+#'  english <- escalc(
+#'    measure = "SMD", n1i = NStartControl,
+#'    sd1i = SD_C, m1i = MeanC,
+#'    n2i = NStartExpt, sd2i = SD_E,
+#'    m2i = MeanE,
+#'    var.names = c("SMD", "vSMD"))
 #'  model <- rma.mv(yi = SMD, V = vSMD, random = list( ~ 1 | StudyNo, ~ 1 | EffectID), data = english)
 #'  test3 <-  get_data_raw(model, mod = "1", group = "StudyNo")}
 
@@ -443,9 +520,16 @@ weighted_var <- function(x, weights){
 #' @return Returns a table with the number of studies in each level of all parameters within a \code{rma.mv} or \code{rma} object.
 #' @export
 #' @examples
-#' \dontrun{data(fish)
-#'warm_dat <- fish
-#' model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi, random = list( ~1 | es_ID,~1 | group_ID), mods = ~experimental_design-1, method = "REML", test = "t", data = warm_dat, control=list(optimizer="optim", optmethod="Nelder-Mead"))
+#' \dontrun{
+#' data(fish)
+#' warm_dat <- fish
+#' model <- metafor::rma.mv(
+#'   yi = lnrr, V = lnrr_vi,
+#'   random = list(~1 | es_ID, ~1 | group_ID),
+#'   mods = ~ experimental_design - 1,
+#'   method = "REML", test = "t", data = warm_dat,
+#'   control = list(optimizer = "optim",
+#'     optmethod = "Nelder-Mead"))
 #' num_studies(model$data, experimental_design, group_ID)
 #' }
 
