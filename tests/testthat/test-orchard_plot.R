@@ -37,3 +37,17 @@ testthat::test_that("Checking orchard_plot output ...", {
 
 })
 
+
+testthat::test_that("point.size controls the size scale range in orchard_plot", {
+  p_default <- orchard_plot(eklof_MR, xlab = "Grazing", group = "ExptID")
+  p_small   <- orchard_plot(eklof_MR, xlab = "Grazing", group = "ExptID",
+                            point.size = c(0.5, 2))
+
+  # Extract the mapped size values from the built plot data
+  default_sizes <- range(ggplot2::ggplot_build(p_default)$data[[1]]$size)
+  small_sizes   <- range(ggplot2::ggplot_build(p_small)$data[[1]]$size)
+
+  # The small range plot should have smaller max size
+  testthat::expect_lt(max(small_sizes), max(default_sizes))
+})
+

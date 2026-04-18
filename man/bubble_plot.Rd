@@ -23,6 +23,7 @@ bubble_plot(
   est.col = "black",
   ci.col = "black",
   pi.col = "black",
+  point.size = c(1, 3.5),
   legend.pos = c("top.left", "top.right", "bottom.right", "bottom.left", "top.out",
     "bottom.out", "none"),
   k.pos = c("top.right", "top.left", "bottom.right", "bottom.left", "none"),
@@ -72,6 +73,8 @@ bubble_plot(
 \item{ci.col}{Colour of the confidence interval.}
 
 \item{pi.col}{Colour of the prediction interval.}
+
+\item{point.size}{Numeric vector of length 2, specifying the minimum and maximum point sizes for effect size bubbles. Defaults to \code{c(1, 3.5)}. Useful for controlling bubble size in small figures.}
 
 \item{legend.pos}{Where to place the legend, or not to include a legend ("none").}
 

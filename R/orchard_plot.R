@@ -20,6 +20,7 @@
 #' @param trunk.size Size of the mean, or central point.
 #' @param branch.size Size of the confidence intervals.
 #' @param twig.size Size of the prediction intervals.
+#' @param point.size Numeric vector of length 2, specifying the minimum and maximum point sizes for effect size bubbles. Defaults to \code{c(1, 3.5)}. Useful for controlling bubble size in small figures.
 #' @param legend.pos Where to place the legend. To remove the legend, use \code{legend.pos = "none"}.
 #' @param k.pos Where to put k (number of effect sizes) on the plot. Users can specify the exact position or they can use specify \code{"right"}, \code{"left"},  or \code{"none"}. Note that numeric values (0, 0.5, 1) can also be specified and this would give greater precision.
 #' @param refline.pos Where to put the reference line. defaults to 0.
@@ -74,6 +75,7 @@ orchard_plot <- function(
   trunk.size = 0.5,
   branch.size = 1.2,
   twig.size = 0.5,
+  point.size = c(1, 3.5),
   transfm = c("none", "tanh", "invlogit", "percent", "percentr", "inv_ft"),
   n_transfm = NULL,
   condition.lab = NULL,
@@ -125,6 +127,7 @@ orchard_plot <- function(
     .orcd_conf_intervals(mod_table, branch.size) +
     .orcd_pred_intervals(mod_table, twig.size) +
     .orcd_point_estimates(mod_table, colour, trunk.size) +
+    ggplot2::scale_size_continuous(range = point.size) +
     .orcd_legends(legend.pos, scale_legend, condition.lab) +
     .orcd_axis_labels(xlab) +
     .orcd_k_and_g(k, k.pos, g, data_trim, mod_table) +

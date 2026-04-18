@@ -19,6 +19,7 @@ orchard_plot(
   trunk.size = 0.5,
   branch.size = 1.2,
   twig.size = 0.5,
+  point.size = c(1, 3.5),
   transfm = c("none", "tanh", "invlogit", "percent", "percentr", "inv_ft"),
   n_transfm = NULL,
   condition.lab = NULL,
@@ -63,6 +64,8 @@ orchard_plot(
 \item{branch.size}{Size of the confidence intervals.}
 
 \item{twig.size}{Size of the prediction intervals.}
+
+\item{point.size}{Numeric vector of length 2, specifying the minimum and maximum point sizes for effect size bubbles. Defaults to \code{c(1, 3.5)}. Useful for controlling bubble size in small figures.}
 
 \item{transfm}{If set to \code{"tanh"}, a tanh transformation will be applied to effect sizes, converting Zr to a correlation or pulling in extreme values for other effect sizes (lnRR, lnCVR, SMD).  \code{"invlogit"} can be used to convert lnRR to the inverse logit scale. \code{"percentr"} can convert to the percentage change scale when using response ratios and \code{"percent"} can convert to the percentage change scale of an log transformed effect size. Defaults to \code{"none"}.}
 
