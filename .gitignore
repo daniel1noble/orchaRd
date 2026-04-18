@@ -54,3 +54,4 @@ test-heterogeneity_plot.R
 /.quarto/
 orchaRd.Rproj
 .claude/worktrees/funny-mirzakhani/
+.claude/settings.json
