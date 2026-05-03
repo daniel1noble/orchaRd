@@ -446,14 +446,17 @@ test_that("leave_one_out() supports vcalc_args (builds a temporary VCV per leave
   expect_true(nrow(res$mod_table) >= 1)
 })
 
-test_that("leave_one_out() supports robust_args with clubSandwich = TRUE", {
+test_that("leave_one_out() honors an explicit clubSandwich entry in robust_args", {
+  # Passing clubSandwich = FALSE (rather than relying on the default) hits the
+  # non-NULL branch in leave_one_out (`clubSandwich_arg <- robust_args$clubSandwich`)
+  # without needing the optional clubSandwich package on CI runners.
   eklof_setup <- setup_eklof_data()
   eklof_data  <- eklof_setup$data
   m <- rma.mv(yi = lnRR, V = vlnRR,
               random = list(~1 | ExptID, ~1 | Datapoint),
               data = eklof_data)
   res <- leave_one_out(m, group = "paper_ID",
-                       robust_args = list(cluster = "paper_ID", clubSandwich = TRUE))
+                       robust_args = list(cluster = "paper_ID", clubSandwich = FALSE))
   expect_s3_class(res, "orchard")
 })
 

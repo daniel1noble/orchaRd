@@ -18,8 +18,11 @@ english_MA <- metafor::rma.mv(yi = SMD, V = vSMD,
 # Step 1: fixed-effect model + robust correction (Yang et al. 2023)
 english_FE <- metafor::rma(yi = SMD, vi = vSMD, data = english,
                            test = "t", method = "FE")
+# clubSandwich = FALSE keeps this test runnable on CI where the
+# clubSandwich package isn't installed; the pub_bias_plot codepath
+# is identical regardless of how the robust correction was computed.
 english_FE_robust <- metafor::robust(english_FE, cluster = english$StudyNo,
-                                     clubSandwich = TRUE)
+                                     clubSandwich = FALSE)
 
 # Modified Egger model used for the optional v_model branch
 english_egger <- metafor::rma.mv(yi = SMD, V = vSMD, mods = ~vSMD,
