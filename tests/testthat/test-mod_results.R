@@ -1,10 +1,14 @@
 context("Checking mod_results function..")
 
 # Simple eklof data
+# Pin escalc to the pre-5.0 ROM behavior (correct = FALSE). metafor 5.0-1
+# (2026-04-26) changed the default to correct = TRUE for ROM/ROMC/CVR/CVRC,
+# which shifts all downstream estimates. The reference values asserted below
+# were computed under correct = FALSE; do not silently "modernize" this call.
 data(eklof)
 eklof<-metafor::escalc(measure="ROM", n1i=N_control, sd1i=SD_control,
 m1i=mean_control, n2i=N_treatment, sd2i=SD_treatment, m2i=mean_treatment,
-data=eklof)
+data=eklof, correct=FALSE)
 # Add the unit level predictor
 eklof$Datapoint<-as.factor(seq(1, dim(eklof)[1], 1))
 # fit a MLMR - accouting for some non-independence
@@ -28,6 +32,18 @@ eklof_MR_miss2<-metafor::rma.mv(yi=yi, V=vi, mods=~ Grazer.type, random=list(~1|
 ~1|Datapoint), data=eklof)
 results_miss2 <- mod_results(eklof_MR_miss2, mod = "Grazer.type", group = "ExptID")
 
+# Parallel build under the metafor >= 5.0-1 default (correct = TRUE), which
+# applies a second-order Taylor bias correction for ROM. Reload eklof since
+# the legacy block above mutated it with NAs.
+data(eklof)
+eklof_corr <- metafor::escalc(measure="ROM", n1i=N_control, sd1i=SD_control,
+m1i=mean_control, n2i=N_treatment, sd2i=SD_treatment, m2i=mean_treatment,
+data=eklof, correct=TRUE)
+eklof_corr$Datapoint <- as.factor(seq(1, dim(eklof_corr)[1], 1))
+eklof_MR_corr <- metafor::rma.mv(yi=yi, V=vi, mods=~ Grazer.type,
+random=list(~1|ExptID, ~1|Datapoint), data=eklof_corr)
+results_corr <- orchaRd::mod_results(eklof_MR_corr, mod = "Grazer.type", group = "ExptID")
+
 testthat::test_that("Checking mod_results output for eklof dataset ..", {
 
   testthat::expect_equal(dim(results)[[2]], 2, info = "mod_results output for eklof has correct dimensions")
@@ -41,6 +57,15 @@ testthat::test_that("Checking mod_results output for eklof dataset ..", {
   testthat::expect_equal(dim(results_miss$mod_table), c(2,6), info = "checking mod_results output for eklof when missing data is included in yi...")
 
   testthat::expect_equal(dim(results_miss2$mod_table), c(2,6), info = "checking mod_results output for eklof when missing data is included in yi and vi are calculated...")
+})
+
+testthat::test_that("Checking mod_results output for eklof dataset under metafor >= 5.0-1 ROM default (correct = TRUE) ..", {
+
+  testthat::expect_equal(round(results_corr$mod_table[1,2],2), round(-0.7691617, 2), info = "checking mod_results estimate for Amphipod with bias-corrected ROM (metafor 5.0-1 default)...")
+
+  testthat::expect_equal(round(results_corr$mod_table[1,4],2), round(-0.1765570, 2), info = "checking mod_results upper confidence interval for Amphipod with bias-corrected ROM (metafor 5.0-1 default)...")
+
+  testthat::expect_equal(round(results_corr$mod_table[1,5],2), round(-2.911848, 2), info = "checking mod_results lower prediction interval for Amphipod with bias-corrected ROM (metafor 5.0-1 default)...")
 })
 
 
