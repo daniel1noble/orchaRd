@@ -98,3 +98,21 @@ test_that("known differences from Pearson distributions are recovered (kurt ≈ 
   expect_equal(d_skew, 0,   tolerance = 0.12)
   expect_equal(d_kurt, -2,  tolerance = 0.20)
 })
+
+# --- .sv_jack with return.replicates = TRUE (jack vector branch) ---
+test_that(".sv_jack returns the leave-one-out replicates when requested", {
+  set.seed(7)
+  x <- rnorm(40)
+  res <- .sv_jack(x, type = "skew", return.replicates = TRUE)
+  expect_named(res, c("est", "est_bc", "var", "se", "jack"))
+  expect_length(res$jack, length(x))
+  expect_true(all(is.finite(res$jack)))
+})
+
+# --- .MSb / .MSw paired-mode error branches ---
+test_that(".MSb and .MSw error when paired = TRUE but n1 != n2", {
+  expect_error(.MSb(10, 7, n1 = 30, n2 = 25, paired = TRUE),
+               "n1 and n2 must be equal", fixed = TRUE)
+  expect_error(.MSw(2, 3, n1 = 30, n2 = 25, paired = TRUE),
+               "n1 and n2 must be equal", fixed = TRUE)
+})

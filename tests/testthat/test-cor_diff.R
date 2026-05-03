@@ -96,3 +96,34 @@ test_that("data-frame inputs must have exactly two columns", {
     fixed = TRUE
   )
 })
+
+test_that("non-data-frame x1/x2 inputs are rejected", {
+  # Passing vectors instead of data frames triggers the !is.data.frame branch
+  expect_error(
+    cor_diff(x1 = rnorm(10), x2 = rnorm(10),
+             cor1 = 0.2, cor2 = 0.3, n1 = 10, n2 = 10),
+    "both must be data frames", fixed = TRUE
+  )
+})
+
+test_that("cor_diff errors when sample sizes are too small for Fisher z variance", {
+  expect_error(
+    cor_diff(cor1 = 0.5, cor2 = 0.3, n1 = 3, n2 = 50),
+    "Sample sizes must be > 3", fixed = TRUE
+  )
+  expect_error(
+    cor_diff(cor1 = 0.5, cor2 = 0.3, n1 = 50, n2 = 2),
+    "Sample sizes must be > 3", fixed = TRUE
+  )
+})
+
+test_that("cor_diff errors when correlations are not finite", {
+  expect_error(
+    cor_diff(cor1 = NA_real_, cor2 = 0.3, n1 = 50, n2 = 50),
+    "must be finite", fixed = TRUE
+  )
+  expect_error(
+    cor_diff(cor1 = 0.5, cor2 = Inf, n1 = 50, n2 = 50),
+    "must be finite", fixed = TRUE
+  )
+})

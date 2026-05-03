@@ -71,3 +71,14 @@ testthat::test_that("r2_ml rejects unsupported model types", {
   testthat::expect_error(orchaRd::r2_ml(stats::lm(yi ~ Phylum, data=lim), data=lim),
     info = "r2_ml errors on non-metafor model classes")
 })
+
+testthat::test_that("r2_ml rejects models with heterogeneous variance (tau2 > 0)", {
+  data(fish)
+  m_tau2 <- metafor::rma.mv(yi = lnrr, V = lnrr_vi,
+                            mods = ~ trait.type + deg_dif,
+                            random = list(~1 | group_ID, ~1 + trait.type | es_ID),
+                            struc = "HCS", data = fish, method = "REML",
+                            control = list(optimizer = "optim", optmethod = "Nelder-Mead"))
+  testthat::expect_error(orchaRd::r2_ml(m_tau2, data = fish),
+    "heterogeneous variance", fixed = TRUE)
+})

@@ -125,3 +125,35 @@ testthat::test_that("ml_* helpers compute the same values as their wrappers", {
   testthat::expect_equal(orchaRd::ml_m1(lim_MR),   m1_pt)
   testthat::expect_equal(orchaRd::ml_m2(lim_MR),   m2_pt)
 })
+
+# --- Heterogeneous-variance models (tau2 > 0) are deliberately rejected
+#     with an explicit message; build one fixture and check all four wrappers. ---
+data(fish)
+m_tau2 <- metafor::rma.mv(yi = lnrr, V = lnrr_vi,
+                          mods = ~ trait.type + deg_dif,
+                          random = list(~1 | group_ID, ~1 + trait.type | es_ID),
+                          struc = "HCS", data = fish, method = "REML",
+                          control = list(optimizer = "optim", optmethod = "Nelder-Mead"))
+
+testthat::test_that("cvh/m wrappers reject models with heterogeneous variance (tau2 > 0)", {
+  testthat::expect_error(orchaRd::cvh1_ml(m_tau2), "heterogeneous variance", fixed = TRUE)
+  testthat::expect_error(orchaRd::cvh2_ml(m_tau2), "heterogeneous variance", fixed = TRUE)
+  testthat::expect_error(orchaRd::m1_ml(m_tau2),   "heterogeneous variance", fixed = TRUE)
+  testthat::expect_error(orchaRd::m2_ml(m_tau2),   "heterogeneous variance", fixed = TRUE)
+})
+
+# --- Bootstrap path with NAs in yi exercises the model$not.na branch
+#     (data <- data[model$not.na, ]). ---
+data(lim)
+lim_na <- lim
+lim_na$vi <- (1/sqrt(lim_na$N - 3))^2
+lim_na$yi[1:5] <- NA
+lim_MR_na <- metafor::rma.mv(yi = yi, V = vi, mods = ~ Phylum - 1,
+                             random = list(~1 | Article, ~1 | Datapoint),
+                             data = lim_na)
+
+testthat::test_that("cvh1_ml bootstrap respects model$not.na for missing-data models", {
+  set.seed(42)
+  out <- orchaRd::cvh1_ml(lim_MR_na, boot = 2)
+  testthat::expect_equal(dim(out), c(3, 3))
+})

@@ -321,3 +321,65 @@ test_that("glmmTMB_to_rma keeps propto variance components in phylogenetic model
   expect_equal(converted_res$estimate, metafor_res$estimate, tolerance = 3e-3)
   expect_equal(converted_res$lowerPR, metafor_res$lowerPR, tolerance = 1e-2)
 })
+
+# --- Error-branch and edge-case coverage for glmmTMB_to_rma() ---
+
+test_that("glmmTMB_to_rma rejects non-glmmTMB objects", {
+  expect_error(
+    glmmTMB_to_rma(stats::lm(mpg ~ wt, data = mtcars), yi = "mpg", vi = "wt"),
+    "must be a fitted glmmTMB object", fixed = TRUE
+  )
+})
+
+test_that("glmmTMB_to_rma rejects invalid 'test' values", {
+  dat <- make_simple_tmb_data()
+  fit <- glmmTMB(y ~ moderator + (1 | study), data = dat, REML = TRUE)
+  expect_error(
+    glmmTMB_to_rma(fit, yi = "y", vi = "vi", data = dat, test = "wald"),
+    "test", fixed = TRUE
+  )
+})
+
+test_that("glmmTMB_to_rma errors when yi or vi columns are missing from data", {
+  dat <- make_simple_tmb_data()
+  fit <- glmmTMB(y ~ moderator + (1 | study), data = dat, REML = TRUE)
+  expect_error(
+    glmmTMB_to_rma(fit, yi = "not_there", vi = "vi", data = dat),
+    "yi", fixed = TRUE
+  )
+  expect_error(
+    glmmTMB_to_rma(fit, yi = "y", vi = "missing_vi", data = dat),
+    "vi", fixed = TRUE
+  )
+})
+
+test_that("glmmTMB_to_rma uses model$frame when data is omitted (numeric yi/vi inputs)", {
+  dat <- make_simple_tmb_data()
+  fit <- glmmTMB(y ~ moderator + (1 | study), data = dat, REML = TRUE)
+  # data = NULL forces the model$frame fallback (line 55). Passing yi/vi as
+  # numeric vectors also exercises the as.numeric() branches at lines 58-59.
+  out <- glmmTMB_to_rma(fit, yi = dat$y, vi = dat$vi)
+  expect_s3_class(out, "rma.mv")
+  expect_equal(out$k, nrow(dat))
+})
+
+test_that("glmmTMB_to_rma test='t' warns when no study column can be guessed and ddf is unset", {
+  dat <- make_simple_tmb_data()
+  # Rename 'study' so the auto-detect heuristic finds nothing.
+  names(dat)[names(dat) == "study"] <- "panel"
+  fit <- glmmTMB(y ~ moderator + (1 | panel), data = dat, REML = TRUE)
+  expect_warning(
+    glmmTMB_to_rma(fit, yi = "y", vi = "vi", data = dat, test = "t"),
+    "Could not find study column", fixed = TRUE
+  )
+})
+
+test_that("glmmTMB_to_rma test='t' uses an explicit study_col when supplied", {
+  dat <- make_simple_tmb_data()
+  fit <- glmmTMB(y ~ moderator + (1 | study), data = dat, REML = TRUE)
+  out <- glmmTMB_to_rma(fit, yi = "y", vi = "vi", data = dat,
+                        test = "t", study_col = "study")
+  # ddf is filled per parameter; should match k_studies - p
+  expect_false(is.null(out$ddf))
+  expect_equal(unique(unlist(out$ddf)), nlevels(dat$study) - out$p)
+})

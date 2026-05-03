@@ -349,14 +349,120 @@ test_that(".run_leave1out correctly handles phylogenetic arguments", {
 test_that("leave_one_out() throw errors", {
   mock_data <- create_mock_data()
   mock_model <- rma.mv(yi, vi, data = mock_data)
-  
+
   # Test with non-existent grouping variable
   expect_error(
     leave_one_out(mock_model, group = "nonexistent_group"),
   )
-  
+
   # Test with NULL model
   expect_error(
     leave_one_out(NULL, group = "study_ID")
   )
+})
+
+# --- Validator coverage: feed each validator bad inputs and confirm the right
+#     error is raised. These exercise the .validate_*_args branches directly. ---
+
+test_that(".validate_vcalc_args rejects malformed inputs", {
+  data <- create_mock_data()
+  # Not a list at all
+  expect_error(.validate_vcalc_args(data, "not a list"), "must be a list", fixed = TRUE)
+  # Missing one of the required names
+  expect_error(.validate_vcalc_args(data, list(vi = "vi", cluster = "study_ID", obs = "species")),
+               "must contain at least", fixed = TRUE)
+  # Names present but referring to columns that don't exist in the data
+  expect_error(.validate_vcalc_args(data, list(vi = "missing", cluster = "missing",
+                                                obs = "missing", rho = 0.5)),
+               "not found in the model data", fixed = TRUE)
+})
+
+test_that(".validate_robust_args rejects malformed inputs", {
+  data <- create_mock_data()
+  expect_error(.validate_robust_args(data, "not a list"), "must be a list", fixed = TRUE)
+  expect_error(.validate_robust_args(data, list(rho = 0.5)),
+               "must contain at least", fixed = TRUE)
+  expect_error(.validate_robust_args(data, list(cluster = "missing")),
+               "not found in the model data", fixed = TRUE)
+})
+
+test_that(".validate_phylo_args rejects malformed inputs", {
+  # Create a minimal phylo-aware model so the function has a valid 'model' arg
+  # to compare phylo_args$species_colname against.
+  full_spp_names <- c("Festuca_arundinacea", "Lolium_perenne",
+                      "Solanum_tuberosum", "Nassella_neesiana")
+  tree <- ape::read.tree(test_path("dummy_tree.rda"))
+  tree <- ape::compute.brlen(tree)
+  phylo_matrix <- ape::vcv(tree, corr = TRUE)
+  set.seed(123)
+  mock_data <- data.frame(spp_names = rep(full_spp_names, times = 5),
+                          yi = rnorm(20), vi = abs(rnorm(20)))
+  mock_data$phylo <- mock_data$spp_names
+  phylo_model <- metafor::rma.mv(yi, vi,
+                                  random = list(~1 | spp_names, ~1 | phylo),
+                                  R = list(phylo = phylo_matrix),
+                                  data = mock_data)
+
+  # Not a list
+  expect_error(.validate_phylo_args(phylo_model, "not a list"),
+               "must be a list", fixed = TRUE)
+  # Missing required keys
+  expect_error(.validate_phylo_args(phylo_model, list(tree = tree)),
+               "must contain at least", fixed = TRUE)
+  # tree is not a phylo object
+  expect_error(.validate_phylo_args(phylo_model,
+                                    list(tree = "not a tree", species_colname = "phylo")),
+               "must be a phylogenetic tree", fixed = TRUE)
+  # species_colname does not match a random factor linked to a matrix
+  expect_error(.validate_phylo_args(phylo_model,
+                                    list(tree = tree, species_colname = "spp_names")),
+               "must be the name of the random factor", fixed = TRUE)
+})
+
+# --- leave_one_out() top-level branches we hadn't covered yet ---
+
+test_that("leave_one_out() errors when fewer than 2 groups are present", {
+  one_group <- create_mock_data()
+  one_group$study_ID <- 1L  # collapse to a single group
+  m <- rma.mv(yi, vi, data = one_group)
+  expect_error(leave_one_out(m, group = "study_ID"),
+               "at least 2 groups", fixed = TRUE)
+})
+
+test_that("leave_one_out() supports vcalc_args (builds a temporary VCV per leave-out)", {
+  eklof_setup <- setup_eklof_data()
+  eklof_data  <- eklof_setup$data
+  # Need an obs-level identifier for vcalc; Datapoint fits.
+  eklof_data$obs_id <- seq_len(nrow(eklof_data))
+  m <- rma.mv(yi = lnRR, V = vlnRR,
+              random = list(~1 | ExptID, ~1 | Datapoint),
+              data = eklof_data)
+  res <- leave_one_out(m, group = "paper_ID",
+                       vcalc_args = list(vi = "vlnRR",
+                                          cluster = "paper_ID",
+                                          obs = "obs_id",
+                                          rho = 0.5))
+  expect_s3_class(res, "orchard")
+  expect_true(nrow(res$mod_table) >= 1)
+})
+
+test_that("leave_one_out() supports robust_args with clubSandwich = TRUE", {
+  eklof_setup <- setup_eklof_data()
+  eklof_data  <- eklof_setup$data
+  m <- rma.mv(yi = lnRR, V = vlnRR,
+              random = list(~1 | ExptID, ~1 | Datapoint),
+              data = eklof_data)
+  res <- leave_one_out(m, group = "paper_ID",
+                       robust_args = list(cluster = "paper_ID", clubSandwich = TRUE))
+  expect_s3_class(res, "orchard")
+})
+
+test_that(".create_tmp_vcv produces a square VCV matching the input rows", {
+  eklof_setup <- setup_eklof_data()
+  eklof_data  <- eklof_setup$data
+  eklof_data$obs_id <- seq_len(nrow(eklof_data))
+  vcv <- .create_tmp_vcv(eklof_data,
+                         vcalc_args = list(vi = "vlnRR", cluster = "paper_ID",
+                                            obs = "obs_id", rho = 0.5))
+  expect_equal(dim(vcv), c(nrow(eklof_data), nrow(eklof_data)))
 })

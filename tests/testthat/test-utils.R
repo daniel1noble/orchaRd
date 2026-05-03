@@ -19,3 +19,31 @@ test_that(".is_group_valid works", {
   expect_error(.is_group_valid(df$Sepal.Width))
 })
 
+test_that(".is_group_valid rejects categorical columns containing NAs", {
+  df_na <- df
+  df_na$Species[c(1, 5, 10)] <- NA
+  expect_error(.is_group_valid(data = df_na, column_name = "Species"),
+               "can't have NAs", fixed = TRUE)
+})
+
+# --- .is_metafor_object / .is_model_valid coverage ---
+
+data(lim)
+lim$vi <- (1/sqrt(lim$N - 3))^2
+lim_MR <- metafor::rma.mv(yi = yi, V = vi, mods = ~ Phylum - 1,
+                          random = list(~1 | Article, ~1 | Datapoint), data = lim)
+
+test_that(".is_metafor_object recognises metafor classes and rejects others", {
+  expect_true(.is_metafor_object(lim_MR))
+  expect_false(.is_metafor_object(stats::lm(yi ~ Phylum, data = lim)))
+  expect_false(.is_metafor_object(list()))
+})
+
+test_that(".is_model_valid errors on missing, NULL, or non-metafor objects", {
+  expect_true(.is_model_valid(lim_MR))
+  expect_error(.is_model_valid(),     "Incorrect argument 'model'", fixed = TRUE)
+  expect_error(.is_model_valid(NULL), "Incorrect argument 'model'", fixed = TRUE)
+  expect_error(.is_model_valid(stats::lm(yi ~ Phylum, data = lim)),
+               "Incorrect argument 'model'", fixed = TRUE)
+})
+
