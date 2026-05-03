@@ -40,3 +40,34 @@ testthat::test_that("Checking r2_ml function..", {
   testthat::expect_error(r2_ml(english_MA_robust, data = english, boot = 10),
                          info = "Checking R2 estimates correctly throw errow...")
 })
+
+# --- Bootstrap path on lim data (matches the i2_ml fixture style) ---
+options(warn = -1)
+data(lim)
+lim$vi <- (1/sqrt(lim$N - 3))^2
+lim_MR <- metafor::rma.mv(yi=yi, V=vi, mods=~Phylum-1,
+                          random=list(~1|Article, ~1|Datapoint), data=lim)
+
+set.seed(42)
+lim_R2_boot <- orchaRd::r2_ml(lim_MR, data=lim, boot=2)
+
+testthat::test_that("r2_ml bootstrap path returns expected structure", {
+  testthat::expect_equal(dim(lim_R2_boot), c(2, 3),
+    info = "r2_ml boot returns 2 rows (marginal, conditional) x 3 quantile columns")
+  testthat::expect_equal(colnames(lim_R2_boot), c("Est.", "2.5%", "97.5%"),
+    info = "r2_ml boot column names follow the Est./2.5%/97.5% convention")
+  testthat::expect_equal(rownames(lim_R2_boot),
+    c("R2_marginal", "R2_conditional"),
+    info = "r2_ml boot row names match the underlying R2_calc output")
+})
+
+testthat::test_that("R2_calc helper computes the same values as r2_ml's no-boot path", {
+  testthat::expect_equal(orchaRd::R2_calc(lim_MR), orchaRd::r2_ml(lim_MR, data=lim))
+  testthat::expect_error(orchaRd::R2_calc(stats::lm(yi ~ Phylum, data=lim)),
+    info = "R2_calc errors when given a non-metafor model object")
+})
+
+testthat::test_that("r2_ml rejects unsupported model types", {
+  testthat::expect_error(orchaRd::r2_ml(stats::lm(yi ~ Phylum, data=lim), data=lim),
+    info = "r2_ml errors on non-metafor model classes")
+})
