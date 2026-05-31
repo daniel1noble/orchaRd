@@ -51,6 +51,16 @@ caterpillars <- function(object, mod = "1",  group, xlab, overall = TRUE, transf
 
   results <- .get_results(object, mod, group, N = NULL, by, at, weights)
 
+  # Compute per-effect-size 95% CIs on the raw scale (e.g. Fisher's z), so that
+  # any requested transformation (e.g. tanh) is applied to the CI bounds rather
+  # than added to an already-transformed estimate. The latter mixes scales (the
+  # variance vi is on the raw scale) and can push correlations outside [-1, 1].
+  data <- results$data
+  data$lower <- data$yi - stats::qnorm(0.975)*sqrt(data$vi)
+  data$upper <- data$yi + stats::qnorm(0.975)*sqrt(data$vi)
+  results <- list(mod_table = results$mod_table, data = data)
+  class(results) <- c("orchard", "data.frame")
+
   if (transfm != "none") {
     results <- transform_mod_results(results, transfm, n_transfm)
   }
@@ -59,8 +69,6 @@ caterpillars <- function(object, mod = "1",  group, xlab, overall = TRUE, transf
   mod_table <- results$mod_table
   # Data set
   data <- results$data
-  data$lower <- data$yi - stats::qnorm(0.975)*sqrt(data$vi)
-  data$upper <- data$yi + stats::qnorm(0.975)*sqrt(data$vi)
 
   label <- xlab
 

@@ -22,14 +22,21 @@ transform_mod_results <- function(results, transfm, n_transfm) {
   mod_table <- results$mod_table
   data <- results$data
 
+  # Per-effect-size CI bounds (e.g. in caterpillars) must be transformed too.
+  # These are computed on the raw (e.g. Fisher's z) scale before transformation,
+  # so transforming them here keeps them on the same scale as yi and, for tanh,
+  # bounded within [-1, 1].
+  data_cols <- c("yi", intersect(c("lower", "upper"), names(data)))
+
   # Make sure are numeric values
   mod_table[, numeric_cols] <- lapply(mod_table[, numeric_cols], as.numeric)
-  data$yi <- as.numeric(data$yi)
+  data[, data_cols] <- lapply(data[, data_cols, drop = FALSE], as.numeric)
 
   # Apply the transformation to each column
   mod_table[, numeric_cols] <- lapply(mod_table[, numeric_cols], function(x) {
                                         transform_data(x, n = n_transfm, transfm = transfm)})
-  data$yi <- transform_data(data$yi, n = n_transfm, transfm = transfm)
+  data[, data_cols] <- lapply(data[, data_cols, drop = FALSE], function(x) {
+                                        transform_data(x, n = n_transfm, transfm = transfm)})
 
   # Rebuild 'results' and return as orchard object
   results <- list(mod_table = mod_table, data = data)

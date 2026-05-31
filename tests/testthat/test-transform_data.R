@@ -129,3 +129,48 @@ meta_rma_new <- predict(meta_rma, transf = transf.ipft.hm, targ = list(ni = data
 
 mod_table <- mod_results(meta_rma, mod = "1", group = "StudyLabel")$mod_table
 mod_table <- transf_inv_ft(as.numeric(mod_table[1,-1]), datap$TotalSample)
+
+test_that("transform_mod_results transforms per-effect-size CI bounds when present", {
+  # transform_mod_results should transform optional 'lower'/'upper' columns in
+  # data (used by caterpillars) on the same scale as yi, so tanh-transformed
+  # correlation CIs stay within [-1, 1].
+  data(lim)
+  lim$vi <- 1 / (lim$N - 3)
+  lim_MR <- metafor::rma.mv(yi = yi, V = vi, mods = ~Phylum - 1,
+                            random = list(~1 | Article, ~1 | Datapoint),
+                            data = lim)
+  results <- mod_results(lim_MR, mod = "Phylum", group = "Article")
+
+  # Add raw-scale (Fisher's z) CI bounds, as caterpillars does. Rebuild as a
+  # list to avoid data.frame method dispatch on the orchard object.
+  d <- results$data
+  d$lower <- d$yi - stats::qnorm(0.975) * sqrt(d$vi)
+  d$upper <- d$yi + stats::qnorm(0.975) * sqrt(d$vi)
+  results <- list(mod_table = results$mod_table, data = d)
+  class(results) <- c("orchard", "data.frame")
+
+  expected_lower <- as.numeric(tanh(d$lower))
+  expected_upper <- as.numeric(tanh(d$upper))
+
+  out <- transform_mod_results(results, "tanh", NULL)
+
+  expect_equal(as.numeric(out$data$lower), expected_lower)
+  expect_equal(as.numeric(out$data$upper), expected_upper)
+  expect_true(all(out$data$lower >= -1 & out$data$upper <= 1))
+})
+
+test_that("transform_mod_results leaves data unchanged when lower/upper absent", {
+  # When no per-effect-size CI columns exist (e.g. orchard_plot path), only yi
+  # is transformed and no error is thrown.
+  data(lim)
+  lim$vi <- 1 / (lim$N - 3)
+  lim_MR <- metafor::rma.mv(yi = yi, V = vi, mods = ~Phylum - 1,
+                            random = list(~1 | Article, ~1 | Datapoint),
+                            data = lim)
+  results <- mod_results(lim_MR, mod = "Phylum", group = "Article")
+  expect_false(any(c("lower", "upper") %in% names(results$data)))
+
+  out <- transform_mod_results(results, "tanh", NULL)
+  expect_equal(as.numeric(out$data$yi), tanh(as.numeric(results$data$yi)))
+  expect_false(any(c("lower", "upper") %in% names(out$data)))
+})
