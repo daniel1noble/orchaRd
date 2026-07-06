@@ -1,52 +1,54 @@
 Package: orchaRd
-Title: Orchard Plots and Prediction Intervals for Meta-analysis and Meta-regression
+Title: Visualizing Meta-Analyses with Orchard Plots and Prediction Intervals
 Version: 2.2.0
-Authors@R: 
-    person(given = "Shinichi",
-           family = "Nakagawa",
+Authors@R: c(
+    person(given = "Daniel", family = "Noble",
            role = c("aut", "cre"),
-           email = "s.nakagawa@unsw.edu.au"); person(given = "Daniel",
-           family = "Noble",
-           role = c("aut", "cre"),
-           email = "daniel.noble@anu.edu.au")
-Description: This package takes meta-analytic and meta-regression models from metafor, generates prediction intervals and produced new orchard plots that depict effect sizes, means , confidence and prediction intervals.
+           email = "daniel.noble@anu.edu.au"),
+    person(given = "Shinichi", family = "Nakagawa",
+           role = "aut",
+           email = "s.nakagawa@unsw.edu.au"))
+Description: Generates prediction intervals and orchard plots for
+    meta-analytic and meta-regression models fitted with the 'metafor'
+    package. Orchard plots augment classic forest plots by displaying
+    individual effect sizes together with group means and their confidence
+    and prediction intervals, providing an enhanced visualization of
+    meta-analytic data for ecology, evolution, and beyond. Methods are
+    described in Nakagawa et al. (2023) <doi:10.1111/2041-210X.14152>.
 Depends: R (>= 4.2)
 URL: https://daniel1noble.github.io/orchaRd/
 BugReports: https://github.com/daniel1noble/orchaRd/issues
-License: GPL (>=2)
+License: GPL (>= 2)
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.3.3
-Imports: 
-    tidyverse,
-    stats,
-    Matrix,
-    graphics,
-    utils,
-    purrr,
-    metafor,
-    metadat,
-    tibble,
-    stringr,
-    ggplot2,
-    ggbeeswarm,
-    emmeans,
-    magrittr,
-    dplyr,
-    progress,
-    latex2exp,
+Imports:
     ape,
-    moments,
-    PearsonDS,
+    dplyr,
+    emmeans,
+    ggbeeswarm,
+    ggplot2,
+    latex2exp,
+    magrittr,
     MASS,
+    metafor,
+    progress,
     rWishart,
-    tester
-Suggests: R.rsp,
-  testthat,
-    knitr,
-    rmarkdown,
-    glmmTMB,
-    lme4,
+    stats,
+    tester,
+    utils
+Suggests:
     broom,
+    glmmTMB,
     gt,
-    patchwork
+    knitr,
+    lme4,
+    metadat,
+    moments,
+    patchwork,
+    PearsonDS,
+    purrr,
+    R.rsp,
+    rmarkdown,
+    testthat,
+    tibble

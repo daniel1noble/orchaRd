@@ -7,8 +7,9 @@
 #' @examples
 #' \dontrun{
 #' set.seed(982)
-#' library(moments, PearsonDS)
-#' 
+#' library(moments)
+#' library(PearsonDS)
+#'
 #' # Just some random comparisons
 #' moment_effects(rnorm(100), rnorm(100), type = "skew")
 #' moment_effects(rnorm(40), rnorm(40), type = "skew")

@@ -1,6 +1,5 @@
 library(metafor)
 library(orchaRd)
-library(tidyverse)
 library(emmeans)
 library(testthat)
 

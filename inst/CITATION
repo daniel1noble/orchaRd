@@ -1,13 +1,29 @@
 citHeader("To cite orchaRd in publications use:")
 
 bibentry(
-  bibtype    = "Article",
+  bibtype  = "Article",
   title    = "orchaRd 2.0: An R package for visualizing meta-analyses with orchard plots",
-  author   = "Shinichi Nakagawa, Malgorzata Lagisz, Rose E. O'Dea, Patrice Pottier, Joanna Rutkowska, Alistair M. Senior, Yefeng Yang, Daniel W.A. Noble",
-  journal  = "EcoEvoRxiv",
+  author   = c(
+    person("Shinichi", "Nakagawa"),
+    person(c("Malgorzata"), "Lagisz"),
+    person(c("Rose", "E."), "O'Dea"),
+    person("Patrice", "Pottier"),
+    person("Joanna", "Rutkowska"),
+    person(c("Alistair", "M."), "Senior"),
+    person("Yefeng", "Yang"),
+    person(c("Daniel", "W.", "A."), "Noble")
+  ),
+  journal  = "Methods in Ecology and Evolution",
   year     = "2023",
-  volume   = "12",
-  pages    = "4-12",
-  doi      = "https://doi.org/10.32942/X2QC7K",
-  textVersion = "Shinichi Nakagawa, Malgorzata Lagisz, Rose E. O'Dea, Patrice Pottier, Joanna Rutkowska, Alistair M. Senior, Yefeng Yang, Daniel W.A. Noble. 2023. orchaRd 2.0: An R package for visualizing meta-analyses with orchard plots. EcoEvoRxiv 12:4-12. https://doi.org/10.32942/X2QC7K"
+  volume   = "14",
+  number   = "8",
+  pages    = "2003--2010",
+  doi      = "10.1111/2041-210X.14152",
+  textVersion = paste(
+    "Shinichi Nakagawa, Malgorzata Lagisz, Rose E. O'Dea, Patrice Pottier,",
+    "Joanna Rutkowska, Alistair M. Senior, Yefeng Yang, Daniel W. A. Noble (2023).",
+    "orchaRd 2.0: An R package for visualizing meta-analyses with orchard plots.",
+    "Methods in Ecology and Evolution, 14(8), 2003-2010.",
+    "doi:10.1111/2041-210X.14152"
+  )
 )

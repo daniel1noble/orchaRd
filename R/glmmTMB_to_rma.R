@@ -43,6 +43,11 @@ glmmTMB_to_rma <- function(model,
                            ddf = NULL,
                            study_col = NULL) {
 
+  if (!requireNamespace("glmmTMB", quietly = TRUE)) {
+    stop("Package 'glmmTMB' is required for glmmTMB_to_rma(). Please install it.",
+         call. = FALSE)
+  }
+
   if (!inherits(model, "glmmTMB")) {
     stop("'model' must be a fitted glmmTMB object.", call. = FALSE)
   }

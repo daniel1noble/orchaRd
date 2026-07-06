@@ -151,7 +151,7 @@ caterpillars <- function(object, mod = "1",  group, xlab, overall = TRUE, transf
                       label= mod_table$name, hjust = "left", size = 3.5) +
     ggplot2::coord_cartesian(xlim = c(min(data$lower)*1.05, max(data$upper)*1.05),
                     ylim = c((min(data$Y)-10), (max(data$Y)+4))
-                    , expand = F)
+                    , expand = FALSE)
 
   # putting k in
   if(k == TRUE && g == FALSE){

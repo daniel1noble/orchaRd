@@ -22,7 +22,8 @@ Computes the effect estimate of the difference in skewness and kurtosis between 
 \examples{
 \dontrun{
 set.seed(982)
-library(moments, PearsonDS)
+library(moments)
+library(PearsonDS)
 
 # Just some random comparisons
 moment_effects(rnorm(100), rnorm(100), type = "skew")
