@@ -5,10 +5,8 @@
 #' @param type Character, either "skew" or "kurt" to specify the type of moment effect.
 #' @return A data frame with the difference in moment effects and their variances.
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' set.seed(982)
-#' library(moments)
-#' library(PearsonDS)
 #'
 #' # Just some random comparisons
 #' moment_effects(rnorm(100), rnorm(100), type = "skew")
@@ -58,7 +56,7 @@ moment_effects <- function(x1, x2, type = c("skew", "kurt")) {
 #' @param x2 A numeric vector for group 2.
 #' @return A data frame with the difference in correlations and the sampling variances of the difference.
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' set.seed(982)
 #' # Example with known correlations
 #' cor_diff(0.5, 0.3, 100, 100)
@@ -455,48 +453,16 @@ cor_diff <- function(cor1 = NULL, cor2 = NULL, n1 = NULL, n2 = NULL, x1 = NULL, 
 #' @param seed Random seed for reproducibility. Default is 565.
 #' @return A list containing the point estimate, variance, number of kept samples, total draws, number of attempts, and status.
 #' @export 
-#' @examples \dontrun{
+#' @examples \donttest{
+#' # min_kept/chunk_init are set LOW here for speed; use the
+#' # defaults for real analyses.
 #' # Independent samples
-#' magnitude_effects(x1bar = 10, x2bar = 7, sd1 = 2, sd2 = 3, n1 = 30, n2 = 30)
-#' # Dependent samples with correlation
-#' magnitude_effects(x1bar = 10, x2bar = 7, sd1 = 2, sd2 = 3, n1 = 30, n2 = 30, paired = TRUE, r = 0.5)
-#' # Example across rows of data frame
-#' data = data.frame(
-#'   xbar1 = rep(5, 5), xbar2 = rep(20, 5),
-#'   sd1 = rep(5, 5), sd2 = rep(6, 5),
-#'   n1 = rep(30, 5), n2 = rep(30, 5))
-#' res <- data %>%
-#'   mutate(
-#'     mag = purrr::pmap(
-#'       list(xbar1, xbar2, sd1, sd2, n1, n2),
-#'       ~ magnitude_effects(
-#'           x1bar = ..1, x2bar = ..2,
-#'           sd1 = ..3, sd2 = ..4,
-#'           n1 = ..5, n2 = ..6,
-#'           paired = FALSE))) %>%
-#'   unnest_wider(mag)
-#' 
-#' # Alternatively, you can use `rowwise()` 
-#' res <- data %>%
-#'   rowwise() %>%
-#'   mutate(out = list(magnitude_effects(xbar1, xbar2, sd1, sd2, n1, n2,
-#'                                    min_kept = 200, chunk_init = 400))) %>%
-#'   unnest_wider(out)
-#' 
-#' # Paired, use add correlation to dataframe
-#' data = data  %>% mutate(r = 0.4)
-#' 
-#' res2 <- data %>%
-#'   mutate(
-#'     mag = purrr::pmap(
-#'       list(xbar1, xbar2, sd1, sd2, n1, n2, r),
-#'       ~ magnitude_effects(
-#'           x1bar = ..1, x2bar = ..2,
-#'           sd1 = ..3, sd2 = ..4,
-#'           n1 = ..5, n2 = ..6, r = ..7,
-#'           paired = TRUE))) %>%
-#'   unnest_wider(mag)
-#' 
+#' magnitude_effects(x1bar = 10, x2bar = 7, sd1 = 2, sd2 = 3,
+#'                   n1 = 30, n2 = 30, min_kept = 200, chunk_init = 400)
+#' # Dependent (paired) samples, given the correlation between groups
+#' magnitude_effects(x1bar = 10, x2bar = 7, sd1 = 2, sd2 = 3,
+#'                   n1 = 30, n2 = 30, paired = TRUE, r = 0.5,
+#'                   min_kept = 200, chunk_init = 400)
 #' }
 magnitude_effects <- function(x1bar, x2bar, sd1, sd2, n1, n2,
                            min_kept   = 2000, 

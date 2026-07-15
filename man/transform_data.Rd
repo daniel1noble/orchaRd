@@ -30,11 +30,4 @@ A numeric vector with the applied transformation.
 \description{
 This function applies a specified transformation to a numeric vector.
 }
-\examples{
-\dontrun{
-transform_data(c(-1, 0, 1), transfm = "tanh")
-transform_data(c(-1, 0, 1), transfm = "invlogit")
-transform_data(c(-1, 0, 1), transfm = "none")
-}
-}
 \keyword{internal}

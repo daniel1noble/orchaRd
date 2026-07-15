@@ -9,12 +9,15 @@ matrix_i2(model)
 \arguments{
 \item{model}{Model object of class \code{rma.mv} or \code{rma}.}
 }
+\value{
+A named numeric vector of I2 (I-squared) values expressed as percentages. The first element, \code{I2_Total}, is the total heterogeneity; each remaining element (named \code{I2_<level>} after a random-effect level of the model) is the heterogeneity attributable to that level.
+}
 \description{
 Calculated I2 (I-squared) for mulilevel meta-analytic models, based on a matrix method proposed by Wolfgang Viechtbauer.
 }
 \examples{
-\dontrun{
-# English example
+\donttest{
+library(metafor)
 data(english)
 english <- escalc(
   measure = "SMD", n1i = NStartControl,
@@ -25,17 +28,6 @@ english_MA <- rma.mv(
   yi = SMD, V = vSMD,
   random = list(~1 | StudyNo, ~1 | EffectID),
   data = english)
-I2_eng <- i2_ml(english_MA, data = english, method = "matrix")
-
-# Lim example
-data(lim)
-# Add in the sampling variance
-lim$vi<-(1/sqrt(lim$N - 3))^2
-# Fit a meta-regression with Phylum as fixed effect
-lim_MR <- metafor::rma.mv(
-  yi = yi, V = vi, mods = ~ Phylum - 1,
-  random = list(~1 | Article, ~1 | Datapoint),
-  data = lim)
-I2_lim <- i2_ml(lim_MR, data=lim, method = "matrix")
+matrix_i2(english_MA)
 }
 }

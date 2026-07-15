@@ -8,14 +8,14 @@
 #' @author Daniel Noble - daniel.noble@anu.edu.au
 #' @references Nakagawa, S, and Schielzeth, H. 2013. A general and simple method for obtaining R2 from generalized linear mixed‐effects models. *Methods in Ecology and Evolution* 4(2): 133-142.
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' data(lim)
 #' lim$vi <- (1/sqrt(lim$N - 3))^2
 #' lim_MR <- metafor::rma.mv(
 #'   yi = yi, V = vi, mods = ~ Phylum - 1,
 #'   random = list(~1 | Article, ~1 | Datapoint),
 #'   data = lim)
-#' R2 <- r2_ml(lim_MR, data = lim, boot = 10)
+#' R2 <- r2_ml(lim_MR, data = lim)
 #' }
 #' @export
 r2_ml <- function(model, data, boot = NULL) {
@@ -71,10 +71,11 @@ return(R2)
 #' @title R2_calc
 #' @description Calculated R2 (R-squared) for mixed (mulitlevel) models, based on Nakagawa & Schielzeth (2013).
 #' @param model Model object of class \code{rma.mv} or \code{rma}.
+#' @return A named numeric vector of length two: \code{R2_marginal}, the proportion of variance explained by the fixed effects (moderators) alone, and \code{R2_conditional}, the proportion explained by both the fixed and random effects. Values range from 0 to 1.
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' data(lim)
 #' lim$vi<-(1/sqrt(lim$N - 3))^2
 #' lim_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~Phylum-1,

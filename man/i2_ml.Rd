@@ -20,43 +20,18 @@ A data frame containing all the model results including mean effect size estimat
 I2 (I-squared) for mulilevel meta-analytic models, based on Nakagawa & Santos (2012). Under multilevel models, we can have multiple I2 (see also Senior et al. 2016). Alternatively, the method proposed by Wolfgang Viechtbauer can also be used.
 }
 \examples{
-\dontrun{
-# IMPORTANT NOTE ** boot = 10 is set LOW deliberately
-# to make the models run fast. Always use boot >= 1000
-# English example
+\donttest{
+library(metafor)
+# NOTE: boot is set LOW here for speed; use boot >= 1000 in practice.
 data(english)
 english <- escalc(measure = "SMD", n1i = NStartControl,
-sd1i = SD_C, m1i = MeanC, n2i = NStartExpt, sd2i = SD_E,
-m2i = MeanE, var.names=c("SMD","vSMD"),data = english)
+  sd1i = SD_C, m1i = MeanC, n2i = NStartExpt, sd2i = SD_E,
+  m2i = MeanE, var.names = c("SMD", "vSMD"), data = english)
 english_MA <- rma.mv(yi = SMD, V = vSMD,
-random = list( ~ 1 | StudyNo, ~ 1 | EffectID), data = english)
-I2_eng_1 <- i2_ml(english_MA, data = english, boot = 10)
-I2_eng_2 <- i2_ml(english_MA, data = english, method = "ratio")
-I2_eng_3 <- i2_ml(english_MA, data = english, method = "matrix")
-
-## Fish example
-data(fish)
-warm_dat <- fish
-model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi,
-random = list(~1 | group_ID, ~1 | es_ID),
-mods = ~ experimental_design + trait.type + deg_dif + treat_end_days,
-method = "REML", test = "t", data = warm_dat,
-control=list(optimizer="optim", optmethod="Nelder-Mead"))
-I2_fish_1 <- i2_ml(model, data = warm_dat, boot = 10)
-I2_fish_2 <- i2_ml(model, method = c("matrix"),data = warm_dat)
-I2_fish_2 <- i2_ml(model, method = c("ratio"),data = warm_dat)
-
-# Lim example
-data(lim)
-# Add in the sampling variance
-lim$vi<-(1/sqrt(lim$N - 3))^2
-# Fit a meta-regression with Phylum as fixed effect
-lim_MR <- metafor::rma.mv(
-  yi = yi, V = vi, mods = ~ Phylum - 1,
-  random = list(~1 | Article, ~1 | Datapoint),
-  data = lim)
-I2_lim_1 <- i2_ml(lim_MR, data = lim, boot = 10)
-I2_lim_2 <- i2_ml(lim_MR, data = lim)
+  random = list(~1 | StudyNo, ~1 | EffectID), data = english)
+i2_ml(english_MA)
+i2_ml(english_MA, method = "matrix")
+i2_ml(english_MA, boot = 10)
 }
 }
 \references{

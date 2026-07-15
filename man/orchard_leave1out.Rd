@@ -63,9 +63,10 @@ The function internally sets a color palette for the plot. If more than 20 eleme
 palette is used. Otherwise, a color-blind friendly palette is applied by default.
 }
 \examples{
-\dontrun{
-  # Fit a multivariate meta-analytic model using the metafor package
-  res <- metafor::rma.mv(lnrr, lnrr_vi, random = ~ 1 | paper_ID, data = fish)
+\donttest{
+  # Subset to a few studies so the leave-one-out refits run quickly
+  fish_sub <- fish[fish$paper_ID \%in\% unique(fish$paper_ID)[1:5], ]
+  res <- metafor::rma.mv(lnrr, lnrr_vi, random = ~ 1 | paper_ID, data = fish_sub)
   loo_res <- orchaRd::leave_one_out(res, group = "paper_ID")
   orchard_leave1out(leave1out = loo_res, xlab = "lnRR")
 }

@@ -39,7 +39,8 @@ An orchard plot with the corrected meta-analytic mean and confidence intervals a
 This function adds the bias corrected mean and confidence intervals to an existing orchard plot that displays the overall meta-analytic mean effect size.
 }
 \examples{
-\dontrun{
+\donttest{
+library(metafor)
 # Data
 data(english)
 # We need to calculate the effect sizes, in this case d
@@ -66,8 +67,7 @@ english_MA3 <- rma(
 
 # Step 2: Correct for dependency
 english_MA2_1 <- robust(
-  english_MA2, cluster = english$StudyNo,
-  clubSandwich = TRUE)
+  english_MA2, cluster = english$StudyNo)
 
 # Step 3: Testing modified eggers
 english_MA4 <- rma.mv(

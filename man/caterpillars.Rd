@@ -60,7 +60,7 @@ Caterpillars plot
 Using a \pkg{metafor} model object of class \code{rma} or \code{rma.mv} or a results table of class \code{orchard}, this function produces a caterpillar plot from mean effect size estimates for all levels of a given categorical moderator, their corresponding confidence intervals, and prediction intervals.
 }
 \examples{
-\dontrun{
+\donttest{
 data(eklof)
 eklof<-metafor::escalc(measure="ROM", n1i=N_control, sd1i=SD_control,
 m1i=mean_control, n2i=N_treatment, sd2i=SD_treatment, m2i=mean_treatment,

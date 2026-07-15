@@ -103,7 +103,7 @@ Bubble plot
 Using a \pkg{metafor} model object of class \code{rma} or \code{rma.mv}, a results table of class \code{orchard}, or a raw \code{data.frame}, the \code{bubble_plot} function creates a bubble plot from slope estimates or raw effect sizes. When a raw \code{data.frame} is provided, only the data points are plotted (no model fit lines). In cases when a model includes interaction terms, this function creates panels of bubble plots.
 }
 \examples{
-\dontrun{
+\donttest{
 data(lim)
 lim[, "year"] <- as.numeric(lim$year)
 lim$vi <- 1 / (lim$N - 3)

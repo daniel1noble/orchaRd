@@ -47,7 +47,7 @@
 #'
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
-#' @examples \dontrun{
+#' @examples \donttest{
 #' # Simple eklof data
 #' data(eklof)
 #' eklof<-metafor::escalc(measure="ROM", n1i=N_control, sd1i=SD_control,
@@ -61,46 +61,15 @@
 #'
 #' # Fish example demonstrating marginalised means
 #' data(fish)
-#' warm_dat <- fish
 #' model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi,
-#' random = list(~1 | group_ID, ~1 | es_ID),
-#' mods = ~ experimental_design + trait.type + deg_dif + treat_end_days,
-#' method = "REML", test = "t",
-#' control=list(optimizer="optim", optmethod="Nelder-Mead"), data = warm_dat)
-#'   overall <- mod_results(model, group = "group_ID")
-#' across_trait <- mod_results(model, group = "group_ID", mod = "trait.type")
-#' across_trait_by_degree_diff <- mod_results(model, group = "group_ID",
-#' mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif")
-#' across_trait_by_degree_diff_at_treat_end_days10 <- mod_results(model, group = "group_ID",
-#' mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = 10),
-#' by = "deg_dif",data = warm_dat)
-#' across_trait_by_degree_diff_at_treat_end_days10And50 <- mod_results(model, group = "group_ID",
-#' mod = "trait.type", at = list(deg_dif = c(5, 10, 15),
-#'  treat_end_days = c(10, 50)), by = "deg_dif")
-#' across_trait_by_treat_end_days10And50 <- mod_results(model, group = "group_ID",
-#' mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)),
-#' by = "treat_end_days")
-#' across_trait_by_treat_end_days10And50_ordinaryMM <- mod_results(model, group = "group_ID",
-#' mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)),
-#' by = "treat_end_days", weights = "prop")
-#'
-#' # Fish data example with a heteroscedastic error
-#' model_het <- metafor::rma.mv(
-#'   yi = lnrr, V = lnrr_vi,
-#'   random = list(~1 | group_ID,
-#'     ~1 + trait.type | es_ID),
+#'   random = list(~1 | group_ID, ~1 | es_ID),
 #'   mods = ~ trait.type + deg_dif,
-#'   method = "REML", test = "t", rho = 0,
-#'   struc = "HCS",
-#'   control = list(optimizer = "optim",
-#'     optmethod = "Nelder-Mead"),
-#'   data = warm_dat)
-#' HetModel <- mod_results(
-#'   model_het, group = "group_ID",
-#'   mod = "trait.type",
-#'   at = list(deg_dif = c(5, 10, 15)),
-#'   by = "deg_dif", weights = "prop")
-#' orchard_plot(HetModel, xlab = "lnRR")
+#'   method = "REML", test = "t", data = fish)
+#' overall <- mod_results(model, group = "group_ID")
+#' across_trait <- mod_results(model, group = "group_ID", mod = "trait.type")
+#' # Marginalised means, conditioning on levels of a continuous moderator
+#' across_trait_by_deg <- mod_results(model, group = "group_ID",
+#'   mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif")
 #' }
 #' @export
 #'
@@ -262,6 +231,7 @@ mod_results <- function(model, mod = "1", group,  N = NULL,  weights = "prop", b
 #' @param mm result from \code{emmeans::emmeans} object.
 #' @param mod Moderator of interest.
 #' @param ... other arguments passed to function.
+#' @return A data frame built from \code{summary()} of the \code{emmeans} object: one row per level of the moderator giving the estimated marginal mean and its confidence limits, plus two added columns, \code{lower.PI} and \code{upper.PI}, containing the lower and upper bounds of the prediction (credibility) interval.
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
 #' @export
@@ -330,7 +300,7 @@ pred_interval_esmeans <- function(model, mm, mod, ...) {
 #' @author Daniel Noble - daniel.noble@anu.edu.au
 #' @return Returns a data frame
 #' @export
-#' @examples \dontrun{
+#' @examples \donttest{
 #' data(fish)
 #' warm_dat <- fish
 #' model <- metafor::rma.mv(
@@ -347,17 +317,7 @@ pred_interval_esmeans <- function(model, mm, mod, ...) {
 #'   at = list(trait.type = c("physiology",
 #'     "morphology")))
 #'  test2 <- get_data_raw(model, mod = "1", group = "group_ID")
-#'
-#'  data(english)
-#'  # We need to calculate the effect sizes, in this case d
-#'  english <- escalc(
-#'    measure = "SMD", n1i = NStartControl,
-#'    sd1i = SD_C, m1i = MeanC,
-#'    n2i = NStartExpt, sd2i = SD_E,
-#'    m2i = MeanE,
-#'    var.names = c("SMD", "vSMD"))
-#'  model <- rma.mv(yi = SMD, V = vSMD, random = list( ~ 1 | StudyNo, ~ 1 | EffectID), data = english)
-#'  test3 <-  get_data_raw(model, mod = "1", group = "StudyNo")}
+#' }
 
 get_data_raw <- function(model, mod, group, N = NULL, at = NULL, subset = TRUE, upper = TRUE){
   if(missing(group)){
@@ -520,7 +480,7 @@ weighted_var <- function(x, weights){
 #' @return Returns a table with the number of studies in each level of all parameters within a \code{rma.mv} or \code{rma} object.
 #' @export
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' data(fish)
 #' warm_dat <- fish
 #' model <- metafor::rma.mv(
@@ -530,7 +490,8 @@ weighted_var <- function(x, weights){
 #'   method = "REML", test = "t", data = warm_dat,
 #'   control = list(optimizer = "optim",
 #'     optmethod = "Nelder-Mead"))
-#' num_studies(model$data, experimental_design, group_ID)
+#' res <- mod_results(model, mod = "experimental_design", group = "group_ID")
+#' num_studies(res$data, moderator, stdy)
 #' }
 
 num_studies <- function(data, mod, group){

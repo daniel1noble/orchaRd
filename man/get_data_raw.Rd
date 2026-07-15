@@ -36,7 +36,7 @@ Returns a data frame
 Collects and builds the data used to fit the \code{rma.mv} or \code{rma} model in \pkg{metafor}.
 }
 \examples{
-\dontrun{
+\donttest{
 data(fish)
 warm_dat <- fish
 model <- metafor::rma.mv(
@@ -53,17 +53,7 @@ test <- get_data_raw(
   at = list(trait.type = c("physiology",
     "morphology")))
  test2 <- get_data_raw(model, mod = "1", group = "group_ID")
-
- data(english)
- # We need to calculate the effect sizes, in this case d
- english <- escalc(
-   measure = "SMD", n1i = NStartControl,
-   sd1i = SD_C, m1i = MeanC,
-   n2i = NStartExpt, sd2i = SD_E,
-   m2i = MeanE,
-   var.names = c("SMD", "vSMD"))
- model <- rma.mv(yi = SMD, V = vSMD, random = list( ~ 1 | StudyNo, ~ 1 | EffectID), data = english)
- test3 <-  get_data_raw(model, mod = "1", group = "StudyNo")}
+}
 }
 \author{
 Shinichi Nakagawa - s.nakagawa@unsw.edu.au

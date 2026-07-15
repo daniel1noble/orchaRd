@@ -6,41 +6,17 @@
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
 #' @examples
-#' \dontrun{
-#' # IMPORTANT NOTE ** boot = 10 is set LOW deliberately
-#' # to make the models run fast. Always use boot >= 1000
-#' # English example
+#' \donttest{
+#' library(metafor)
+#' # NOTE: boot is set LOW here for speed; use boot >= 1000 in practice.
 #' data(english)
 #' english <- escalc(measure = "SMD", n1i = NStartControl,
-#' sd1i = SD_C, m1i = MeanC, n2i = NStartExpt, sd2i = SD_E,
-#' m2i = MeanE, var.names=c("SMD","vSMD"),data = english)
+#'   sd1i = SD_C, m1i = MeanC, n2i = NStartExpt, sd2i = SD_E,
+#'   m2i = MeanE, var.names = c("SMD", "vSMD"), data = english)
 #' english_MA <- rma.mv(yi = SMD, V = vSMD,
-#' random = list( ~ 1 | StudyNo, ~ 1 | EffectID), data = english)
-#' M2_eng_1 <- m2_ml(english_MA, boot = 10)
-#' M2_eng_2 <- m2_ml(english_MA)
-#'
-#' ## Fish example
-#' data(fish)
-#' warm_dat <- fish
-#' model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi,
-#' random = list(~1 | group_ID, ~1 | es_ID),
-#' mods = ~ experimental_design + trait.type + deg_dif + treat_end_days,
-#' method = "REML", test = "t", data = warm_dat,
-#' control=list(optimizer="optim", optmethod="Nelder-Mead"))
-#' M2_fish_1 <- m2_ml(model, boot = 10)
-#' M2_fish_2 <- m2_ml(model)
-#'
-#' # Lim example
-#' data(lim)
-#' # Add in the sampling variance
-#' lim$vi<-(1/sqrt(lim$N - 3))^2
-#' # Fit a meta-regression with Phylum as fixed effect
-#' lim_MR <- metafor::rma.mv(
-#'   yi = yi, V = vi, mods = ~ Phylum - 1,
-#'   random = list(~1 | Article, ~1 | Datapoint),
-#'   data = lim)
-#' M2_lim_1 <- m2_ml(lim_MR, boot = 10)
-#' M2_lim_2 <- m2_ml(lim_MR)
+#'   random = list(~1 | StudyNo, ~1 | EffectID), data = english)
+#' m2_ml(english_MA)
+#' m2_ml(english_MA, boot = 10)
 #' }
 #' @references TODO
 #' @export
@@ -109,6 +85,7 @@ m2_ml <- function(model,
 #' @title ml_m2
 #' @description Calculated CV for mulilevel meta-analytic models
 #' @param model Model object of class \code{rma.mv} or \code{rma}.
+#' @return A named numeric vector of M2 heterogeneity values (a proportion-type index on the variance scale, bounded between 0 and 1). The first element, \code{M2_Total}, is the overall value across all random effects; each remaining element (named \code{M2_<level>} after a random-effect level of the model) is the value for that level.
 #' @export
 
 ml_m2 <- function(model){

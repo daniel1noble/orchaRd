@@ -20,7 +20,7 @@ Returns a table with the number of studies in each level of all parameters withi
 Computes how many studies are in each level of categorical moderators of a \code{rma.mv} model object.
 }
 \examples{
-\dontrun{
+\donttest{
 data(fish)
 warm_dat <- fish
 model <- metafor::rma.mv(
@@ -30,7 +30,8 @@ model <- metafor::rma.mv(
   method = "REML", test = "t", data = warm_dat,
   control = list(optimizer = "optim",
     optmethod = "Nelder-Mead"))
-num_studies(model$data, experimental_design, group_ID)
+res <- mod_results(model, mod = "experimental_design", group = "group_ID")
+num_studies(res$data, moderator, stdy)
 }
 }
 \author{

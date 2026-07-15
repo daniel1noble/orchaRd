@@ -26,7 +26,7 @@ A data frame with the difference in correlations and the sampling variances of t
 Computes the difference in correlation coefficients between two groups along with associated sampling variance for meta-analysis. The correlation and associated sample size or the data frame of the two variables can be provided
 }
 \examples{
-\dontrun{
+\donttest{
 set.seed(982)
 # Example with known correlations
 cor_diff(0.5, 0.3, 100, 100)

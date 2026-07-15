@@ -76,7 +76,7 @@ prediction interval with a manual calculation using the full
 variance-covariance matrix from the model.
 }
 \examples{
-\dontrun{
+\donttest{
 # Simple eklof data
 data(eklof)
 eklof<-metafor::escalc(measure="ROM", n1i=N_control, sd1i=SD_control,
@@ -90,46 +90,15 @@ results <- mod_results(eklof_MR, mod = "Grazer.type", group = "ExptID")
 
 # Fish example demonstrating marginalised means
 data(fish)
-warm_dat <- fish
 model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi,
-random = list(~1 | group_ID, ~1 | es_ID),
-mods = ~ experimental_design + trait.type + deg_dif + treat_end_days,
-method = "REML", test = "t",
-control=list(optimizer="optim", optmethod="Nelder-Mead"), data = warm_dat)
-  overall <- mod_results(model, group = "group_ID")
-across_trait <- mod_results(model, group = "group_ID", mod = "trait.type")
-across_trait_by_degree_diff <- mod_results(model, group = "group_ID",
-mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif")
-across_trait_by_degree_diff_at_treat_end_days10 <- mod_results(model, group = "group_ID",
-mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = 10),
-by = "deg_dif",data = warm_dat)
-across_trait_by_degree_diff_at_treat_end_days10And50 <- mod_results(model, group = "group_ID",
-mod = "trait.type", at = list(deg_dif = c(5, 10, 15),
- treat_end_days = c(10, 50)), by = "deg_dif")
-across_trait_by_treat_end_days10And50 <- mod_results(model, group = "group_ID",
-mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)),
-by = "treat_end_days")
-across_trait_by_treat_end_days10And50_ordinaryMM <- mod_results(model, group = "group_ID",
-mod = "trait.type", at = list(deg_dif = c(5, 10, 15), treat_end_days = c(10, 50)),
-by = "treat_end_days", weights = "prop")
-
-# Fish data example with a heteroscedastic error
-model_het <- metafor::rma.mv(
-  yi = lnrr, V = lnrr_vi,
-  random = list(~1 | group_ID,
-    ~1 + trait.type | es_ID),
+  random = list(~1 | group_ID, ~1 | es_ID),
   mods = ~ trait.type + deg_dif,
-  method = "REML", test = "t", rho = 0,
-  struc = "HCS",
-  control = list(optimizer = "optim",
-    optmethod = "Nelder-Mead"),
-  data = warm_dat)
-HetModel <- mod_results(
-  model_het, group = "group_ID",
-  mod = "trait.type",
-  at = list(deg_dif = c(5, 10, 15)),
-  by = "deg_dif", weights = "prop")
-orchard_plot(HetModel, xlab = "lnRR")
+  method = "REML", test = "t", data = fish)
+overall <- mod_results(model, group = "group_ID")
+across_trait <- mod_results(model, group = "group_ID", mod = "trait.type")
+# Marginalised means, conditioning on levels of a continuous moderator
+across_trait_by_deg <- mod_results(model, group = "group_ID",
+  mod = "trait.type", at = list(deg_dif = c(5, 10, 15)), by = "deg_dif")
 }
 }
 \author{

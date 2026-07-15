@@ -20,14 +20,14 @@ A data frame containing all model results, including: mean effect size estimate,
 R2 (R-squared) for mixed (mulitlevel) models, based on Nakagawa & Schielzeth (2013).
 }
 \examples{
-\dontrun{
+\donttest{
 data(lim)
 lim$vi <- (1/sqrt(lim$N - 3))^2
 lim_MR <- metafor::rma.mv(
   yi = yi, V = vi, mods = ~ Phylum - 1,
   random = list(~1 | Article, ~1 | Datapoint),
   data = lim)
-R2 <- r2_ml(lim_MR, data = lim, boot = 10)
+R2 <- r2_ml(lim_MR, data = lim)
 }
 }
 \references{

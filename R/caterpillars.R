@@ -19,7 +19,7 @@
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' data(eklof)
 #' eklof<-metafor::escalc(measure="ROM", n1i=N_control, sd1i=SD_control,
 #' m1i=mean_control, n2i=N_treatment, sd2i=SD_treatment, m2i=mean_treatment,

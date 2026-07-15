@@ -9,19 +9,21 @@ ratio_i2(model)
 \arguments{
 \item{model}{Model object of class \code{rma.mv} or \code{rma}.}
 }
+\value{
+A named numeric vector of I2 (I-squared) values expressed as percentages. The first element, \code{I2_Total}, is the total heterogeneity; each remaining element (named \code{I2_<level>} after a random-effect level of the model) is the heterogeneity attributable to that level.
+}
 \description{
 I2 (I-squared) for mulilevel meta-analytic models based on Nakagawa & Santos (2012). Under multilevel models, we can have a multiple I2 (see also Senior et al. 2016).
 }
 \examples{
-\dontrun{
-# English example
+\donttest{
+library(metafor)
 data(english)
 english <- escalc(measure = "SMD", n1i = NStartControl,
 sd1i = SD_C, m1i = MeanC, n2i = NStartExpt,
 sd2i = SD_E, m2i = MeanE, var.names=c("SMD","vSMD"),data = english)
 english_MA <- rma.mv(yi = SMD, V = vSMD,
 random = list( ~ 1 | StudyNo, ~ 1 | EffectID), data = english)
-I2_eng_1 <- i2_ml(english_MA, data = english, boot = 1000)
-I2_eng_2 <- i2_ml(english_MA, data = english, method = "ratio")
+ratio_i2(english_MA)
 }
 }

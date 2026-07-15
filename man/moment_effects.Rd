@@ -20,10 +20,8 @@ A data frame with the difference in moment effects and their variances.
 Computes the effect estimate of the difference in skewness and kurtosis between two groups along with associated sampling variance for meta-analysis.
 }
 \examples{
-\dontrun{
+\donttest{
 set.seed(982)
-library(moments)
-library(PearsonDS)
 
 # Just some random comparisons
 moment_effects(rnorm(100), rnorm(100), type = "skew")

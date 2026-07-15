@@ -1,6 +1,6 @@
 Package: orchaRd
 Title: Visualizing Meta-Analyses with Orchard Plots and Prediction Intervals
-Version: 2.2.0
+Version: 2.2.1
 Authors@R: c(
     person(given = "Daniel", family = "Noble",
            role = c("aut", "cre"),

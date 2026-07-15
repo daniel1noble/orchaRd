@@ -34,7 +34,7 @@
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' data(lim)
 #' lim[, "year"] <- as.numeric(lim$year)
 #' lim$vi <- 1 / (lim$N - 3)

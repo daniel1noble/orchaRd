@@ -62,12 +62,6 @@ transform_mod_results <- function(results, transfm, n_transfm) {
 #'   - "inv_ft": Inverse Freeman-Tukey (double arcsine) transformation for proportions (use with caution)
 #'
 #' @return A numeric vector with the applied transformation.
-#' @examples
-#' \dontrun{
-#' transform_data(c(-1, 0, 1), transfm = "tanh")
-#' transform_data(c(-1, 0, 1), transfm = "invlogit")
-#' transform_data(c(-1, 0, 1), transfm = "none")
-#' }
 #' @keywords internal
 transform_data <- function(x, n = NULL, transfm = c("none", "tanh", "invlogit", "percentr", "percent", "inv_ft")) {
   transfm <- match.arg(transfm)

@@ -15,6 +15,9 @@ pred_interval_esmeans(model, mm, mod, ...)
 
 \item{...}{other arguments passed to function.}
 }
+\value{
+A data frame built from \code{summary()} of the \code{emmeans} object: one row per level of the moderator giving the estimated marginal mean and its confidence limits, plus two added columns, \code{lower.PI} and \code{upper.PI}, containing the lower and upper bounds of the prediction (credibility) interval.
+}
 \description{
 Function to get prediction intervals (credibility intervals) from \code{esmeans} objects (\pkg{metafor}).
 }

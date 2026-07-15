@@ -7,43 +7,18 @@
 #' @author Shinichi Nakagawa - s.nakagawa@unsw.edu.au
 #' @author Daniel Noble - daniel.noble@anu.edu.au
 #' @examples
-#' \dontrun{
-#' # IMPORTANT NOTE ** boot = 10 is set LOW deliberately
-#' # to make the models run fast. Always use boot >= 1000
-#' # English example
+#' \donttest{
+#' library(metafor)
+#' # NOTE: boot is set LOW here for speed; use boot >= 1000 in practice.
 #' data(english)
 #' english <- escalc(measure = "SMD", n1i = NStartControl,
-#' sd1i = SD_C, m1i = MeanC, n2i = NStartExpt, sd2i = SD_E,
-#' m2i = MeanE, var.names=c("SMD","vSMD"),data = english)
+#'   sd1i = SD_C, m1i = MeanC, n2i = NStartExpt, sd2i = SD_E,
+#'   m2i = MeanE, var.names = c("SMD", "vSMD"), data = english)
 #' english_MA <- rma.mv(yi = SMD, V = vSMD,
-#' random = list( ~ 1 | StudyNo, ~ 1 | EffectID), data = english)
-#' I2_eng_1 <- i2_ml(english_MA, data = english, boot = 10)
-#' I2_eng_2 <- i2_ml(english_MA, data = english, method = "ratio")
-#' I2_eng_3 <- i2_ml(english_MA, data = english, method = "matrix")
-#'
-#' ## Fish example
-#' data(fish)
-#' warm_dat <- fish
-#' model <- metafor::rma.mv(yi = lnrr, V = lnrr_vi,
-#' random = list(~1 | group_ID, ~1 | es_ID),
-#' mods = ~ experimental_design + trait.type + deg_dif + treat_end_days,
-#' method = "REML", test = "t", data = warm_dat,
-#' control=list(optimizer="optim", optmethod="Nelder-Mead"))
-#' I2_fish_1 <- i2_ml(model, data = warm_dat, boot = 10)
-#' I2_fish_2 <- i2_ml(model, method = c("matrix"),data = warm_dat)
-#' I2_fish_2 <- i2_ml(model, method = c("ratio"),data = warm_dat)
-#'
-#' # Lim example
-#' data(lim)
-#' # Add in the sampling variance
-#' lim$vi<-(1/sqrt(lim$N - 3))^2
-#' # Fit a meta-regression with Phylum as fixed effect
-#' lim_MR <- metafor::rma.mv(
-#'   yi = yi, V = vi, mods = ~ Phylum - 1,
-#'   random = list(~1 | Article, ~1 | Datapoint),
-#'   data = lim)
-#' I2_lim_1 <- i2_ml(lim_MR, data = lim, boot = 10)
-#' I2_lim_2 <- i2_ml(lim_MR, data = lim)
+#'   random = list(~1 | StudyNo, ~1 | EffectID), data = english)
+#' i2_ml(english_MA)
+#' i2_ml(english_MA, method = "matrix")
+#' i2_ml(english_MA, boot = 10)
 #' }
 #' @references Senior, A. M., Grueber, C. E., Kamiya, T., Lagisz, M., O’Dwyer, K., Santos, E. S. A. & Nakagawa S. 2016. Heterogeneity in ecological and evolutionary meta-analyses: its magnitudes and implications. Ecology 97(12): 3293-3299.
 #'  Nakagawa, S, and Santos, E.S.A. 2012. Methodological issues and advances in biological meta-analysis.Evolutionary Ecology 26(5): 1253-1274.
@@ -139,9 +114,9 @@ i2_ml <- function(model,
 #' @title matrix_i2
 #' @description Calculated I2 (I-squared) for mulilevel meta-analytic models, based on a matrix method proposed by Wolfgang Viechtbauer.
 #' @param model Model object of class \code{rma.mv} or \code{rma}.
-#' @examples
-#' \dontrun{
-#' # English example
+#' @return A named numeric vector of I2 (I-squared) values expressed as percentages. The first element, \code{I2_Total}, is the total heterogeneity; each remaining element (named \code{I2_<level>} after a random-effect level of the model) is the heterogeneity attributable to that level.
+#' @examples \donttest{
+#' library(metafor)
 #' data(english)
 #' english <- escalc(
 #'   measure = "SMD", n1i = NStartControl,
@@ -152,18 +127,7 @@ i2_ml <- function(model,
 #'   yi = SMD, V = vSMD,
 #'   random = list(~1 | StudyNo, ~1 | EffectID),
 #'   data = english)
-#' I2_eng <- i2_ml(english_MA, data = english, method = "matrix")
-#'
-#' # Lim example
-#' data(lim)
-#' # Add in the sampling variance
-#' lim$vi<-(1/sqrt(lim$N - 3))^2
-#' # Fit a meta-regression with Phylum as fixed effect
-#' lim_MR <- metafor::rma.mv(
-#'   yi = yi, V = vi, mods = ~ Phylum - 1,
-#'   random = list(~1 | Article, ~1 | Datapoint),
-#'   data = lim)
-#' I2_lim <- i2_ml(lim_MR, data=lim, method = "matrix")
+#' matrix_i2(english_MA)
 #' }
 #' @export
 matrix_i2 <- function(model){
@@ -185,17 +149,16 @@ matrix_i2 <- function(model){
 #' @title ratio_i2
 #' @description I2 (I-squared) for mulilevel meta-analytic models based on Nakagawa & Santos (2012). Under multilevel models, we can have a multiple I2 (see also Senior et al. 2016).
 #' @param model Model object of class \code{rma.mv} or \code{rma}.
-#' @examples
-#' \dontrun{
-#' # English example
+#' @return A named numeric vector of I2 (I-squared) values expressed as percentages. The first element, \code{I2_Total}, is the total heterogeneity; each remaining element (named \code{I2_<level>} after a random-effect level of the model) is the heterogeneity attributable to that level.
+#' @examples \donttest{
+#' library(metafor)
 #' data(english)
 #' english <- escalc(measure = "SMD", n1i = NStartControl,
 #' sd1i = SD_C, m1i = MeanC, n2i = NStartExpt,
 #' sd2i = SD_E, m2i = MeanE, var.names=c("SMD","vSMD"),data = english)
 #' english_MA <- rma.mv(yi = SMD, V = vSMD,
 #' random = list( ~ 1 | StudyNo, ~ 1 | EffectID), data = english)
-#' I2_eng_1 <- i2_ml(english_MA, data = english, boot = 1000)
-#' I2_eng_2 <- i2_ml(english_MA, data = english, method = "ratio")
+#' ratio_i2(english_MA)
 #' }
 #' @export
 ratio_i2 <- function(model){

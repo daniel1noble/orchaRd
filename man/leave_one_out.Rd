@@ -58,20 +58,15 @@ the **metafor** package by iteratively removing each level of a grouping
 variable and refitting the model.
 }
 \examples{
-\dontrun{
-res <- metafor::rma.mv(lnrr, lnrr_vi, random = ~ 1 | paper_ID, data = fish)
+\donttest{
+# Subset to a few studies so the leave-one-out refits run quickly
+fish_sub <- fish[fish$paper_ID \%in\% unique(fish$paper_ID)[1:5], ]
+res <- metafor::rma.mv(lnrr, lnrr_vi, random = ~ 1 | paper_ID, data = fish_sub)
 loo_results <- leave_one_out(res, group = "paper_ID")
 
-# With variance-covariance calculation
-loo_results <- leave_one_out(res, group = "paper_ID", 
-                             vcalc_args = list(vi = "lnrr_vi", 
-                                              cluster = "paper_ID", 
-                                              obs = "es_ID", 
-                                              rho = 0.5))
-                                              
 # With robust variance estimation
-loo_results <- leave_one_out(res, group = "paper_ID", 
-                             robust_args = list(cluster = "paper_ID"))
+loo_robust <- leave_one_out(res, group = "paper_ID",
+                            robust_args = list(cluster = "paper_ID"))
 }
 
 }

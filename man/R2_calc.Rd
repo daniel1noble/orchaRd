@@ -9,11 +9,14 @@ R2_calc(model)
 \arguments{
 \item{model}{Model object of class \code{rma.mv} or \code{rma}.}
 }
+\value{
+A named numeric vector of length two: \code{R2_marginal}, the proportion of variance explained by the fixed effects (moderators) alone, and \code{R2_conditional}, the proportion explained by both the fixed and random effects. Values range from 0 to 1.
+}
 \description{
 Calculated R2 (R-squared) for mixed (mulitlevel) models, based on Nakagawa & Schielzeth (2013).
 }
 \examples{
-\dontrun{
+\donttest{
 data(lim)
 lim$vi<-(1/sqrt(lim$N - 3))^2
 lim_MR<-metafor::rma.mv(yi=yi, V=vi, mods=~Phylum-1,

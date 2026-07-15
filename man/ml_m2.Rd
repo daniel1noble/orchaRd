@@ -9,6 +9,9 @@ ml_m2(model)
 \arguments{
 \item{model}{Model object of class \code{rma.mv} or \code{rma}.}
 }
+\value{
+A named numeric vector of M2 heterogeneity values (a proportion-type index on the variance scale, bounded between 0 and 1). The first element, \code{M2_Total}, is the overall value across all random effects; each remaining element (named \code{M2_<level>} after a random-effect level of the model) is the value for that level.
+}
 \description{
 Calculated CV for mulilevel meta-analytic models
 }

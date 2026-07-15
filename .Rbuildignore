@@ -27,3 +27,4 @@
 ^orchaRd_vignette\.qmd_files$
 ^cran-comments\.md$
 ^CRAN-SUBMISSION$
+^Rplots\.pdf$
