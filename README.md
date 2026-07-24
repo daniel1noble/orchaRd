@@ -1,4 +1,6 @@
 # Introducing the Orchard Plot for Meta-analysis
+[![CRAN status](https://www.r-pkg.org/badges/version/orchaRd)](https://CRAN.R-project.org/package=orchaRd)
+[![CRAN downloads](https://cranlogs.r-pkg.org/badges/grand-total/orchaRd)](https://CRAN.R-project.org/package=orchaRd)
 [![R-CMD-check](https://github.com/daniel1noble/orchaRd/actions/workflows/check-standard.yaml/badge.svg)](https://github.com/daniel1noble/orchaRd/actions/workflows/check-standard.yaml)
 [![test-coverage](https://github.com/daniel1noble/orchaRd/actions/workflows/test-coverage.yaml/badge.svg)](https://github.com/daniel1noble/orchaRd/actions/workflows/test-coverage.yaml)
 [![Coverage Status](https://img.shields.io/coverallsCoverage/github/daniel1noble/orchaRd?branch=main)](https://coveralls.io/github/daniel1noble/orchaRd?branch=main)
@@ -18,13 +20,19 @@ For earlier versions please cite:
 Nakagawa, S., Lagisz, M., O'Dea, R. E., Rutkowska, J., Yang, Y., Noble, D. W., & Senior, A. M. (2019). The Orchard Plot: Cultivating Forest Plots for Use in Ecology, Evolution and Beyond. *Research Synthesis Methods* https://doi.org/10.1002/jrsm.1424 12: 4-12 (preprint = *EcoEvoRxiv* https://doi.org/10.32942/osf.io/epqa7)
 
 # Installation
-To install `orchaRd` use the following code in R:
 
+`orchaRd` is on CRAN. Install the released version with:
+
+```r
+install.packages("orchaRd")
+library(orchaRd)
 ```
-install.packages("pacman")
-pacman::p_load(devtools, tidyverse, metafor, patchwork, R.rsp, emmeans)
 
-devtools::install_github("daniel1noble/orchaRd", force = TRUE)
+To install the latest development version from GitHub instead:
+
+```r
+# install.packages("remotes")
+remotes::install_github("daniel1noble/orchaRd")
 library(orchaRd)
 ```
 
@@ -35,6 +43,11 @@ We detail how to use the `orchaRd` package in the [vignette](https://daniel1nobl
 Please note that orchaRd 2.0 is still under active development and testing. If you use it, you should check that the results are what you expect. We do have a number of tests already in place, but there may still be situations where it fails. If you find a bug or a situation that doesn't match your expectations let us know by lodging an [issue](https://github.com/daniel1noble/orchaRd/issues) on GitHub.
 
 # Changelog
+
+## Version 2.2.1 (2026-07-25)
+
+- **`orchaRd` is now on CRAN!** Install the released version with `install.packages("orchaRd")`.
+- Documentation updated for CRAN: added `\value` (return-value) documentation to all exported functions, and reworked examples so they are executable and run within CRAN time limits.
 
 ## Version 2.2.0 (2026-04-18)
 

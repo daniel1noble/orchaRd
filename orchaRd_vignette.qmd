@@ -62,12 +62,12 @@ Nakagawa, S., Lagisz, M., O'Dea, R. E., Rutkowska, J., Yang, Y., Noble, D. W., &
 
 # **Installation**
 
-To install `orchaRd` use the following code in R:
+`orchaRd` is on CRAN, so most users should install the released version with the code below.
 
 
 :::{.column-margin}
 :::{.callout-note}
-If you want to download the development branch, which contains newer features you can execute the following code:
+If you want the development version, which may contain newer features not yet on CRAN, you can install it from GitHub instead:
 
 ```{r, packages}
 #| label: packages
@@ -75,24 +75,26 @@ If you want to download the development branch, which contains newer features yo
 #| eval: false
 #| results: hide
 #| code-fold: true
-rm(list = ls())
-devtools::install_github("daniel1noble/orchaRd", ref = "dev", force = TRUE)
-pacman::p_load(devtools, tidyverse, metafor, patchwork, R.rsp, orchaRd, emmeans, ape, phytools, flextable, rotl, clubSandwich, glmmTMB, lme4)
+# install.packages("remotes")
+remotes::install_github("daniel1noble/orchaRd", ref = "dev")
+pacman::p_load(tidyverse, metafor, patchwork, R.rsp, orchaRd, emmeans, ape, phytools, flextable, rotl, clubSandwich, glmmTMB, lme4)
 ```
 
-It's important to note that this version may not be as stable as the master branch.
+It's important to note that this version may not be as stable as the CRAN release.
 
 :::
 :::
 
 ```{r echo = TRUE, eval = FALSE, results = 'hide', warning=FALSE, message=FALSE,  class.source='klippy'}
-#install.packages("pacman")
-rm(list = ls())
-devtools::install_github("daniel1noble/orchaRd", ref = "main", force = TRUE)
-pacman::p_load(devtools, tidyverse, metafor, patchwork, R.rsp, orchaRd, emmeans, ape, phytools, flextable, glmmTMB, lme4)
+# Install the released version of orchaRd from CRAN
+install.packages("orchaRd")
+
+# Load orchaRd together with the other packages used throughout this vignette
+# install.packages("pacman")
+pacman::p_load(orchaRd, tidyverse, metafor, patchwork, R.rsp, emmeans, ape, phytools, flextable, glmmTMB, lme4)
 ```
 
-Installation will make the primary functions accessible to users along with their help files. You will also need the `tidyverse` and `metafor` packages.
+Installing `orchaRd` from CRAN will make the primary functions accessible to users along with their help files, and will automatically install its required dependencies (including `metafor`). The examples in this vignette also make use of the `tidyverse` and `metafor` packages.
 
 # **Examples of orchard and caterpillars plots**
 
