@@ -1,4 +1,4 @@
-# Introducing the Orchard Plot for Meta-analysis
+# Introducing the Orchard Plot for Meta-analysis <img src="man/figures/logo.png" align="right" height="139" alt="orchaRd hex sticker" />
 [![CRAN status](https://www.r-pkg.org/badges/version/orchaRd)](https://CRAN.R-project.org/package=orchaRd)
 [![CRAN downloads](https://cranlogs.r-pkg.org/badges/grand-total/orchaRd)](https://CRAN.R-project.org/package=orchaRd)
 [![R-CMD-check](https://github.com/daniel1noble/orchaRd/actions/workflows/check-standard.yaml/badge.svg)](https://github.com/daniel1noble/orchaRd/actions/workflows/check-standard.yaml)
