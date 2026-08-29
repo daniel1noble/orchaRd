@@ -42,9 +42,9 @@ pkgload::load_all(".")
 ```
 
 
-<img src="man/figures/logo.png" alt="orchaRd hex sticker" style="float:right; width:170px; margin:0 0 1em 1.5em;"/>
-
 # **Introduction**
+
+<img src="man/figures/logo.png" alt="orchaRd hex sticker" style="float:right; width:170px; margin:0 0 1em 1.5em;"/>
 
 `orchaRd` 2.0 allows users to create pretty orchard plots that contain both confidence intervals (CIs) and prediction intervals (PIs) around point estimates for different categorical moderators, plots the effect size distribution over top such estimates and weights effect sizes by their precision (1/standard error, SE) or sample size. `orchaRd` takes a `metafor` object of class `rma.mv` or `rma` [@Viechtbauer2010] and plots the results for the meta-analytic or meta-regression model. 
 
